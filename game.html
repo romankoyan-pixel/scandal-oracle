@@ -1091,14 +1091,6 @@
                 await loadUserStats();
                 await updateGameStatus();
 
-                // Listen for account changes
-                window.ethereum.on('accountsChanged', async (accounts) => {
-                    walletAddress = accounts[0];
-                    document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-                    await loadTokenBalance();
-                    await loadUserStats();
-                });
-
             } catch (error) {
                 console.error('Wallet connection failed:', error);
                 alert('Failed to connect wallet: ' + error.message);
@@ -1140,8 +1132,8 @@
                     myBetAmount = 0;
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                     document.getElementById('yourBet').style.display = 'none';
-                    // Simulate new fake bets
-                    simulateFakeBets();
+                    // Load pool from blockchain
+                    loadPoolFromContract();
                 }
                 lastCycleId = data.cycleId;
 
@@ -1315,7 +1307,6 @@
             } catch (error) { }
         }
 
-        document.getElementById('connectWallet').addEventListener('click', connectWallet);
         document.getElementById('rulesModal').addEventListener('click', (e) => {
             if (e.target.id === 'rulesModal') closeRules();
         });
@@ -1324,15 +1315,15 @@
         });
 
         async function init() {
-            // Auto-connect test wallet for testing (using localStorage)
-            await connectWallet();
-
-            simulateFakeBets(); // Initial pool simulation
+            // Load initial data without auto-connecting wallet
+            loadPoolFromContract();
             await updateGameStatus();
             await loadLeaderboard();
             await loadLastCycle();
+
+            // Timer updates every second
             setInterval(updateGameStatus, 1000);
-            setInterval(loadUserStats, 10000);
+            setInterval(loadPoolFromContract, 10000);
             setInterval(loadLeaderboard, 30000);
             setInterval(loadLastCycle, 30000);
         }
