@@ -649,6 +649,9 @@
                 <a href="news.html" class="btn-news">NEWS</a>
                 <a href="game.html" class="btn-news">ORACLE</a>
                 <button class="btn-connect" id="connectWallet">Connect Wallet</button>
+                <button class="btn-disconnect" id="disconnectBtn"
+                    style="display: none; background: #ff4444; margin-left: 0.5rem;"
+                    onclick="disconnectWallet()">✕</button>
             </div>
         </div>
 
@@ -964,15 +967,45 @@
 
         function closeLastCycle() { document.getElementById('lastCycleModal').classList.remove('active'); }
 
-        // Simulate fake bets from other players
-        function simulateFakeBets() {
-            const fakePlayers = Math.floor(Math.random() * 8) + 3; // 3-10 fake bets
+        // Load real pool data from blockchain contract
+        async function loadPoolFromContract() {
+            if (!gameContract) {
+                poolData = { mint: 0, neutral: 0, burn: 0 };
+                updatePoolDisplay();
+                return;
+            }
+            try {
+                const round = await gameContract.getCurrentRound();
+                poolData = {
+                    mint: Number(ethers.formatEther(round.mintPool)),
+                    neutral: Number(ethers.formatEther(round.neutralPool)),
+                    burn: Number(ethers.formatEther(round.burnPool))
+                };
+                updatePoolDisplay();
+            } catch (error) {
+                console.error('Error loading pool:', error);
+                poolData = { mint: 0, neutral: 0, burn: 0 };
+                updatePoolDisplay();
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            walletAddress = null;
+            web3Provider = null;
+            web3Signer = null;
+            tokenContract = null;
+            gameContract = null;
+            userTokenBalance = 0;
+            myVote = null;
+            myBetAmount = 0;
             poolData = { mint: 0, neutral: 0, burn: 0 };
 
-            for (let i = 0; i < fakePlayers; i++) {
-                const choice = ['mint', 'neutral', 'burn'][Math.floor(Math.random() * 3)];
-                poolData[choice] += BET_AMOUNT;
-            }
+            document.getElementById('connectWallet').textContent = 'Connect Wallet';
+            document.getElementById('disconnectBtn').style.display = 'none';
+            document.getElementById('userBalance').textContent = '0';
+            document.getElementById('yourBet').style.display = 'none';
+            document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
             updatePoolDisplay();
         }
 
@@ -1041,9 +1074,11 @@
 
                 // Update button text
                 document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                document.getElementById('disconnectBtn').style.display = 'inline-block';
 
-                // Load real SCNDL balance
+                // Load real SCNDL balance and pool from contract
                 await loadTokenBalance();
+                await loadPoolFromContract();
                 await loadUserStats();
                 await updateGameStatus();
 
