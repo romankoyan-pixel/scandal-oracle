@@ -1,0 +1,31 @@
+{
+  "name": "scandal-oracle",
+  "version": "2.3.0",
+  "description": "SCANDAL - $SCNDL News Oracle with AI Scoring",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "scandal",
+    "news",
+    "ai",
+    "oracle",
+    "crypto"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^9.0.2",
+    "openai": "^4.20.1",
+    "rss-parser": "^3.13.0"
+  }
+}

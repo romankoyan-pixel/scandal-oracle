@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SCANDAL - Prediction Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-wrapper {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        /* Header */
+        .game-header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .game-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .game-logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .game-logo .oracle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-left: 0.3rem;
+        }
+
+        .game-logo .token {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        .game-nav {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .game-nav a,
+        .game-nav button {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Main Content */
+        .game-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            min-height: 0;
+        }
+
+        /* Left: Voting Panel */
+        .voting-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .rules-link {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: transparent;
+        }
+
+        .rules-link:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .cycle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .cycle-info {
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .cycle-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .cycle-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+        }
+
+        .timer-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--accent-cyan);
+            min-width: 150px;
+            display: inline-block;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-value.closed {
+            color: var(--accent-red);
+        }
+
+        .articles-bar {
+            text-align: center;
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .vote-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vote-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .vote-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            flex: 1;
+        }
+
+        .vote-btn {
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vote-btn.mint {
+            color: var(--accent-green);
+            border-bottom: 4px solid var(--accent-green);
+        }
+
+        .vote-btn.burn {
+            color: var(--accent-red);
+            border-bottom: 4px solid var(--accent-red);
+        }
+
+        .vote-btn.neutral {
+            color: var(--accent-cyan);
+            border-bottom: 4px solid var(--accent-cyan);
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            transform: scale(1.03);
+        }
+
+        .vote-btn.mint:hover:not(:disabled),
+        .vote-btn.mint.selected {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+        }
+
+        .vote-btn.burn:hover:not(:disabled),
+        .vote-btn.burn.selected {
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+        }
+
+        .vote-btn.neutral:hover:not(:disabled),
+        .vote-btn.neutral.selected {
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+        }
+
+        .vote-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .vote-message {
+            text-align: center;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .vote-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .vote-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* Right: Stats + Leaderboard */
+        .right-panel {
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            gap: 0.8rem;
+            min-height: 0;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.3rem;
+        }
+
+        .leaderboard-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .leaderboard-list {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 80px 60px;
+            align-items: center;
+            padding: 0.8rem 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-rank {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+        }
+
+        .leaderboard-rank.gold {
+            color: #ffd700;
+        }
+
+        .leaderboard-rank.silver {
+            color: #c0c0c0;
+        }
+
+        .leaderboard-rank.bronze {
+            color: #cd7f32;
+        }
+
+        .leaderboard-wallet {
+            color: var(--text-primary);
+        }
+
+        .leaderboard-points {
+            color: var(--accent-green);
+            text-align: right;
+        }
+
+        .leaderboard-streak {
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        /* Rules Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .rules-list li:last-child {
+            border-bottom: none;
+        }
+
+        .rule-name {
+            color: var(--text-secondary);
+        }
+
+        .rule-val {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Pool Section */
+        .pool-section {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .pool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .pool-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .pool-total {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+        }
+
+        .pool-bar {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .pool-bar-mint {
+            background: var(--accent-green);
+        }
+
+        .pool-bar-neutral {
+            background: var(--accent-cyan);
+        }
+
+        .pool-bar-burn {
+            background: var(--accent-red);
+        }
+
+        .pool-amounts {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .pool-mint {
+            color: var(--accent-green);
+        }
+
+        .pool-neutral {
+            color: var(--accent-cyan);
+        }
+
+        .pool-burn {
+            color: var(--accent-red);
+        }
+
+        .your-bet {
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .your-bet span {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        /* Last Cycle Panel */
+        .last-cycle-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .last-cycle-panel:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .last-cycle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .last-cycle-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .last-cycle-result {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .last-cycle-result.mint {
+            color: var(--accent-green);
+        }
+
+        .last-cycle-result.burn {
+            color: var(--accent-red);
+        }
+
+        .last-cycle-result.neutral {
+            color: var(--accent-cyan);
+        }
+
+        .last-cycle-info {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        /* Last Cycle Modal */
+        .cycle-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .cycle-modal-overlay.active {
+            display: flex;
+        }
+
+        .cycle-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .cycle-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cycle-modal-body {
+            padding: 1rem 1.5rem;
+        }
+
+        .article-item {
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-title {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .article-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .article-score {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-wrapper">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="game-logo">
+                <h1>SCANDAL</h1>
+                <span class="oracle">ORACLE</span>
+            </div>
+            <div class="game-nav">
+                <a href="index.html#oracle" class="btn-news">DASHBOARD</a>
+                <a href="news.html" class="btn-news">NEWS</a>
+                <a href="game.html" class="btn-news">ORACLE</a>
+                <button class="btn-connect" id="connectWallet">Connect Wallet</button>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="game-main">
+            <!-- Left: Voting -->
+            <div class="voting-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Current Cycle</h2>
+                    <button class="rules-link" onclick="openRules()">? Rules</button>
+                </div>
+
+                <div class="cycle-row">
+                    <div class="cycle-info">
+                        <div class="cycle-label">Cycle</div>
+                        <div class="cycle-value" id="currentCycle">#--</div>
+                    </div>
+                    <div class="cycle-info" style="text-align: left;">
+                        <div class="cycle-label" style="margin-bottom: 0.3rem;">Status</div>
+                        <div class="timer-value" id="votingTimer">--:--</div>
+                    </div>
+                </div>
+
+                <div class="articles-bar">
+                    <span id="articlesCount">0</span> articles in cycle
+                </div>
+
+                <div class="vote-section">
+                    <div class="vote-label">Your Prediction</div>
+                    <div class="vote-buttons">
+                        <button class="vote-btn mint" id="voteMint" onclick="vote('MINT')" disabled>MINT</button>
+                        <button class="vote-btn neutral" id="voteNeutral" onclick="vote('NEUTRAL')"
+                            disabled>NEUTRAL</button>
+                        <button class="vote-btn burn" id="voteBurn" onclick="vote('BURN')" disabled>BURN</button>
+                    </div>
+                </div>
+
+                <!-- Pool Stats -->
+                <div class="pool-section">
+                    <div class="pool-header">
+                        <span class="pool-label">POOL</span>
+                        <span class="pool-total" id="poolTotal">0 $SCNDL</span>
+                    </div>
+                    <div class="pool-distribution">
+                        <div class="pool-bar">
+                            <div class="pool-bar-mint" id="poolBarMint" style="width: 33%;"></div>
+                            <div class="pool-bar-neutral" id="poolBarNeutral" style="width: 34%;"></div>
+                            <div class="pool-bar-burn" id="poolBarBurn" style="width: 33%;"></div>
+                        </div>
+                        <div class="pool-amounts">
+                            <span class="pool-mint" id="poolMint">0</span>
+                            <span class="pool-neutral" id="poolNeutral">0</span>
+                            <span class="pool-burn" id="poolBurn">0</span>
+                        </div>
+                    </div>
+                    <div class="your-bet" id="yourBet" style="display: none;">
+                        Your bet: <span id="yourBetAmount">0</span> $SCNDL on <span id="yourBetChoice">-</span>
+                    </div>
+                </div>
+
+                <div class="vote-message" id="voteMessage" style="display: none;"></div>
+            </div>
+
+            <!-- Right -->
+            <div class="right-panel">
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-value" id="userBalance" style="color: var(--accent-cyan);">10,000</div>
+                        <div class="stat-label">$SCNDL Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userWon" style="color: var(--accent-green);">0</div>
+                        <div class="stat-label">Total Won</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userLost" style="color: var(--accent-red);">0</div>
+                        <div class="stat-label">Total Lost</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="winRate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                </div>
+
+                <!-- Last Cycle -->
+                <div class="last-cycle-panel" id="lastCyclePanel" onclick="openLastCycle()">
+                    <div class="last-cycle-header">
+                        <span class="last-cycle-title">LAST CYCLE #<span id="lastCycleNumber">--</span></span>
+                        <span class="last-cycle-result" id="lastCycleResult">--</span>
+                    </div>
+                    <div class="last-cycle-info">
+                        <span id="lastCycleArticles">0 articles</span> •
+                        <span id="lastCycleScore">Score: --</span>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div class="leaderboard-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Leaderboard</h2>
+                    </div>
+                    <div class="leaderboard-list" id="leaderboard">
+                        <p class="text-secondary" style="text-align: center;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="modal-overlay" id="rulesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Game Rules</h3>
+                <button class="modal-close" onclick="closeRules()">&times;</button>
+            </div>
+            <ul class="rules-list">
+                <li><span class="rule-name">Bet Amount</span><span class="rule-val">100 $SCNDL</span></li>
+                <li><span class="rule-name">Voting Window</span><span class="rule-val">First 60 seconds</span></li>
+                <li><span class="rule-name">House Fee</span><span class="rule-val">5%</span></li>
+                <li><span class="rule-name">Win Payout</span><span class="rule-val">Pool ÷ Winners</span></li>
+                <li><span class="rule-name">No News</span><span class="rule-val">Full Refund</span></li>
+                <li><span class="rule-name">Wallet Required</span><span class="rule-val">MetaMask</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Last Cycle Modal -->
+    <div class="cycle-modal-overlay" id="lastCycleModal">
+        <div class="cycle-modal">
+            <div class="cycle-modal-header">
+                <h3 class="modal-title">Cycle #<span id="modalCycleId">--</span> Details</h3>
+                <button class="modal-close" onclick="closeLastCycle()">&times;</button>
+            </div>
+            <div class="cycle-modal-body">
+                <div
+                    style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding: 0.8rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Result</div>
+                        <div id="modalCycleAction" style="font-family: 'Orbitron'; font-size: 1.2rem;">--</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Average Score</div>
+                        <div id="modalCycleScore"
+                            style="font-family: 'Orbitron'; font-size: 1.2rem; color: var(--accent-cyan);">--</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Rate</div>
+                        <div id="modalCycleRate" style="font-family: 'Orbitron'; font-size: 1.2rem;">--</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">News Articles:
+                </div>
+                <div id="modalArticlesList">
+                    <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Popup -->
+    <div class="result-popup" id="resultPopup">
+        <div class="result-content" id="resultContent">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-text" id="resultText">WIN</div>
+            <div class="result-points" id="resultPoints">+10 pts</div>
+            <div class="result-streak" id="resultStreak"></div>
+        </div>
+    </div>
+
+    <style>
+        .result-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-popup.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result-content {
+            text-align: center;
+            animation: popIn 0.4s ease;
+        }
+
+        .result-content.win {
+            color: var(--accent-green);
+        }
+
+        .result-content.lose {
+            color: var(--accent-red);
+        }
+
+        .result-content.refund {
+            color: var(--accent-cyan);
+        }
+
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-points {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+        }
+
+        .result-streak {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <script>
+        let walletAddress = null;
+        let currentCycleId = null;
+        let myVote = null;
+        let lastCycleId = null;
+
+        // Pool simulation
+        const BET_AMOUNT = 100; // $SCNDL per bet
+        let poolData = { mint: 0, neutral: 0, burn: 0 };
+        let myBetAmount = 0;
+        let lastCycleData = null;
+
+        function openRules() { document.getElementById('rulesModal').classList.add('active'); }
+        function closeRules() { document.getElementById('rulesModal').classList.remove('active'); }
+
+        function openLastCycle() {
+            if (!lastCycleData) return;
+            document.getElementById('modalCycleId').textContent = lastCycleData.id;
+            const actionEl = document.getElementById('modalCycleAction');
+            actionEl.textContent = lastCycleData.action;
+            actionEl.className = lastCycleData.action.toLowerCase();
+            document.getElementById('modalCycleScore').textContent = lastCycleData.averageScore;
+            document.getElementById('modalCycleRate').textContent = lastCycleData.ratePercentage;
+
+            const listEl = document.getElementById('modalArticlesList');
+            if (lastCycleData.articles.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No articles in this cycle</p>';
+            } else {
+                listEl.innerHTML = lastCycleData.articles.map(a => `
+                    <div class="article-item">
+                        <div class="article-title">${a.title}</div>
+                        <div class="article-meta">
+                            <span>${a.source || a.category}</span>
+                            <span class="article-score">Score: ${a.score}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('lastCycleModal').classList.add('active');
+        }
+
+        function closeLastCycle() { document.getElementById('lastCycleModal').classList.remove('active'); }
+
+        // Simulate fake bets from other players
+        function simulateFakeBets() {
+            const fakePlayers = Math.floor(Math.random() * 8) + 3; // 3-10 fake bets
+            poolData = { mint: 0, neutral: 0, burn: 0 };
+
+            for (let i = 0; i < fakePlayers; i++) {
+                const choice = ['mint', 'neutral', 'burn'][Math.floor(Math.random() * 3)];
+                poolData[choice] += BET_AMOUNT;
+            }
+            updatePoolDisplay();
+        }
+
+        function updatePoolDisplay() {
+            const total = poolData.mint + poolData.neutral + poolData.burn + myBetAmount;
+            document.getElementById('poolTotal').textContent = total.toLocaleString() + ' $SCNDL';
+
+            document.getElementById('poolMint').textContent = poolData.mint + (myVote === 'MINT' ? BET_AMOUNT : 0);
+            document.getElementById('poolNeutral').textContent = poolData.neutral + (myVote === 'NEUTRAL' ? BET_AMOUNT : 0);
+            document.getElementById('poolBurn').textContent = poolData.burn + (myVote === 'BURN' ? BET_AMOUNT : 0);
+
+            // Update bar widths
+            if (total > 0) {
+                const mintW = ((poolData.mint + (myVote === 'MINT' ? BET_AMOUNT : 0)) / total * 100);
+                const neutralW = ((poolData.neutral + (myVote === 'NEUTRAL' ? BET_AMOUNT : 0)) / total * 100);
+                const burnW = ((poolData.burn + (myVote === 'BURN' ? BET_AMOUNT : 0)) / total * 100);
+
+                document.getElementById('poolBarMint').style.width = mintW + '%';
+                document.getElementById('poolBarNeutral').style.width = neutralW + '%';
+                document.getElementById('poolBarBurn').style.width = burnW + '%';
+            }
+        }
+
+        async function connectWallet() {
+            // Test mode: use fake wallet if MetaMask not installed
+            if (typeof window.ethereum === 'undefined') {
+                // Persist test wallet in localStorage
+                walletAddress = localStorage.getItem('testWallet');
+                if (!walletAddress) {
+                    walletAddress = '0xTEST' + Math.random().toString(16).slice(2, 10).toUpperCase();
+                    localStorage.setItem('testWallet', walletAddress);
+                }
+                document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                await loadUserStats();
+                await updateGameStatus();
+                return;
+            }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                walletAddress = accounts[0];
+                document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                loadUserStats();
+                updateGameStatus();
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+            }
+        }
+
+        async function loadUserStats() {
+            if (!walletAddress) {
+                console.log('❌ loadUserStats: no walletAddress');
+                return;
+            }
+            try {
+                console.log(`📊 Loading stats for: ${walletAddress}`);
+                const res = await fetch(`/api/user-stats/${walletAddress}`);
+                const data = await res.json();
+                console.log('📊 Got stats:', data);
+                document.getElementById('userBalance').textContent = (data.balance || 10000).toLocaleString();
+                document.getElementById('userWon').textContent = (data.totalWon || 0).toLocaleString();
+                document.getElementById('userLost').textContent = (data.totalLost || 0).toLocaleString();
+                document.getElementById('winRate').textContent = (data.winRate || 0) + '%';
+            } catch (error) { console.error('Load user stats error:', error); }
+        }
+
+        async function updateGameStatus() {
+            try {
+                const url = walletAddress ? `/api/game-status?wallet=${walletAddress}` : '/api/game-status';
+                const res = await fetch(url);
+                const data = await res.json();
+
+                // Detect cycle change - check result and reset
+                if (lastCycleId && lastCycleId !== data.cycleId) {
+                    if (myVote) checkMyResult(lastCycleId);
+                    // Reset for new cycle
+                    myVote = null;
+                    myBetAmount = 0;
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                    document.getElementById('yourBet').style.display = 'none';
+                    // Simulate new fake bets
+                    simulateFakeBets();
+                }
+                lastCycleId = data.cycleId;
+
+                // Restore vote UI if already voted this cycle
+                if (data.userVote && !myVote) {
+                    myVote = data.userVote;
+                    myBetAmount = BET_AMOUNT;
+                    document.getElementById(`vote${data.userVote.charAt(0) + data.userVote.slice(1).toLowerCase()}`).classList.add('selected');
+                    document.getElementById('yourBet').style.display = 'block';
+                    document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                    document.getElementById('yourBetChoice').textContent = data.userVote;
+                }
+
+                document.getElementById('currentCycle').textContent = '#' + data.cycleId;
+                document.getElementById('articlesCount').textContent = data.articlesCount;
+
+                const timerEl = document.getElementById('votingTimer');
+                if (data.votingOpen) {
+                    const seconds = Math.floor(data.votingTimeRemaining / 1000);
+                    timerEl.textContent = `OPEN: ${seconds.toString().padStart(2, '0')}s`;
+                    timerEl.classList.remove('closed');
+                } else {
+                    const nextSeconds = Math.floor((data.cycleTimeRemaining || 0) / 1000);
+                    timerEl.textContent = `NEXT: ${nextSeconds.toString().padStart(2, '0')}s`;
+                    timerEl.classList.add('closed');
+                }
+
+                // Can only vote if not already voted
+                const canVote = walletAddress && data.votingOpen && !myVote;
+                document.getElementById('voteMint').disabled = !canVote;
+                document.getElementById('voteNeutral').disabled = !canVote;
+                document.getElementById('voteBurn').disabled = !canVote;
+            } catch (error) { }
+        }
+
+        async function vote(choice) {
+            if (!walletAddress) { showMessage('Connect wallet first!', 'error'); return; }
+            try {
+                const res = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ wallet: walletAddress, vote: choice })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    showMessage(data.error, 'error');
+                } else {
+                    myVote = choice;
+                    myBetAmount = BET_AMOUNT;
+
+                    // Use new balance from server (already has -100 deducted)
+                    if (data.newBalance !== undefined) {
+                        document.getElementById('userBalance').textContent = data.newBalance.toLocaleString();
+                    }
+
+                    showMessage(`Bet placed: ${BET_AMOUNT} $SCNDL on ${choice}`, 'success');
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                    document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
+
+                    // Show your bet info
+                    document.getElementById('yourBet').style.display = 'block';
+                    document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                    document.getElementById('yourBetChoice').textContent = choice;
+                    updatePoolDisplay();
+                }
+            } catch (error) { showMessage('Failed', 'error'); }
+        }
+
+        function showResult(resultType, tokenAmount) {
+            const popup = document.getElementById('resultPopup');
+            const content = document.getElementById('resultContent');
+            const icon = document.getElementById('resultIcon');
+            const text = document.getElementById('resultText');
+            const pts = document.getElementById('resultPoints');
+            const stk = document.getElementById('resultStreak');
+
+            if (resultType === 'refund') {
+                content.className = 'result-content refund';
+                icon.textContent = '↩';
+                text.textContent = 'REFUND';
+                pts.textContent = `+${tokenAmount} $SCNDL`;
+                stk.textContent = 'No news this cycle - bet returned!';
+            } else if (resultType === 'win') {
+                content.className = 'result-content win';
+                icon.textContent = '✓';
+                text.textContent = 'WIN!';
+                pts.textContent = `+${tokenAmount} $SCNDL`;
+                stk.textContent = 'Congratulations!';
+            } else {
+                content.className = 'result-content lose';
+                icon.textContent = '✗';
+                text.textContent = 'LOSE';
+                pts.textContent = `-${tokenAmount} $SCNDL`;
+                stk.textContent = 'Better luck next time!';
+            }
+
+            popup.classList.add('active');
+            setTimeout(() => popup.classList.remove('active'), 4000);
+        }
+
+        async function checkMyResult(cycleId) {
+            if (!walletAddress) return;
+            try {
+                const res = await fetch(`/api/prediction-result/${walletAddress}/${cycleId}`);
+                const data = await res.json();
+
+                if (!data.found) return;
+
+                const tokenAmount = Math.floor(data.payout) || data.amount;
+
+                // Update balance from server
+                loadUserStats();
+
+                showResult(data.result, tokenAmount);
+                loadLastCycle();
+            } catch (error) { console.error('Failed to check result:', error); }
+        }
+
+        function showMessage(text, type) {
+            const msgEl = document.getElementById('voteMessage');
+            msgEl.textContent = text;
+            msgEl.className = `vote-message ${type}`;
+            msgEl.style.display = 'block';
+            setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch('/api/leaderboard');
+                const data = await res.json();
+                const container = document.getElementById('leaderboard');
+
+                if (data.leaderboard.length === 0) {
+                    container.innerHTML = '<p class="text-secondary" style="text-align: center; padding: 2rem;">No predictions yet</p>';
+                    return;
+                }
+
+                container.innerHTML = data.leaderboard.map((user, i) => {
+                    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+                    const profit = user.profit || 0;
+                    const balance = user.balance || 10000;
+                    const profitColor = profit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                    const profitSign = profit >= 0 ? '+' : '';
+                    return `
+                        <div class="leaderboard-item">
+                            <div class="leaderboard-rank ${rankClass}">#${i + 1}</div>
+                            <div class="leaderboard-wallet">${user.wallet}</div>
+                            <div class="leaderboard-points" style="color: ${profitColor}">${profitSign}${profit.toLocaleString()} $SCNDL</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) { }
+        }
+
+        async function loadLastCycle() {
+            try {
+                const res = await fetch('/api/last-cycle');
+                const data = await res.json();
+                if (data.lastCycle) {
+                    lastCycleData = data.lastCycle;
+                    document.getElementById('lastCycleNumber').textContent = data.lastCycle.id;
+                    const resultEl = document.getElementById('lastCycleResult');
+                    resultEl.textContent = data.lastCycle.action;
+                    resultEl.className = 'last-cycle-result ' + data.lastCycle.action.toLowerCase();
+                    document.getElementById('lastCycleArticles').textContent = data.lastCycle.articles.length + ' articles';
+                    document.getElementById('lastCycleScore').textContent = 'Score: ' + data.lastCycle.averageScore;
+                }
+            } catch (error) { }
+        }
+
+        document.getElementById('connectWallet').addEventListener('click', connectWallet);
+        document.getElementById('rulesModal').addEventListener('click', (e) => {
+            if (e.target.id === 'rulesModal') closeRules();
+        });
+        document.getElementById('lastCycleModal').addEventListener('click', (e) => {
+            if (e.target.id === 'lastCycleModal') closeLastCycle();
+        });
+
+        async function init() {
+            // Auto-connect test wallet for testing (using localStorage)
+            await connectWallet();
+
+            simulateFakeBets(); // Initial pool simulation
+            await updateGameStatus();
+            await loadLeaderboard();
+            await loadLastCycle();
+            setInterval(updateGameStatus, 1000);
+            setInterval(loadUserStats, 10000);
+            setInterval(loadLeaderboard, 30000);
+            setInterval(loadLastCycle, 30000);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

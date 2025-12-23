@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCANDAL - $SCNDL Oracle</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+</head>
+
+<body>
+    <div class="scanner-line"></div>
+
+    <!-- HERO SECTION - Full Screen Landing -->
+    <section class="hero-section" id="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">SCANDAL</h1>
+            <p class="hero-slogan">Every scandal has a price. Every headline shapes the supply.</p>
+            <div class="hero-buttons">
+                <a href="#oracle" class="hero-btn hero-btn-primary">ENTER DASHBOARD</a>
+                <a href="litepaper.html" class="hero-btn hero-btn-secondary">READ LITEPAPER</a>
+            </div>
+        </div>
+        <div class="hero-scroll-indicator">
+            <span>SCROLL</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <div class="container" id="oracle">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <h1>SCANDAL</h1>
+                <span class="token-name">$SCNDL</span>
+            </div>
+
+            <!-- Total Supply -->
+            <div class="total-supply">
+                <span class="supply-label">TOTAL SUPPLY</span>
+                <span class="supply-value" id="totalSupply">1,000,000,000</span>
+            </div>
+
+            <!-- Header Buttons -->
+            <div class="header-buttons">
+                <a href="news.html" class="btn-news">NEWS</a>
+                <a href="game.html" class="btn-news">ORACLE</a>
+                <a href="#" class="btn-buy" target="_blank">Buy $SCNDL</a>
+                <button class="btn-connect" id="connectWallet">Connect Wallet</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="oracle">
+            <!-- Scandal Meter -->
+            <div class="meter-section">
+                <h2 class="section-title">SCANDAL METER</h2>
+                <div class="meter-container">
+                    <div class="meter-display">
+                        <div class="meter-value" id="scandalScore">--</div>
+                        <div class="meter-label">CURRENT SCORE</div>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meterFill"></div>
+                        <div class="meter-markers">
+                            <span class="marker" style="left: 0%">0</span>
+                            <span class="marker" style="left: 33%">33</span>
+                            <span class="marker" style="left: 66%">66</span>
+                            <span class="marker" style="left: 100%">100</span>
+                        </div>
+                    </div>
+                    <div class="meter-zones">
+                        <div class="zone mint">MINT ZONE</div>
+                        <div class="zone neutral">NEUTRAL</div>
+                        <div class="zone burn">BURN ZONE</div>
+                    </div>
+                </div>
+
+                <!-- Action Status -->
+                <div class="action-status" id="actionStatus">
+                    <div class="action-header">
+                        <div class="action-label">PROJECTED ACTION</div>
+                        <div class="action-value">--</div>
+                    </div>
+                    <div class="action-details">
+                        <div class="action-stat">
+                            <span class="action-stat-label">Impact</span>
+                            <span class="action-stat-value" id="tokenImpact">--</span>
+                        </div>
+                        <div class="action-stat">
+                            <span class="action-stat-label">New Supply</span>
+                            <span class="action-stat-value" id="newSupply">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supply Chart -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">SUPPLY HISTORY</h3>
+                        <button class="chart-expand-btn" id="expandChart">⛶ Expand</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="supplyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Feed -->
+            <div class="news-section">
+                <h2 class="section-title">LIVE NEWS FEED</h2>
+                <div class="news-stats">
+                    <div class="stat">
+                        <span class="stat-label">Articles Analyzed</span>
+                        <span class="stat-value" id="articleCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Avg Score</span>
+                        <span class="stat-value" id="avgScore">--</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Next Cycle</span>
+                        <span class="stat-value" id="cycleTimer">2:00</span>
+                    </div>
+                </div>
+                <div class="news-feed" id="newsFeed">
+                    <div class="loading">Initializing Oracle...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokenomics Section -->
+        <div class="tokenomics-section" id="tokenomics">
+            <h2 class="section-title">TOKENOMICS</h2>
+            <div class="tokenomics-grid">
+                <div class="tokenomics-card supply">
+                    <img src="images/scndl_coin_1766434955833.png" alt="SCNDL Coin" class="tokenomics-img">
+                    <h3>Initial Supply</h3>
+                    <p class="tokenomics-value">1B</p>
+                    <p class="tokenomics-desc">1 Billion $SCNDL tokens</p>
+                </div>
+                <div class="tokenomics-card mint">
+                    <img src="images/mint_zone_icon_1766434971466.png" alt="Mint Zone" class="tokenomics-img">
+                    <h3>Mint Zone</h3>
+                    <p class="tokenomics-value">+0.10% → +0.30%</p>
+                    <p class="tokenomics-desc">Score 0-32 (Good News)</p>
+                </div>
+                <div class="tokenomics-card burn">
+                    <img src="images/burn_zone_icon_1766434986892.png" alt="Burn Zone" class="tokenomics-img">
+                    <h3>Burn Zone</h3>
+                    <p class="tokenomics-value">-0.10% → -0.30%</p>
+                    <p class="tokenomics-desc">Score 67-100 (Scandal)</p>
+                </div>
+                <div class="tokenomics-card neutral">
+                    <img src="images/neutral_zone_icon_1766435002090.png" alt="Neutral Zone" class="tokenomics-img">
+                    <h3>Neutral Zone</h3>
+                    <p class="tokenomics-value">0%</p>
+                    <p class="tokenomics-desc">Score 33-66</p>
+                </div>
+            </div>
+
+            <!-- Rate Steps Table -->
+            <div class="rate-steps">
+                <h3>Dynamic Rate Steps</h3>
+                <div class="steps-grid">
+                    <div class="step-item mint">
+                        <span class="step-score">0-6</span>
+                        <span class="step-rate">+0.30%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">7-13</span>
+                        <span class="step-rate">+0.25%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">14-19</span>
+                        <span class="step-rate">+0.20%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">20-26</span>
+                        <span class="step-rate">+0.15%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">27-32</span>
+                        <span class="step-rate">+0.10%</span>
+                    </div>
+                    <div class="step-item neutral">
+                        <span class="step-score">33-66</span>
+                        <span class="step-rate">0%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">67-73</span>
+                        <span class="step-rate">-0.10%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">74-80</span>
+                        <span class="step-rate">-0.15%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">81-86</span>
+                        <span class="step-rate">-0.20%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">87-93</span>
+                        <span class="step-rate">-0.25%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">94-100</span>
+                        <span class="step-rate">-0.30%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roadmap Section -->
+        <div class="roadmap-section" id="roadmap">
+            <h2 class="section-title">ROADMAP</h2>
+            <div class="roadmap-timeline">
+                <div class="roadmap-item completed">
+                    <div class="roadmap-phase">Phase 1</div>
+                    <h3>Launch</h3>
+                    <ul>
+                        <li>✓ Oracle Development</li>
+                        <li>✓ AI News Analysis</li>
+                        <li>✓ Dashboard Launch</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item active">
+                    <div class="roadmap-phase">Phase 2</div>
+                    <h3>Token Launch</h3>
+                    <ul>
+                        <li>Smart Contract Deploy</li>
+                        <li>DEX Listing</li>
+                        <li>Community Building</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-phase">Phase 3</div>
+                    <h3>Expansion</h3>
+                    <ul>
+                        <li>CEX Listings</li>
+                        <li>Partnerships</li>
+                        <li>Mobile App</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-phase">Phase 4</div>
+                    <h3>Ecosystem</h3>
+                    <ul>
+                        <li>Staking Platform</li>
+                        <li>DAO Governance</li>
+                        <li>Multi-chain</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Log -->
+        <div class="history-section">
+            <h2 class="section-title">ACTION HISTORY</h2>
+            <div class="history-log" id="historyLog">
+                <div class="log-entry">
+                    <span class="log-time">System initialized</span>
+                    <span class="log-action">Waiting for first cycle...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span>⚡</span>
+                    <span>SCANDAL</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Whitepaper</a>
+                    <a href="#">Docs</a>
+                    <a href="#">Twitter</a>
+                    <a href="#">Telegram</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 SCANDAL Protocol. DYOR.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Wallet Modal -->
+    <div class="modal" id="walletModal">
+        <div class="modal-content wallet-modal">
+            <div class="modal-header">
+                <h2>Connect Wallet</h2>
+                <button class="modal-close" id="closeWalletModal">×</button>
+            </div>
+            <div class="wallet-options">
+                <button class="wallet-option" data-wallet="metamask">
+                    🦊 MetaMask
+                </button>
+                <button class="wallet-option" data-wallet="phantom">
+                    👻 Phantom
+                </button>
+                <button class="wallet-option" data-wallet="walletconnect">
+                    🔗 WalletConnect
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>COMPLETE SUPPLY HISTORY</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-chart">
+                <canvas id="fullSupplyChart"></canvas>
+            </div>
+            <div class="modal-stats" id="modalStats"></div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToOracle()"></button>
+
+    <script src="app.js"></script>
+    <script>
+        // Scroll to top button visibility
+        const scrollBtn = document.getElementById('scrollToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+
+        // Scroll to oracle anchor on main page
+        function scrollToOracle() {
+            document.getElementById('oracle').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>

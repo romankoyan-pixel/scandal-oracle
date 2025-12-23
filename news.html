@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCANDAL | News Archive</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="scanner-line"></div>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <h1>SCANDAL</h1>
+                <span class="token-name">$SCNDL</span>
+            </div>
+            <div class="header-buttons">
+                <a href="index.html" class="btn-news">DASHBOARD</a>
+                <a href="news.html" class="btn-news">NEWS</a>
+                <a href="game.html" class="btn-news">PREDICT</a>
+            </div>
+        </header>
+
+        <!-- NEWS ARCHIVE SECTION -->
+        <section class="news-archive-section">
+            <div class="archive-header">
+                <h2 class="section-title">📰 NEWS ARCHIVE</h2>
+                <span class="total-count" id="totalCount">Loading...</span>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="news-filters">
+                <!-- Search -->
+                <div class="filter-group search-group">
+                    <input type="text" id="searchInput" placeholder="Search news..." class="search-input">
+                    <button class="search-btn" onclick="applyFilters()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Category -->
+                <div class="filter-group">
+                    <label>Category</label>
+                    <div class="category-buttons" id="categoryButtons">
+                        <button class="category-btn active" data-category="all">All</button>
+                        <button class="category-btn" data-category="politics">Politics</button>
+                        <button class="category-btn" data-category="crypto">Crypto</button>
+                        <button class="category-btn" data-category="tech">Tech</button>
+                        <button class="category-btn" data-category="world">World</button>
+                        <button class="category-btn" data-category="business">Business</button>
+                        <button class="category-btn" data-category="sports">Sports</button>
+                        <button class="category-btn" data-category="esports">Esports</button>
+                    </div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="filter-group date-group">
+                    <label>Date Range</label>
+                    <div class="date-inputs">
+                        <input type="date" id="startDate" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="endDate" class="date-input">
+                    </div>
+                </div>
+
+                <!-- Clear Filters -->
+                <button class="clear-filters-btn" onclick="clearFilters()">Clear Filters</button>
+            </div>
+
+            <!-- NEWS GRID -->
+            <div class="news-grid" id="newsGrid">
+                <!-- News cards will be loaded here -->
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more-container" id="loadMoreContainer">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load More</button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading-indicator" id="loadingIndicator">
+                <div class="spinner"></div>
+                <span>Loading news...</span>
+            </div>
+        </section>
+    </div>
+
+    <!-- Article Modal -->
+    <div class="article-modal" id="articleModal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-header">
+                <span class="modal-category" id="modalCategory"></span>
+                <span class="modal-score" id="modalScore"></span>
+            </div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-meta">
+                <span class="modal-source" id="modalSource"></span>
+                <span class="modal-time" id="modalTime"></span>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-actions">
+                <a href="#" class="modal-source-btn" id="modalSourceLink" target="_blank">
+                    🔗 Read Original Article
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentOffset = 0;
+        const LIMIT = 24;
+        let currentCategory = 'all';
+        let isLoading = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCategoryButtons();
+            setupSearchInput();
+            loadNews();
+        });
+
+        // Setup category buttons
+        function setupCategoryButtons() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    applyFilters();
+                });
+            });
+        }
+
+        // Setup search input (Enter key)
+        function setupSearchInput() {
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') applyFilters();
+            });
+        }
+
+        // Load news from API
+        async function loadNews(append = false) {
+            if (isLoading) return;
+            isLoading = true;
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+            loadingIndicator.style.display = 'flex';
+            if (loadMoreBtn) loadMoreBtn.disabled = true;
+
+            try {
+                // Use /api/news and extract articles from cycles
+                const response = await fetch(`${API_URL}/api/news`);
+                const data = await response.json();
+
+                // Extract all articles from completed cycles
+                let allArticles = [];
+
+                // Add current cycle articles
+                if (data.currentCycle && data.currentCycle.articles) {
+                    data.currentCycle.articles.forEach(article => {
+                        allArticles.push({ ...article, cycleAction: 'PENDING' });
+                    });
+                }
+
+                // Add completed cycles articles
+                if (data.completedCycles) {
+                    data.completedCycles.forEach(cycle => {
+                        if (cycle.articles) {
+                            cycle.articles.forEach(article => {
+                                allArticles.push({ ...article, cycleAction: cycle.action });
+                            });
+                        }
+                    });
+                }
+
+                // Sort by timestamp (newest first)
+                allArticles.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                // Apply filters
+                const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                let filtered = allArticles;
+
+                // Category filter
+                if (currentCategory !== 'all') {
+                    filtered = filtered.filter(a => a.category === currentCategory);
+                }
+
+                // Search filter
+                if (searchTerm) {
+                    filtered = filtered.filter(a =>
+                        (a.title && a.title.toLowerCase().includes(searchTerm)) ||
+                        (a.description && a.description.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                // Date filter
+                if (startDate) {
+                    const start = new Date(startDate).getTime();
+                    filtered = filtered.filter(a => a.timestamp >= start);
+                }
+                if (endDate) {
+                    const end = new Date(endDate).getTime() + 86400000;
+                    filtered = filtered.filter(a => a.timestamp <= end);
+                }
+
+                // Pagination
+                const total = filtered.length;
+                const paginated = filtered.slice(currentOffset, currentOffset + LIMIT);
+
+                renderNews(paginated, append);
+                updateTotalCount(total);
+
+                // Show/hide load more button
+                const loadMoreContainer = document.getElementById('loadMoreContainer');
+                if (currentOffset + LIMIT >= total) {
+                    loadMoreContainer.style.display = 'none';
+                } else {
+                    loadMoreContainer.style.display = 'flex';
+                }
+
+            } catch (error) {
+                console.error('Error loading news:', error);
+                document.getElementById('newsGrid').innerHTML = '<div class="error-message">Failed to load news. Is the server running?</div>';
+            } finally {
+                loadingIndicator.style.display = 'none';
+                if (loadMoreBtn) loadMoreBtn.disabled = false;
+                isLoading = false;
+            }
+        }
+
+        // Render news cards
+        function renderNews(articles, append = false) {
+            const grid = document.getElementById('newsGrid');
+
+            if (!append) {
+                grid.innerHTML = '';
+            }
+
+            // Check if articles is valid
+            if (!articles || articles.length === 0) {
+                if (!append) {
+                    grid.innerHTML = '<div class="no-results">No news found matching your criteria.</div>';
+                }
+                return;
+            }
+
+            articles.forEach(article => {
+                const card = createNewsCard(article);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create a news card
+        function createNewsCard(article) {
+            const card = document.createElement('div');
+            card.className = 'news-card';
+
+            const scoreClass = article.score >= 70 ? 'score-high' :
+                article.score >= 40 ? 'score-medium' : 'score-low';
+
+            const categoryIcon = getCategoryIcon(article.category);
+            const timeAgo = getTimeAgo(article.timestamp);
+
+            card.innerHTML = `
+                <div class="news-card-header">
+                    <span class="news-category ${article.category}">${categoryIcon} ${article.category?.toUpperCase() || 'NEWS'}</span>
+                    <span class="news-score ${scoreClass}">${article.score || 0}</span>
+                </div>
+                <h3 class="news-card-title">${escapeHtml(article.title || 'Untitled')}</h3>
+                <p class="news-card-description">${escapeHtml(truncate(article.description || '', 150))}</p>
+                <div class="news-card-footer">
+                    <span class="news-source">${escapeHtml(article.source || 'Unknown')}</span>
+                    <span class="news-time">${timeAgo}</span>
+                </div>
+                <a href="${article.link}" target="_blank" class="news-card-link">Read Article →</a>
+            `;
+
+            return card;
+        }
+
+        // Get category icon
+        function getCategoryIcon(category) {
+            const icons = {
+                politics: '🏛️',
+                crypto: '🪙',
+                tech: '💻',
+                world: '🌍',
+                business: '💼',
+                sports: '⚽',
+                esports: '🎮'
+            };
+            return icons[category] || '📰';
+        }
+
+        // Get time ago string
+        function getTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            const now = Date.now();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            return `${days}d ago`;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Truncate text
+        function truncate(text, length) {
+            if (text.length <= length) return text;
+            return text.substring(0, length) + '...';
+        }
+
+        // Update total count
+        function updateTotalCount(total) {
+            document.getElementById('totalCount').textContent = `${total} articles`;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            currentOffset = 0;
+            loadNews(false);
+        }
+
+        // Load more
+        function loadMore() {
+            currentOffset += LIMIT;
+            loadNews(true);
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+            currentCategory = 'all';
+            currentOffset = 0;
+            loadNews(false);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (currentOffset === 0) {
+                loadNews(false);
+            }
+        }, 30000);
+
+        // Open modal with article details
+        function openModal(article) {
+            const modal = document.getElementById('articleModal');
+            const categoryIcon = getCategoryIcon(article.category);
+            const scoreClass = article.score >= 70 ? 'score-high' :
+                article.score >= 40 ? 'score-medium' : 'score-low';
+
+            document.getElementById('modalCategory').innerHTML = `${categoryIcon} ${article.category?.toUpperCase() || 'NEWS'}`;
+            document.getElementById('modalCategory').className = `modal-category ${article.category}`;
+            document.getElementById('modalScore').textContent = article.score || 0;
+            document.getElementById('modalScore').className = `modal-score ${scoreClass}`;
+            document.getElementById('modalTitle').textContent = article.title || 'Untitled';
+            document.getElementById('modalSource').textContent = article.source || 'Unknown Source';
+            document.getElementById('modalTime').textContent = getTimeAgo(article.timestamp);
+            document.getElementById('modalBody').textContent = article.description || 'No description available.';
+            document.getElementById('modalSourceLink').href = article.link || '#';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('articleModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()"></button>
+
+    <script>
+        // Scroll to top button
+        const scrollBtn = document.getElementById('scrollToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>
