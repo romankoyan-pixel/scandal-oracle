@@ -843,22 +843,36 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 // Get last completed cycle
-app.get('/api/last-cycle', (req, res) => {
-    // Use currentCycle.id - 1 as the last completed cycle ID
-    const lastCycleId = currentCycle.id - 1;
+app.get('/api/last-cycle', async (req, res) => {
+    try {
+        // Try to get from MongoDB first
+        const lastCycleFromDB = await Cycle.findOne({ status: 'completed' })
+            .sort({ id: -1 })
+            .lean();
 
-    // Find in completed cycles array
-    const completedCycles = cycles.filter(c => c.status === 'completed');
-    const lastCycle = completedCycles.find(c => c.id === lastCycleId) || completedCycles[0];
+        if (lastCycleFromDB) {
+            return res.json({
+                lastCycle: lastCycleFromDB,
+                currentCycleId: currentCycle.id
+            });
+        }
 
-    if (!lastCycle) {
-        return res.json({ lastCycle: null });
+        // Fallback to local cycles array
+        const completedCycles = cycles.filter(c => c.status === 'completed');
+        if (completedCycles.length > 0) {
+            // Sort by id descending and get first
+            completedCycles.sort((a, b) => b.id - a.id);
+            return res.json({
+                lastCycle: completedCycles[0],
+                currentCycleId: currentCycle.id
+            });
+        }
+
+        res.json({ lastCycle: null, currentCycleId: currentCycle.id });
+    } catch (error) {
+        console.error('Error getting last cycle:', error);
+        res.json({ lastCycle: null, currentCycleId: currentCycle.id });
     }
-
-    res.json({
-        lastCycle,
-        currentCycleId: currentCycle.id  // For sync verification
-    });
 });
 
 // User stats endpoint - MongoDB

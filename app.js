@@ -1,5 +1,5 @@
 // Frontend Application Logic - CYCLE-BASED with Supply Tracking
-const API_URL = 'http://localhost:3000';
+const API_URL = ''; // Use relative URLs for same-origin requests
 const CYCLE_DURATION = 120000; // 2 minutes
 const INITIAL_SUPPLY = 1000000000; // 1 Billion tokens
 
