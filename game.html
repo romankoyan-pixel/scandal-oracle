@@ -1019,18 +1019,19 @@
         }
 
         function updatePoolDisplay() {
-            const total = poolData.mint + poolData.neutral + poolData.burn + myBetAmount;
+            // Pool data comes from blockchain - already includes all bets
+            const total = poolData.mint + poolData.neutral + poolData.burn;
             document.getElementById('poolTotal').textContent = total.toLocaleString() + ' $SCNDL';
 
-            document.getElementById('poolMint').textContent = poolData.mint + (myVote === 'MINT' ? BET_AMOUNT : 0);
-            document.getElementById('poolNeutral').textContent = poolData.neutral + (myVote === 'NEUTRAL' ? BET_AMOUNT : 0);
-            document.getElementById('poolBurn').textContent = poolData.burn + (myVote === 'BURN' ? BET_AMOUNT : 0);
+            document.getElementById('poolMint').textContent = poolData.mint;
+            document.getElementById('poolNeutral').textContent = poolData.neutral;
+            document.getElementById('poolBurn').textContent = poolData.burn;
 
             // Update bar widths
             if (total > 0) {
-                const mintW = ((poolData.mint + (myVote === 'MINT' ? BET_AMOUNT : 0)) / total * 100);
-                const neutralW = ((poolData.neutral + (myVote === 'NEUTRAL' ? BET_AMOUNT : 0)) / total * 100);
-                const burnW = ((poolData.burn + (myVote === 'BURN' ? BET_AMOUNT : 0)) / total * 100);
+                const mintW = (poolData.mint / total * 100);
+                const neutralW = (poolData.neutral / total * 100);
+                const burnW = (poolData.burn / total * 100);
 
                 document.getElementById('poolBarMint').style.width = mintW + '%';
                 document.getElementById('poolBarNeutral').style.width = neutralW + '%';
