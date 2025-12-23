@@ -987,6 +987,10 @@
                     myBetAmount = 0;
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                     document.getElementById('yourBet').style.display = 'none';
+
+                    // Immediately reset pool display (don't wait for blockchain)
+                    poolData = { mint: 0, neutral: 0, burn: 0 };
+                    updatePoolDisplay();
                 }
 
                 currentBlockchainRoundId = roundId;
