@@ -648,10 +648,7 @@
                 <a href="index.html#oracle" class="btn-news">DASHBOARD</a>
                 <a href="news.html" class="btn-news">NEWS</a>
                 <a href="game.html" class="btn-news">ORACLE</a>
-                <button class="btn-connect" id="connectWallet">Connect Wallet</button>
-                <button class="btn-disconnect" id="disconnectBtn"
-                    style="display: none; background: #ff4444; margin-left: 0.5rem;"
-                    onclick="disconnectWallet()">✕</button>
+                <button class="btn-connect" id="connectWallet" onclick="toggleWallet()">Connect Wallet</button>
             </div>
         </div>
 
@@ -989,6 +986,15 @@
             }
         }
 
+        // Toggle wallet connect/disconnect
+        function toggleWallet() {
+            if (walletAddress) {
+                disconnectWallet();
+            } else {
+                connectWallet();
+            }
+        }
+
         // Disconnect wallet
         function disconnectWallet() {
             walletAddress = null;
@@ -1002,8 +1008,11 @@
             poolData = { mint: 0, neutral: 0, burn: 0 };
 
             document.getElementById('connectWallet').textContent = 'Connect Wallet';
-            document.getElementById('disconnectBtn').style.display = 'none';
+            document.getElementById('connectWallet').style.background = '';
             document.getElementById('userBalance').textContent = '0';
+            document.getElementById('userWon').textContent = '0';
+            document.getElementById('userLost').textContent = '0';
+            document.getElementById('winRate').textContent = '0%';
             document.getElementById('yourBet').style.display = 'none';
             document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
             updatePoolDisplay();
@@ -1072,9 +1081,9 @@
                 tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
                 gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
 
-                // Update button text
+                // Update button text and style (click again to disconnect)
                 document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-                document.getElementById('disconnectBtn').style.display = 'inline-block';
+                document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
 
                 // Load real SCNDL balance and pool from contract
                 await loadTokenBalance();
