@@ -717,7 +717,7 @@
                 <!-- Stats Row -->
                 <div class="stats-row">
                     <div class="stat-card">
-                        <div class="stat-value" id="userBalance" style="color: var(--accent-cyan);">10,000</div>
+                        <div class="stat-value" id="userBalance" style="color: var(--accent-cyan);">0</div>
                         <div class="stat-label">$SCNDL Balance</div>
                     </div>
                     <div class="stat-card">
@@ -1312,6 +1312,35 @@
 
             popup.classList.add('active');
             setTimeout(() => popup.classList.remove('active'), 4000);
+        }
+
+        // Claim winnings from blockchain
+        async function claimWinnings(roundId) {
+            if (!gameContract || !walletAddress) {
+                showMessage('Connect wallet first', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Claiming winnings...', 'info');
+
+                const tx = await gameContract.claimWinnings(roundId);
+                showMessage('Waiting for confirmation...', 'info');
+                await tx.wait();
+
+                showMessage('Winnings claimed! 🎉', 'success');
+                await loadTokenBalance();
+                await loadUserStats();
+            } catch (error) {
+                console.error('Claim error:', error);
+                if (error.message.includes('Already claimed')) {
+                    showMessage('Already claimed!', 'error');
+                } else if (error.message.includes('No winnings')) {
+                    showMessage('No winnings to claim', 'error');
+                } else {
+                    showMessage('Claim failed: ' + (error.reason || error.message), 'error');
+                }
+            }
         }
 
         async function checkMyResult(cycleId) {

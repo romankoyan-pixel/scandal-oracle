@@ -5,10 +5,52 @@ const OpenAI = require('openai');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const { ethers } = require('ethers');
 require('dotenv').config();
 
 // Import MongoDB models
 const { Player, Prediction, Cycle, SystemState } = require('./models');
+
+// ============================================
+// BLOCKCHAIN / SMART CONTRACT CONFIG
+// ============================================
+const BLOCKCHAIN_CONFIG = {
+    rpcUrl: process.env.BASE_SEPOLIA_RPC || 'https://sepolia.base.org',
+    tokenAddress: '0x0F71E2d170dCdBE32E54D961C31e2101f8826a48',
+    gameAddress: '0x15B1787F5a9BD937954EB8111F1Cc513AB41f0DB',
+    // Game ABI for closeRound
+    gameABI: [
+        'function closeRound(uint8 result, uint256 rate) external',
+        'function getCurrentRound() view returns (uint256 roundId, uint8 status, uint256 mintPool, uint256 burnPool, uint256 neutralPool, uint256 startTime)',
+        'function currentRoundId() view returns (uint256)'
+    ],
+    // Token ABI for oracle operations
+    tokenABI: [
+        'function oracleMint(uint256 amount) external',
+        'function oracleBurn(uint256 amount) external',
+        'function totalSupply() view returns (uint256)'
+    ]
+};
+
+// Initialize blockchain provider and contract (with Oracle wallet)
+let blockchainProvider = null;
+let oracleWallet = null;
+let gameContract = null;
+let tokenContract = null;
+
+if (process.env.PRIVATE_KEY) {
+    try {
+        blockchainProvider = new ethers.JsonRpcProvider(BLOCKCHAIN_CONFIG.rpcUrl);
+        oracleWallet = new ethers.Wallet(process.env.PRIVATE_KEY, blockchainProvider);
+        gameContract = new ethers.Contract(BLOCKCHAIN_CONFIG.gameAddress, BLOCKCHAIN_CONFIG.gameABI, oracleWallet);
+        tokenContract = new ethers.Contract(BLOCKCHAIN_CONFIG.tokenAddress, BLOCKCHAIN_CONFIG.tokenABI, oracleWallet);
+        console.log('✅ Blockchain Oracle configured:', oracleWallet.address);
+    } catch (e) {
+        console.error('❌ Blockchain setup failed:', e.message);
+    }
+} else {
+    console.log('⚠️ No PRIVATE_KEY - blockchain features disabled');
+}
 
 const app = express();
 const parser = new Parser();
@@ -591,6 +633,38 @@ async function scanAndAddNews() {
     }
 }
 
+// ============================================
+// BLOCKCHAIN ROUND CLOSING
+// ============================================
+async function closeRoundOnBlockchain(result, ratePercentage) {
+    if (!gameContract) {
+        console.log('⚠️ Blockchain not configured - skipping closeRound');
+        return { success: false, reason: 'no_contract' };
+    }
+
+    try {
+        // Convert result to contract enum (1=MINT, 2=BURN, 3=NEUTRAL)
+        const resultMap = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 };
+        const resultCode = resultMap[result] || 3;
+
+        // Convert rate percentage to basis points (0.1% = 10, 0.30% = 30)
+        const rateValue = Math.round(parseFloat(ratePercentage) * 100);
+
+        console.log(`🔗 Calling closeRound on blockchain: result=${result}(${resultCode}), rate=${rateValue}`);
+
+        const tx = await gameContract.closeRound(resultCode, rateValue);
+        console.log(`📤 Transaction sent: ${tx.hash}`);
+
+        const receipt = await tx.wait();
+        console.log(`✅ Round closed on blockchain! Block: ${receipt.blockNumber}`);
+
+        return { success: true, txHash: tx.hash, blockNumber: receipt.blockNumber };
+    } catch (error) {
+        console.error('❌ closeRound blockchain error:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 // Close cycle
 async function closeCycleAndStartNew() {
     // Close cycle even if empty - just mark as NEUTRAL with 0 articles
@@ -613,6 +687,15 @@ async function closeCycleAndStartNew() {
     cycles.unshift(completedCycle);
     // No limit - keep all cycles for complete news archive
 
+    // ============================================
+    // CLOSE ROUND ON BLOCKCHAIN
+    // ============================================
+    const blockchainResult = await closeRoundOnBlockchain(
+        completedCycle.action,
+        completedCycle.ratePercentage.replace('%', '')
+    );
+    completedCycle.blockchainTx = blockchainResult.txHash || null;
+
     // Handle predictions based on article count
     if (completedCycle.articles.length === 0) {
         // No articles = refund all bets without house fee
@@ -632,6 +715,9 @@ async function closeCycleAndStartNew() {
     console.log(`⚡ CYCLE ${completedCycle.id} COMPLETED`);
     console.log(`📊 Articles: ${completedCycle.articles.length} | Score: ${avgScore.toFixed(1)}`);
     console.log(`🎯 ${completedCycle.action} @ ${completedCycle.ratePercentage}`);
+    if (blockchainResult.txHash) {
+        console.log(`🔗 Blockchain TX: ${blockchainResult.txHash}`);
+    }
     console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 
     currentCycle = {
