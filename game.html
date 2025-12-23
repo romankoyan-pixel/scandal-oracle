@@ -1046,8 +1046,15 @@
             }
 
             try {
-                // Request account access
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                // Use wallet_requestPermissions to ALWAYS show account picker
+                // This forces user to select account even if previously connected
+                await window.ethereum.request({
+                    method: 'wallet_requestPermissions',
+                    params: [{ eth_accounts: {} }]
+                });
+
+                // Now get the selected account
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                 walletAddress = accounts[0];
 
                 // Check/switch network to Base Sepolia
