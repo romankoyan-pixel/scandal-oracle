@@ -1261,17 +1261,16 @@
                 localStorage.setItem('scandals_wallet', walletAddress);
                 localStorage.setItem('scandals_lastActive', Date.now().toString());
 
-                // Load real SCNDL balance and pool from contract
-                await loadTokenBalance();
-                await loadPoolFromContract();
-                await loadUserStats();
-                await updateGameStatus();
+                // Load data independently (don't let one failure block others)
+                try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
+                try { await loadPoolFromContract(); } catch (e) { console.log('Pool load error:', e); }
+                try { await loadUserStats(); } catch (e) { console.log('Stats load error:', e); }
+                try { await updateGameStatus(); } catch (e) { console.log('Status update error:', e); }
+                try { await checkUnclaimedWinnings(); } catch (e) { console.log('Unclaimed check error:', e); }
+                try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
 
-                // Check for unclaimed winnings from previous rounds
-                await checkUnclaimedWinnings();
-
-                // Restore current bet selection if already bet this round
-                await restoreCurrentBet();
+                // Always update unclaimed UI
+                updateUnclaimedUI();
 
             } catch (error) {
                 console.error('Wallet connection failed:', error);
@@ -1549,14 +1548,19 @@
 
         // Load all unclaimed winnings from blockchain
         async function loadUnclaimedWinnings() {
+            console.log('[UNCLAIMED] loadUnclaimedWinnings called');
+            console.log('[UNCLAIMED] gameContract:', !!gameContract, 'walletAddress:', walletAddress);
+
             if (!gameContract || !walletAddress) {
                 document.getElementById('unclaimedPanel').style.display = 'none';
+                console.log('[UNCLAIMED] No contract or wallet, hiding panel');
                 return;
             }
 
             try {
                 const round = await gameContract.getCurrentRound();
                 const currentRound = Number(round.id);
+                console.log('[UNCLAIMED] Current round:', currentRound);
                 unclaimedWinnings = [];
 
                 // Check last 20 rounds for unclaimed winnings
@@ -1572,6 +1576,7 @@
                         const winnings = Number(ethers.formatEther(result[5]));
 
                         if (participated && won && !claimed && winnings > 0) {
+                            console.log('[UNCLAIMED] Found unclaimed round:', roundId, 'winnings:', winnings);
                             unclaimedWinnings.push({ roundId, amount: winnings });
                         }
                     } catch (e) {
@@ -1579,6 +1584,7 @@
                     }
                 }
 
+                console.log('[UNCLAIMED] Total unclaimed:', unclaimedWinnings.length);
                 updateUnclaimedUI();
             } catch (error) {
                 console.error('Load unclaimed error:', error);
@@ -1587,6 +1593,7 @@
 
         // Update the unclaimed winnings UI
         function updateUnclaimedUI() {
+            console.log('[UNCLAIMED] updateUnclaimedUI called, wallet:', walletAddress);
             const panel = document.getElementById('unclaimedPanel');
             const list = document.getElementById('unclaimedList');
             const total = document.getElementById('unclaimedTotal');
@@ -1594,10 +1601,12 @@
 
             if (!walletAddress) {
                 panel.style.display = 'none';
+                console.log('[UNCLAIMED] No wallet, hiding');
                 return;
             }
 
             // Always show panel when wallet connected
+            console.log('[UNCLAIMED] Showing panel!');
             panel.style.display = 'block';
 
             if (unclaimedWinnings.length === 0) {
@@ -1845,19 +1854,28 @@
 
         // Restore session from localStorage if not expired (10 min timeout)
         async function restoreSession() {
+            console.log('[SESSION] restoreSession called');
             const savedWallet = localStorage.getItem('scandals_wallet');
             const lastActive = parseInt(localStorage.getItem('scandals_lastActive') || '0');
             const TEN_MINUTES = 10 * 60 * 1000;
 
-            if (!savedWallet) return;
+            if (!savedWallet) {
+                console.log('[SESSION] No saved wallet found');
+                return;
+            }
+
+            console.log('[SESSION] Found saved wallet:', savedWallet);
+            console.log('[SESSION] Last active:', new Date(lastActive).toISOString());
 
             // Check if session expired (10 minutes of inactivity)
             if (Date.now() - lastActive > TEN_MINUTES) {
                 localStorage.removeItem('scandals_wallet');
                 localStorage.removeItem('scandals_lastActive');
-                console.log('Session expired, please reconnect');
+                console.log('[SESSION] Session expired, please reconnect');
                 return;
             }
+
+            console.log('[SESSION] Session valid, restoring...');
 
             // Try to restore connection
             if (typeof window.ethereum !== 'undefined') {
@@ -1877,13 +1895,17 @@
                         // Update last active time
                         localStorage.setItem('scandals_lastActive', Date.now().toString());
 
-                        await loadTokenBalance();
-                        await loadPoolFromContract();
-                        await loadUserStats();
-                        await checkUnclaimedWinnings();
-                        await restoreCurrentBet(); // Restore bet selection highlighting
+                        // Load data independently (don't let one failure block others)
+                        try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
+                        try { await loadPoolFromContract(); } catch (e) { console.log('Pool load error:', e); }
+                        try { await loadUserStats(); } catch (e) { console.log('Stats load error:', e); }
+                        try { await checkUnclaimedWinnings(); } catch (e) { console.log('Unclaimed check error:', e); }
+                        try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
 
-                        console.log('Session restored for:', walletAddress);
+                        // Always update unclaimed UI even if some load failed
+                        updateUnclaimedUI();
+
+                        console.log('[SESSION] Session restored for:', walletAddress);
                     }
                 } catch (e) {
                     console.log('Could not restore session:', e);
@@ -1903,8 +1925,15 @@
         document.addEventListener('keypress', updateActivity);
 
         init();
-        // Try to restore session after init
-        restoreSession();
+        // Try to restore session after init (async)
+        (async () => {
+            console.log('[SESSION] Checking for saved session...');
+            const saved = localStorage.getItem('scandals_wallet');
+            console.log('[SESSION] Saved wallet:', saved);
+            if (saved) {
+                await restoreSession();
+            }
+        })();
     </script>
 </body>
 
