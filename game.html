@@ -943,6 +943,11 @@
         let userTokenBalance = 0;
         let currentBlockchainRoundId = null; // Track blockchain round for result checking
 
+        // Local timer for smooth countdown (prevents jumping)
+        let localTimerValue = 0;
+        let localTimerMode = 'OPEN'; // 'OPEN' or 'NEXT'
+        let lastServerSync = 0;
+
         // Load real SCNDL balance from blockchain
         async function loadTokenBalance() {
             if (!tokenContract || !walletAddress) return;
@@ -1158,6 +1163,9 @@
                 await loadUserStats();
                 await updateGameStatus();
 
+                // Check for unclaimed winnings from previous rounds
+                await checkUnclaimedWinnings();
+
             } catch (error) {
                 console.error('Wallet connection failed:', error);
                 const errorMsg = error?.message || error?.reason || String(error);
@@ -1229,13 +1237,16 @@
 
                 // Detect cycle change - check result and reset
                 if (lastCycleId && lastCycleId !== data.cycleId) {
-                    if (myVote) checkMyResult(lastCycleId);
-                    // Reset for new cycle
+                    if (myVote) checkMyResult(currentBlockchainRoundId || lastCycleId);
+                    // Reset for new cycle IMMEDIATELY (don't wait for blockchain)
                     myVote = null;
                     myBetAmount = 0;
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                     document.getElementById('yourBet').style.display = 'none';
-                    // Load pool from blockchain
+                    // IMMEDIATELY reset pool display
+                    poolData = { mint: 0, neutral: 0, burn: 0 };
+                    updatePoolDisplay();
+                    // Then refresh from blockchain in background
                     loadPoolFromContract();
                 }
                 lastCycleId = data.cycleId;
@@ -1255,14 +1266,17 @@
 
                 const timerEl = document.getElementById('votingTimer');
                 if (data.votingOpen) {
-                    const seconds = Math.floor(data.votingTimeRemaining / 1000);
-                    timerEl.textContent = `OPEN: ${seconds.toString().padStart(2, '0')}s`;
+                    // Sync local timer from server
+                    localTimerValue = Math.floor(data.votingTimeRemaining / 1000);
+                    localTimerMode = 'OPEN';
                     timerEl.classList.remove('closed');
                 } else {
-                    const nextSeconds = Math.floor((data.cycleTimeRemaining || 0) / 1000);
-                    timerEl.textContent = `NEXT: ${nextSeconds.toString().padStart(2, '0')}s`;
+                    localTimerValue = Math.floor((data.cycleTimeRemaining || 0) / 1000);
+                    localTimerMode = 'NEXT';
                     timerEl.classList.add('closed');
                 }
+                lastServerSync = Date.now();
+                // Display is updated by tickLocalTimer()
 
                 // Can only vote if not already voted
                 const canVote = walletAddress && data.votingOpen && !myVote;
@@ -1534,11 +1548,53 @@
             await loadLeaderboard();
             await loadLastCycle();
 
-            // Timer updates every second
-            setInterval(updateGameStatus, 1000);
+            // Server sync every 3 seconds (for data updates)
+            setInterval(updateGameStatus, 3000);
             setInterval(loadPoolFromContract, 10000);
             setInterval(loadLeaderboard, 30000);
             setInterval(loadLastCycle, 30000);
+
+            // Local timer ticks every second (smooth countdown)
+            setInterval(tickLocalTimer, 1000);
+        }
+
+        // Local timer tick - smooth countdown without network jitter
+        function tickLocalTimer() {
+            const timerEl = document.getElementById('votingTimer');
+            // Calculate elapsed time since last server sync
+            const elapsed = Math.floor((Date.now() - lastServerSync) / 1000);
+            const displayValue = Math.max(0, localTimerValue - elapsed);
+            timerEl.textContent = `${localTimerMode}: ${displayValue.toString().padStart(2, '0')}s`;
+        }
+
+        // Check for unclaimed winnings from previous rounds on page load
+        async function checkUnclaimedWinnings() {
+            if (!walletAddress || !gameContract) return;
+            try {
+                // Get current round ID
+                const round = await gameContract.getCurrentRound();
+                const currentRound = Number(round.id);
+
+                // Check last 5 rounds for unclaimed winnings
+                for (let i = 1; i <= 5; i++) {
+                    const roundId = currentRound - i;
+                    if (roundId < 1) break;
+
+                    const result = await gameContract.checkResult(roundId, walletAddress);
+                    const participated = result[0];
+                    const won = result[3];
+                    const claimed = result[4];
+                    const winnings = Number(ethers.formatEther(result[5]));
+
+                    if (participated && won && !claimed && winnings > 0) {
+                        showClaimButton(roundId, winnings);
+                        showMessage(`You have unclaimed winnings from round ${roundId}!`, 'success');
+                        break; // Show only the first unclaimed
+                    }
+                }
+            } catch (e) {
+                console.error('Check unclaimed error:', e);
+            }
         }
 
         init();
