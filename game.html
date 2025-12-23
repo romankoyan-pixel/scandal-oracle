@@ -734,6 +734,27 @@
                     </div>
                 </div>
 
+                <!-- Claim Winnings Button -->
+                <div id="claimSection" style="display: none; margin-bottom: 1rem;">
+                    <button id="claimBtn" onclick="claimLastRound()" style="
+                        width: 100%;
+                        padding: 1rem;
+                        background: linear-gradient(135deg, #00ff88, #00cc66);
+                        border: none;
+                        border-radius: 8px;
+                        color: #000;
+                        font-family: 'Orbitron', sans-serif;
+                        font-size: 1rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        animation: pulse 2s infinite;
+                    ">🎉 CLAIM WINNINGS</button>
+                    <div id="claimInfo"
+                        style="text-align: center; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+                        You won! Click to claim your tokens.
+                    </div>
+                </div>
+
                 <!-- Last Cycle -->
                 <div class="last-cycle-panel" id="lastCyclePanel" onclick="openLastCycle()">
                     <div class="last-cycle-header">
@@ -1387,6 +1408,28 @@
             }
         }
 
+        // Track round with pending claim
+        let pendingClaimRoundId = null;
+
+        // Claim from the last round (button click handler)
+        async function claimLastRound() {
+            if (!pendingClaimRoundId) {
+                showMessage('No winnings to claim', 'error');
+                return;
+            }
+            await claimWinnings(pendingClaimRoundId);
+            // Hide claim button after successful claim
+            document.getElementById('claimSection').style.display = 'none';
+            pendingClaimRoundId = null;
+        }
+
+        // Show claim button when user wins
+        function showClaimButton(roundId, winAmount) {
+            pendingClaimRoundId = roundId;
+            document.getElementById('claimSection').style.display = 'block';
+            document.getElementById('claimInfo').textContent = `You won ${winAmount.toFixed(0)} SCNDL! Click to claim.`;
+        }
+
         async function checkMyResult(roundId) {
             if (!walletAddress || !gameContract) return;
 
@@ -1406,11 +1449,14 @@
                 await loadTokenBalance();
 
                 if (won && !claimed) {
-                    // Show WIN popup
+                    // Show WIN popup and Claim button
                     showResult('win', winnings);
+                    showClaimButton(roundId, winnings);
                 } else if (!won) {
                     // Show LOSE popup
                     showResult('lose', BET_AMOUNT);
+                    // Hide claim button if showing
+                    document.getElementById('claimSection').style.display = 'none';
                 }
 
                 loadLastCycle();
