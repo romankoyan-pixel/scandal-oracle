@@ -1077,15 +1077,23 @@
 
             isConnecting = true;
             try {
-                // Use wallet_requestPermissions to ALWAYS show account picker
-                // This forces user to select account even if previously connected
-                await window.ethereum.request({
-                    method: 'wallet_requestPermissions',
-                    params: [{ eth_accounts: {} }]
-                });
-
-                // Now get the selected account
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                // Try wallet_requestPermissions first (shows account picker)
+                // Fall back to eth_requestAccounts if pending
+                let accounts;
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_requestPermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+                    accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                } catch (permError) {
+                    // If pending or rejected, fall back to simple request
+                    if (permError.code === -32002 || permError.code === 4001) {
+                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    } else {
+                        throw permError;
+                    }
+                }
                 walletAddress = accounts[0];
 
                 // Check/switch network to Base Sepolia
@@ -1131,8 +1139,9 @@
 
             } catch (error) {
                 console.error('Wallet connection failed:', error);
-                if (!error.message.includes('pending')) {
-                    alert('Failed to connect wallet: ' + error.message);
+                const errorMsg = error?.message || error?.reason || String(error);
+                if (!errorMsg.includes('pending') && !errorMsg.includes('rejected')) {
+                    alert('Failed to connect wallet: ' + errorMsg);
                 }
             } finally {
                 isConnecting = false;
