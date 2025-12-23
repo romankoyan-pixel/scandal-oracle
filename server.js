@@ -928,6 +928,107 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
+// Record blockchain bet for leaderboard tracking
+app.post('/api/predict', async (req, res) => {
+    const { wallet, prediction, amount = 100, txHash } = req.body;
+    if (!wallet || !prediction) {
+        return res.status(400).json({ error: 'Wallet and prediction required' });
+    }
+
+    const walletLower = wallet.toLowerCase();
+    const cycleId = currentCycle.id;
+
+    try {
+        // Get or create player
+        let player = await Player.findOne({ wallet: walletLower });
+        if (!player) {
+            player = await Player.create({
+                wallet: walletLower,
+                balance: 10000
+            });
+        }
+
+        // Record the bet (deduction happens on blockchain, just track here)
+        player.totalPredictions += 1;
+        player.lastActiveAt = new Date();
+        await player.save();
+
+        // Save prediction for tracking
+        await Prediction.findOneAndUpdate(
+            { wallet: walletLower, cycleId },
+            { wallet: walletLower, cycleId, choice: prediction, amount, txHash, timestamp: new Date() },
+            { upsert: true, new: true }
+        );
+
+        res.json({ success: true, cycleId, txHash });
+    } catch (err) {
+        console.error('Predict error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// Report blockchain result for stats tracking
+app.post('/api/report-result', async (req, res) => {
+    const { wallet, roundId, won, amount } = req.body;
+    if (!wallet) {
+        return res.status(400).json({ error: 'Wallet required' });
+    }
+
+    const walletLower = wallet.toLowerCase();
+
+    try {
+        let player = await Player.findOne({ wallet: walletLower });
+        if (!player) {
+            player = await Player.create({ wallet: walletLower, balance: 10000 });
+        }
+
+        if (won) {
+            player.wins += 1;
+            player.totalWon += amount;
+            player.currentStreak = (player.currentStreak > 0) ? player.currentStreak + 1 : 1;
+            if (player.currentStreak > player.maxStreak) {
+                player.maxStreak = player.currentStreak;
+            }
+        } else {
+            player.losses += 1;
+            player.totalLost += amount;
+            player.currentStreak = (player.currentStreak < 0) ? player.currentStreak - 1 : -1;
+        }
+
+        player.lastActiveAt = new Date();
+        await player.save();
+
+        res.json({ success: true, stats: { wins: player.wins, losses: player.losses, totalWon: player.totalWon, totalLost: player.totalLost } });
+    } catch (err) {
+        console.error('Report result error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// Get individual user stats
+app.get('/api/user-stats/:wallet', async (req, res) => {
+    const walletLower = req.params.wallet.toLowerCase();
+
+    try {
+        const player = await Player.findOne({ wallet: walletLower });
+        if (!player) {
+            return res.json({ wins: 0, losses: 0, totalWon: 0, totalLost: 0 });
+        }
+
+        res.json({
+            wins: player.wins || 0,
+            losses: player.losses || 0,
+            totalWon: player.totalWon || 0,
+            totalLost: player.totalLost || 0,
+            balance: player.balance || 10000,
+            streak: player.currentStreak || 0
+        });
+    } catch (err) {
+        console.error('User stats error:', err);
+        res.json({ wins: 0, losses: 0, totalWon: 0, totalLost: 0 });
+    }
+});
+
 // Get last completed cycle
 app.get('/api/last-cycle', async (req, res) => {
     try {

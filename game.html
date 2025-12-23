@@ -1014,13 +1014,18 @@
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                     document.getElementById('yourBet').style.display = 'none';
 
-                    // Immediately reset pool display (don't wait for blockchain)
+                    // Update round ID FIRST
+                    currentBlockchainRoundId = roundId;
+
+                    // Reset pool to 0 - new round starts fresh
                     poolData = { mint: 0, neutral: 0, burn: 0 };
                     updatePoolDisplay();
+                    return; // Don't load old data, next call will get fresh data
                 }
 
                 currentBlockchainRoundId = roundId;
 
+                // Load current round pool data
                 poolData = {
                     mint: Number(ethers.formatEther(round.mintPool)),
                     neutral: Number(ethers.formatEther(round.neutralPool)),
@@ -1029,8 +1034,6 @@
                 updatePoolDisplay();
             } catch (error) {
                 console.error('Error loading pool:', error);
-                poolData = { mint: 0, neutral: 0, burn: 0 };
-                updatePoolDisplay();
             }
         }
 
@@ -1333,6 +1336,20 @@
                 myVote = choice;
                 myBetAmount = BET_AMOUNT;
 
+                // Notify server about the bet (for leaderboard tracking)
+                try {
+                    await fetch('/api/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            wallet: walletAddress,
+                            prediction: choice,
+                            amount: BET_AMOUNT,
+                            txHash: betTx.hash
+                        })
+                    });
+                } catch (e) { console.log('Server sync skipped'); }
+
                 // Reload balance from blockchain
                 await loadTokenBalance();
                 await loadPoolFromContract();
@@ -1466,11 +1483,23 @@
                     // Show WIN popup and Claim button
                     showResult('win', winnings);
                     showClaimButton(roundId, winnings);
+                    // Notify server about win for stats
+                    fetch('/api/report-result', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ wallet: walletAddress, roundId, won: true, amount: winnings })
+                    }).catch(() => { });
                 } else if (!won) {
                     // Show LOSE popup
                     showResult('lose', BET_AMOUNT);
                     // Hide claim button if showing
                     document.getElementById('claimSection').style.display = 'none';
+                    // Notify server about loss for stats
+                    fetch('/api/report-result', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ wallet: walletAddress, roundId, won: false, amount: BET_AMOUNT })
+                    }).catch(() => { });
                 }
 
                 loadLastCycle();
