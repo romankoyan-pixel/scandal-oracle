@@ -1597,13 +1597,16 @@
                 return;
             }
 
+            // Always show panel when wallet connected
+            panel.style.display = 'block';
+
             if (unclaimedWinnings.length === 0) {
-                panel.style.display = 'none';
+                // Empty state
+                total.textContent = '0 SCNDL';
+                list.innerHTML = '<div class="no-unclaimed">✨ No unclaimed winnings. Play and win!</div>';
+                claimAllBtn.style.display = 'none';
                 return;
             }
-
-            // Show panel
-            panel.style.display = 'block';
 
             // Calculate total
             const totalAmount = unclaimedWinnings.reduce((sum, w) => sum + w.amount, 0);
