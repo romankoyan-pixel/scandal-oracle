@@ -1191,9 +1191,12 @@
             try {
                 const res = await fetch('/api/last-cycle');
                 const data = await res.json();
+
+                // Sync check: if lastCycle.id != currentCycleId - 1, use currentCycleId - 1
                 if (data.lastCycle) {
                     lastCycleData = data.lastCycle;
-                    document.getElementById('lastCycleNumber').textContent = data.lastCycle.id;
+                    const displayId = data.currentCycleId ? data.currentCycleId - 1 : data.lastCycle.id;
+                    document.getElementById('lastCycleNumber').textContent = displayId;
                     const resultEl = document.getElementById('lastCycleResult');
                     resultEl.textContent = data.lastCycle.action;
                     resultEl.className = 'last-cycle-result ' + data.lastCycle.action.toLowerCase();

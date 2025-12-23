@@ -844,11 +844,21 @@ app.get('/api/leaderboard', async (req, res) => {
 
 // Get last completed cycle
 app.get('/api/last-cycle', (req, res) => {
+    // Use currentCycle.id - 1 as the last completed cycle ID
+    const lastCycleId = currentCycle.id - 1;
+
+    // Find in completed cycles array
     const completedCycles = cycles.filter(c => c.status === 'completed');
-    if (completedCycles.length === 0) {
+    const lastCycle = completedCycles.find(c => c.id === lastCycleId) || completedCycles[0];
+
+    if (!lastCycle) {
         return res.json({ lastCycle: null });
     }
-    res.json({ lastCycle: completedCycles[0] });
+
+    res.json({
+        lastCycle,
+        currentCycleId: currentCycle.id  // For sync verification
+    });
 });
 
 // User stats endpoint - MongoDB
