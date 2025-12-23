@@ -1017,7 +1017,7 @@ process.on('SIGINT', async () => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`\n🚀 SCANDAL Oracle v2.3 (MongoDB Edition)`);
     console.log(`📡 ${Object.values(RSS_FEEDS).flat().length} RSS feeds`);
 
