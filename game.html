@@ -568,6 +568,109 @@
             margin-top: 0.3rem;
         }
 
+        /* Unclaimed Winnings Panel */
+        .unclaimed-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .unclaimed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .unclaimed-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+        }
+
+        .unclaimed-total {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .unclaimed-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .unclaimed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.8rem;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .unclaimed-item .round-id {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .unclaimed-item .amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            color: var(--accent-green);
+        }
+
+        .unclaimed-item .claim-btn {
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .unclaimed-item .claim-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .no-unclaimed {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .claim-all-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .claim-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
         /* Last Cycle Modal */
         .cycle-modal-overlay {
             display: none;
@@ -734,25 +837,18 @@
                     </div>
                 </div>
 
-                <!-- Claim Winnings Button -->
-                <div id="claimSection" style="display: none; margin-bottom: 1rem;">
-                    <button id="claimBtn" onclick="claimLastRound()" style="
-                        width: 100%;
-                        padding: 1rem;
-                        background: linear-gradient(135deg, #00ff88, #00cc66);
-                        border: none;
-                        border-radius: 8px;
-                        color: #000;
-                        font-family: 'Orbitron', sans-serif;
-                        font-size: 1rem;
-                        font-weight: bold;
-                        cursor: pointer;
-                        animation: pulse 2s infinite;
-                    ">🎉 CLAIM WINNINGS</button>
-                    <div id="claimInfo"
-                        style="text-align: center; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">
-                        You won! Click to claim your tokens.
+                <!-- Unclaimed Winnings Panel -->
+                <div class="unclaimed-panel" id="unclaimedPanel" style="display: none;">
+                    <div class="unclaimed-header">
+                        <span class="unclaimed-title">🎉 UNCLAIMED WINNINGS</span>
+                        <span class="unclaimed-total" id="unclaimedTotal">0 SCNDL</span>
                     </div>
+                    <div class="unclaimed-list" id="unclaimedList">
+                        <div class="no-unclaimed">Loading...</div>
+                    </div>
+                    <button id="claimAllBtn" onclick="claimAllWinnings()" class="claim-all-btn" style="display: none;">
+                        💰 CLAIM ALL
+                    </button>
                 </div>
 
                 <!-- Last Cycle -->
@@ -1174,6 +1270,9 @@
                 // Check for unclaimed winnings from previous rounds
                 await checkUnclaimedWinnings();
 
+                // Restore current bet selection if already bet this round
+                await restoreCurrentBet();
+
             } catch (error) {
                 console.error('Wallet connection failed:', error);
                 const errorMsg = error?.message || error?.reason || String(error);
@@ -1432,38 +1531,120 @@
                 showMessage('Winnings claimed! 🎉', 'success');
                 await loadTokenBalance();
                 await loadUserStats();
+                await loadUnclaimedWinnings(); // Refresh unclaimed list
             } catch (error) {
                 console.error('Claim error:', error);
-                if (error.message.includes('Already claimed')) {
+                if (error.message && error.message.includes('Already claimed')) {
                     showMessage('Already claimed!', 'error');
-                } else if (error.message.includes('No winnings')) {
+                } else if (error.message && error.message.includes('No winnings')) {
                     showMessage('No winnings to claim', 'error');
                 } else {
-                    showMessage('Claim failed: ' + (error.reason || error.message), 'error');
+                    showMessage('Claim failed: ' + (error?.reason || error?.message || 'Unknown error'), 'error');
                 }
             }
         }
 
-        // Track round with pending claim
-        let pendingClaimRoundId = null;
+        // State for unclaimed winnings
+        let unclaimedWinnings = []; // [{roundId, amount}]
 
-        // Claim from the last round (button click handler)
-        async function claimLastRound() {
-            if (!pendingClaimRoundId) {
+        // Load all unclaimed winnings from blockchain
+        async function loadUnclaimedWinnings() {
+            if (!gameContract || !walletAddress) {
+                document.getElementById('unclaimedPanel').style.display = 'none';
+                return;
+            }
+
+            try {
+                const round = await gameContract.getCurrentRound();
+                const currentRound = Number(round.id);
+                unclaimedWinnings = [];
+
+                // Check last 20 rounds for unclaimed winnings
+                for (let i = 1; i <= 20; i++) {
+                    const roundId = currentRound - i;
+                    if (roundId < 1) break;
+
+                    try {
+                        const result = await gameContract.checkResult(roundId, walletAddress);
+                        const participated = result[0];
+                        const won = result[3];
+                        const claimed = result[4];
+                        const winnings = Number(ethers.formatEther(result[5]));
+
+                        if (participated && won && !claimed && winnings > 0) {
+                            unclaimedWinnings.push({ roundId, amount: winnings });
+                        }
+                    } catch (e) {
+                        // Round might not exist, skip
+                    }
+                }
+
+                updateUnclaimedUI();
+            } catch (error) {
+                console.error('Load unclaimed error:', error);
+            }
+        }
+
+        // Update the unclaimed winnings UI
+        function updateUnclaimedUI() {
+            const panel = document.getElementById('unclaimedPanel');
+            const list = document.getElementById('unclaimedList');
+            const total = document.getElementById('unclaimedTotal');
+            const claimAllBtn = document.getElementById('claimAllBtn');
+
+            if (!walletAddress) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            if (unclaimedWinnings.length === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            // Show panel
+            panel.style.display = 'block';
+
+            // Calculate total
+            const totalAmount = unclaimedWinnings.reduce((sum, w) => sum + w.amount, 0);
+            total.textContent = `${totalAmount.toFixed(0)} SCNDL`;
+
+            // Build list HTML
+            list.innerHTML = unclaimedWinnings.map(w => `
+                <div class="unclaimed-item">
+                    <span class="round-id">Round #${w.roundId}</span>
+                    <span class="amount">+${w.amount.toFixed(1)} SCNDL</span>
+                    <button class="claim-btn" onclick="claimSingleRound(${w.roundId})">CLAIM</button>
+                </div>
+            `).join('');
+
+            // Show claim all button if multiple
+            claimAllBtn.style.display = unclaimedWinnings.length > 1 ? 'block' : 'none';
+        }
+
+        // Claim a single round
+        async function claimSingleRound(roundId) {
+            await claimWinnings(roundId);
+        }
+
+        // Claim all unclaimed winnings
+        async function claimAllWinnings() {
+            if (unclaimedWinnings.length === 0) {
                 showMessage('No winnings to claim', 'error');
                 return;
             }
-            await claimWinnings(pendingClaimRoundId);
-            // Hide claim button after successful claim
-            document.getElementById('claimSection').style.display = 'none';
-            pendingClaimRoundId = null;
-        }
 
-        // Show claim button when user wins
-        function showClaimButton(roundId, winAmount) {
-            pendingClaimRoundId = roundId;
-            document.getElementById('claimSection').style.display = 'block';
-            document.getElementById('claimInfo').textContent = `You won ${winAmount.toFixed(0)} SCNDL! Click to claim.`;
+            showMessage(`Claiming ${unclaimedWinnings.length} rounds...`, 'info');
+
+            for (const w of [...unclaimedWinnings]) {
+                try {
+                    await claimWinnings(w.roundId);
+                } catch (e) {
+                    console.error('Claim error for round', w.roundId, e);
+                }
+            }
+
+            showMessage('All winnings claimed! 🎉', 'success');
         }
 
         async function checkMyResult(roundId) {
@@ -1497,10 +1678,11 @@
                 await loadTokenBalance();
 
                 if (won && !claimed) {
-                    console.log('[DEBUG] WIN! Showing claim button...');
-                    // Show WIN popup and Claim button
+                    console.log('[DEBUG] WIN! Refreshing unclaimed panel...');
+                    // Show WIN popup
                     showResult('win', winnings);
-                    showClaimButton(roundId, winnings);
+                    // Refresh unclaimed winnings panel
+                    await loadUnclaimedWinnings();
                     // Notify server about win for stats (net profit = winnings - original bet)
                     const netProfit = Math.max(0, winnings - BET_AMOUNT);
                     fetch('/api/report-result', {
@@ -1511,8 +1693,6 @@
                 } else if (!won) {
                     // Show LOSE popup
                     showResult('lose', BET_AMOUNT);
-                    // Hide claim button if showing
-                    document.getElementById('claimSection').style.display = 'none';
                     // Notify server about loss for stats
                     fetch('/api/report-result', {
                         method: 'POST',
@@ -1620,31 +1800,43 @@
 
         // Check for unclaimed winnings from previous rounds on page load
         async function checkUnclaimedWinnings() {
-            if (!walletAddress || !gameContract) return;
+            await loadUnclaimedWinnings();
+        }
+
+        // Restore current bet state from blockchain (after page refresh)
+        async function restoreCurrentBet() {
+            if (!gameContract || !walletAddress) return;
+
             try {
-                // Get current round ID
                 const round = await gameContract.getCurrentRound();
-                const currentRound = Number(round.id);
+                const roundId = Number(round.id);
+                currentBlockchainRoundId = roundId;
 
-                // Check last 5 rounds for unclaimed winnings
-                for (let i = 1; i <= 5; i++) {
-                    const roundId = currentRound - i;
-                    if (roundId < 1) break;
+                // Check if user has bet in current round
+                const result = await gameContract.checkResult(roundId, walletAddress);
+                const participated = result[0];
+                const prediction = Number(result[1]); // 0=MINT, 1=NEUTRAL, 2=BURN
 
-                    const result = await gameContract.checkResult(roundId, walletAddress);
-                    const participated = result[0];
-                    const won = result[3];
-                    const claimed = result[4];
-                    const winnings = Number(ethers.formatEther(result[5]));
+                if (participated) {
+                    // Restore bet state
+                    const choices = ['MINT', 'NEUTRAL', 'BURN'];
+                    myVote = choices[prediction];
+                    myBetAmount = BET_AMOUNT;
 
-                    if (participated && won && !claimed && winnings > 0) {
-                        showClaimButton(roundId, winnings);
-                        showMessage(`You have unclaimed winnings from round ${roundId}!`, 'success');
-                        break; // Show only the first unclaimed
-                    }
+                    // Highlight the button
+                    const choiceNames = ['Mint', 'Neutral', 'Burn'];
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                    document.getElementById(`vote${choiceNames[prediction]}`).classList.add('selected');
+
+                    // Show bet info
+                    document.getElementById('yourBet').style.display = 'block';
+                    document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                    document.getElementById('yourBetChoice').textContent = myVote;
+
+                    console.log('Restored bet state:', myVote);
                 }
             } catch (e) {
-                console.error('Check unclaimed error:', e);
+                console.error('Restore bet error:', e);
             }
         }
 
@@ -1686,6 +1878,7 @@
                         await loadPoolFromContract();
                         await loadUserStats();
                         await checkUnclaimedWinnings();
+                        await restoreCurrentBet(); // Restore bet selection highlighting
 
                         console.log('Session restored for:', walletAddress);
                     }

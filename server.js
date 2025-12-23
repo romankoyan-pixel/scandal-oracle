@@ -970,13 +970,24 @@ app.post('/api/predict', async (req, res) => {
 // Report blockchain result for stats tracking
 app.post('/api/report-result', async (req, res) => {
     const { wallet, roundId, won, amount } = req.body;
-    if (!wallet) {
-        return res.status(400).json({ error: 'Wallet required' });
+    if (!wallet || !roundId) {
+        return res.status(400).json({ error: 'Wallet and roundId required' });
     }
 
     const walletLower = wallet.toLowerCase();
 
     try {
+        // Check if this round was already reported for this wallet
+        const existingReport = await Prediction.findOne({
+            wallet: walletLower,
+            cycleId: roundId,
+            resultReported: true
+        });
+
+        if (existingReport) {
+            return res.json({ success: true, message: 'Already reported', duplicate: true });
+        }
+
         let player = await Player.findOne({ wallet: walletLower });
         if (!player) {
             player = await Player.create({ wallet: walletLower, balance: 10000 });
@@ -984,19 +995,26 @@ app.post('/api/report-result', async (req, res) => {
 
         if (won) {
             player.wins += 1;
-            player.totalWon += amount;
+            player.totalWon += Math.round(amount); // Round to avoid decimals
             player.currentStreak = (player.currentStreak > 0) ? player.currentStreak + 1 : 1;
             if (player.currentStreak > player.maxStreak) {
                 player.maxStreak = player.currentStreak;
             }
         } else {
             player.losses += 1;
-            player.totalLost += amount;
+            player.totalLost += Math.round(amount);
             player.currentStreak = (player.currentStreak < 0) ? player.currentStreak - 1 : -1;
         }
 
         player.lastActiveAt = new Date();
         await player.save();
+
+        // Mark this round as reported
+        await Prediction.findOneAndUpdate(
+            { wallet: walletLower, cycleId: roundId },
+            { resultReported: true, won: won, payout: amount },
+            { upsert: true }
+        );
 
         res.json({ success: true, stats: { wins: player.wins, losses: player.losses, totalWon: player.totalWon, totalLost: player.totalLost } });
     } catch (err) {
