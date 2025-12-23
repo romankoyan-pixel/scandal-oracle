@@ -1106,20 +1106,24 @@
         }
 
         async function loadUserStats() {
-            if (!walletAddress) {
-                console.log('❌ loadUserStats: no walletAddress');
-                return;
-            }
+            if (!walletAddress) return;
+
+            // Balance comes from blockchain (loadTokenBalance)
+            // Other stats come from server (wins/losses from game history)
             try {
-                console.log(`📊 Loading stats for: ${walletAddress}`);
                 const res = await fetch(`/api/user-stats/${walletAddress}`);
                 const data = await res.json();
-                console.log('📊 Got stats:', data);
-                document.getElementById('userBalance').textContent = (data.balance || 10000).toLocaleString();
+                // Balance is loaded from blockchain, not from server
                 document.getElementById('userWon').textContent = (data.totalWon || 0).toLocaleString();
                 document.getElementById('userLost').textContent = (data.totalLost || 0).toLocaleString();
-                document.getElementById('winRate').textContent = (data.winRate || 0) + '%';
-            } catch (error) { console.error('Load user stats error:', error); }
+
+                const wins = data.wins || 0;
+                const total = (data.wins || 0) + (data.losses || 0);
+                const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+                document.getElementById('winRate').textContent = rate + '%';
+            } catch (error) {
+                console.error('Load user stats error:', error);
+            }
         }
 
         async function updateGameStatus() {
