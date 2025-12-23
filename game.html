@@ -1208,36 +1208,78 @@
         }
 
         async function vote(choice) {
-            if (!walletAddress) { showMessage('Connect wallet first!', 'error'); return; }
+            if (!walletAddress) {
+                showMessage('Connect wallet first!', 'error');
+                return;
+            }
+            if (!gameContract || !tokenContract) {
+                showMessage('Wallet not properly connected', 'error');
+                return;
+            }
+
             try {
-                const res = await fetch('/api/vote', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ wallet: walletAddress, vote: choice })
-                });
-                const data = await res.json();
-                if (data.error) {
-                    showMessage(data.error, 'error');
-                } else {
-                    myVote = choice;
-                    myBetAmount = BET_AMOUNT;
+                // Convert prediction choice to contract format (1=MINT, 2=BURN, 3=NEUTRAL)
+                const predictionMap = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 };
+                const prediction = predictionMap[choice];
 
-                    // Use new balance from server (already has -100 deducted)
-                    if (data.newBalance !== undefined) {
-                        document.getElementById('userBalance').textContent = data.newBalance.toLocaleString();
-                    }
+                // Bet amount (100 SCNDL with 18 decimals)
+                const betAmount = ethers.parseEther(BET_AMOUNT.toString());
 
-                    showMessage(`Bet placed: ${BET_AMOUNT} $SCNDL on ${choice}`, 'success');
-                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-                    document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
+                showMessage('Checking allowance...', 'info');
 
-                    // Show your bet info
-                    document.getElementById('yourBet').style.display = 'block';
-                    document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
-                    document.getElementById('yourBetChoice').textContent = choice;
-                    updatePoolDisplay();
+                // Step 1: Check current allowance
+                const allowance = await tokenContract.allowance(walletAddress, WEB3_CONFIG.contracts.game);
+
+                // Step 2: If allowance insufficient, request approval
+                if (allowance < betAmount) {
+                    showMessage('Approve SCNDL spending in MetaMask...', 'info');
+
+                    // Approve a large amount so user doesn't have to approve every time
+                    const approveAmount = ethers.parseEther('10000000'); // 10M SCNDL
+                    const approveTx = await tokenContract.approve(WEB3_CONFIG.contracts.game, approveAmount);
+
+                    showMessage('Waiting for approval confirmation...', 'info');
+                    await approveTx.wait();
+                    showMessage('Approved! Now placing bet...', 'success');
                 }
-            } catch (error) { showMessage('Failed', 'error'); }
+
+                // Step 3: Place the bet
+                showMessage('Confirm bet in MetaMask...', 'info');
+                const betTx = await gameContract.placeBet(prediction, betAmount);
+
+                showMessage('Waiting for transaction...', 'info');
+                await betTx.wait();
+
+                // Success!
+                myVote = choice;
+                myBetAmount = BET_AMOUNT;
+
+                // Reload balance from blockchain
+                await loadTokenBalance();
+                await loadPoolFromContract();
+
+                showMessage(`Bet placed: ${BET_AMOUNT} $SCNDL on ${choice} ✓`, 'success');
+                document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
+
+                // Show your bet info
+                document.getElementById('yourBet').style.display = 'block';
+                document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                document.getElementById('yourBetChoice').textContent = choice;
+                updatePoolDisplay();
+
+            } catch (error) {
+                console.error('Bet error:', error);
+                if (error.code === 'ACTION_REJECTED') {
+                    showMessage('Transaction rejected by user', 'error');
+                } else if (error.message.includes('Bet too small')) {
+                    showMessage('Bet amount too small (min 100 SCNDL)', 'error');
+                } else if (error.message.includes('Already bet')) {
+                    showMessage('Already bet this round', 'error');
+                } else {
+                    showMessage('Bet failed: ' + (error.reason || error.message), 'error');
+                }
+            }
         }
 
         function showResult(resultType, tokenAmount) {
