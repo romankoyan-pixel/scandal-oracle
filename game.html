@@ -1097,6 +1097,37 @@
             }
         }
 
+        // Setup MetaMask event listeners (call once on page load)
+        function setupWalletListeners() {
+            if (typeof window.ethereum !== 'undefined') {
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', async (accounts) => {
+                    if (accounts.length === 0) {
+                        // User disconnected from MetaMask
+                        disconnectWallet();
+                    } else if (walletAddress && accounts[0].toLowerCase() !== walletAddress.toLowerCase()) {
+                        // User switched accounts - update to new account
+                        walletAddress = accounts[0];
+                        web3Signer = await web3Provider.getSigner();
+                        tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
+                        gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
+
+                        document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                        await loadTokenBalance();
+                        await loadUserStats();
+                    }
+                });
+
+                // Listen for network changes
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                });
+            }
+        }
+
+        // Initialize listeners on page load
+        setupWalletListeners();
+
         async function loadUserStats() {
             if (!walletAddress) return;
 
