@@ -64,12 +64,43 @@ class ScandalOracle {
 
     init() {
         this.syncCycleId(); // Sync cycle ID with server
+        this.loadSupplyFromBlockchain(); // Load real supply from contract
         this.fetchNews();
         setInterval(() => this.fetchNews(), 5000);
         setInterval(() => this.updateTimer(), 1000);
+        setInterval(() => this.loadSupplyFromBlockchain(), 30000); // Refresh supply every 30s
         this.initChart();
         this.setupModal();
         this.setupChartRangeButtons();
+    }
+
+    // Load real totalSupply from blockchain
+    async loadSupplyFromBlockchain() {
+        try {
+            // Use public RPC (no wallet needed for read)
+            const provider = new ethers.JsonRpcProvider(WEB3_CONFIG.network.rpcUrl);
+            const tokenContract = new ethers.Contract(
+                WEB3_CONFIG.contracts.token,
+                WEB3_CONFIG.tokenABI,
+                provider
+            );
+
+            // Get tokenomics from contract
+            const tokenomics = await tokenContract.getTokenomics();
+            const currentSupply = Number(ethers.formatEther(tokenomics.currentSupply));
+            const currentReserve = Number(ethers.formatEther(tokenomics.currentReserve));
+            const burned = Number(ethers.formatEther(tokenomics.burned));
+
+            // Update display
+            this.totalSupply = currentSupply;
+            document.getElementById('totalSupply').textContent = currentSupply.toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+            console.log('📊 Blockchain Supply:', { currentSupply, currentReserve, burned });
+        } catch (error) {
+            console.error('Error loading supply from blockchain:', error);
+            // Fallback to local value
+            document.getElementById('totalSupply').textContent = this.totalSupply.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
     }
 
     // Sync cycle ID from localStorage to server (one-time fix)
