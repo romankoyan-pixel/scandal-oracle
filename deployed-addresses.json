@@ -1,0 +1,19 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "contracts": {
+    "token": "0x0F71E2d170dCdBE32E54D961C31e2101f8826a48",
+    "game": "0x15B1787F5a9BD937954EB8111F1Cc513AB41f0DB"
+  },
+  "wallets": {
+    "deployer": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "oracle": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "marketing": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "liquidity": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F"
+  },
+  "fees": {
+    "tokenTax": "3% (1% burn + 1% marketing + 1% liquidity)",
+    "gameFee": "5% (3% owner + 2% burn)"
+  },
+  "deployedAt": "2025-12-23T09:41:39.128Z"
+}

@@ -10,6 +10,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="web3-config.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         html,
@@ -912,6 +914,25 @@
         let myBetAmount = 0;
         let lastCycleData = null;
 
+        // Web3 / Contract variables
+        let web3Provider = null;
+        let web3Signer = null;
+        let tokenContract = null;
+        let gameContract = null;
+        let userTokenBalance = 0;
+
+        // Load real SCNDL balance from blockchain
+        async function loadTokenBalance() {
+            if (!tokenContract || !walletAddress) return;
+            try {
+                const balance = await tokenContract.balanceOf(walletAddress);
+                userTokenBalance = Number(ethers.formatEther(balance));
+                document.getElementById('userBalance').textContent = userTokenBalance.toLocaleString();
+            } catch (error) {
+                console.error('Error loading token balance:', error);
+            }
+        }
+
         function openRules() { document.getElementById('rulesModal').classList.add('active'); }
         function closeRules() { document.getElementById('rulesModal').classList.remove('active'); }
 
@@ -976,27 +997,67 @@
         }
 
         async function connectWallet() {
-            // Test mode: use fake wallet if MetaMask not installed
+            // Check for MetaMask
             if (typeof window.ethereum === 'undefined') {
-                // Persist test wallet in localStorage
-                walletAddress = localStorage.getItem('testWallet');
-                if (!walletAddress) {
-                    walletAddress = '0xTEST' + Math.random().toString(16).slice(2, 10).toUpperCase();
-                    localStorage.setItem('testWallet', walletAddress);
-                }
-                document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-                await loadUserStats();
-                await updateGameStatus();
+                alert('Please install MetaMask to use this app!');
                 return;
             }
+
             try {
+                // Request account access
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 walletAddress = accounts[0];
+
+                // Check/switch network to Base Sepolia
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== WEB3_CONFIG.network.chainIdHex) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: WEB3_CONFIG.network.chainIdHex }]
+                        });
+                    } catch (switchError) {
+                        // Network not added, add it
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: WEB3_CONFIG.network.chainIdHex,
+                                    chainName: WEB3_CONFIG.network.name,
+                                    rpcUrls: [WEB3_CONFIG.network.rpcUrl],
+                                    blockExplorerUrls: [WEB3_CONFIG.network.explorer],
+                                    nativeCurrency: WEB3_CONFIG.network.currency
+                                }]
+                            });
+                        }
+                    }
+                }
+
+                // Initialize ethers provider and contracts
+                web3Provider = new ethers.BrowserProvider(window.ethereum);
+                web3Signer = await web3Provider.getSigner();
+                tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
+                gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
+
+                // Update button text
                 document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-                loadUserStats();
-                updateGameStatus();
+
+                // Load real SCNDL balance
+                await loadTokenBalance();
+                await loadUserStats();
+                await updateGameStatus();
+
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', async (accounts) => {
+                    walletAddress = accounts[0];
+                    document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                    await loadTokenBalance();
+                    await loadUserStats();
+                });
+
             } catch (error) {
                 console.error('Wallet connection failed:', error);
+                alert('Failed to connect wallet: ' + error.message);
             }
         }
 
