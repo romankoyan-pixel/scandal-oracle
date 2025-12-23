@@ -920,6 +920,7 @@
         let tokenContract = null;
         let gameContract = null;
         let userTokenBalance = 0;
+        let currentBlockchainRoundId = null; // Track blockchain round for result checking
 
         // Load real SCNDL balance from blockchain
         async function loadTokenBalance() {
@@ -973,6 +974,23 @@
             }
             try {
                 const round = await gameContract.getCurrentRound();
+                const roundId = Number(round.id);
+
+                // Check if round changed - get previous round result
+                if (currentBlockchainRoundId !== null && currentBlockchainRoundId !== roundId) {
+                    // Round changed! Check result for previous round
+                    if (myVote) {
+                        checkMyResult(currentBlockchainRoundId);
+                    }
+                    // Reset vote state for new round
+                    myVote = null;
+                    myBetAmount = 0;
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                    document.getElementById('yourBet').style.display = 'none';
+                }
+
+                currentBlockchainRoundId = roundId;
+
                 poolData = {
                     mint: Number(ethers.formatEther(round.mintPool)),
                     neutral: Number(ethers.formatEther(round.neutralPool)),
@@ -1039,13 +1057,21 @@
             }
         }
 
+        let isConnecting = false; // Guard against double-clicks
+
         async function connectWallet() {
+            // Prevent double-clicks
+            if (isConnecting) {
+                return; // Already connecting, ignore
+            }
+
             // Check for MetaMask
             if (typeof window.ethereum === 'undefined') {
                 alert('Please install MetaMask to use this app!');
                 return;
             }
 
+            isConnecting = true;
             try {
                 // Use wallet_requestPermissions to ALWAYS show account picker
                 // This forces user to select account even if previously connected
@@ -1101,7 +1127,11 @@
 
             } catch (error) {
                 console.error('Wallet connection failed:', error);
-                alert('Failed to connect wallet: ' + error.message);
+                if (!error.message.includes('pending')) {
+                    alert('Failed to connect wallet: ' + error.message);
+                }
+            } finally {
+                isConnecting = false;
             }
         }
 
@@ -1344,22 +1374,36 @@
             }
         }
 
-        async function checkMyResult(cycleId) {
-            if (!walletAddress) return;
+        async function checkMyResult(roundId) {
+            if (!walletAddress || !gameContract) return;
+
             try {
-                const res = await fetch(`/api/prediction-result/${walletAddress}/${cycleId}`);
-                const data = await res.json();
+                // Check result from blockchain contract
+                const result = await gameContract.checkResult(roundId, walletAddress);
+                // result = [participated, prediction, result, won, claimed, potentialWinnings]
 
-                if (!data.found) return;
+                const participated = result[0];
+                const won = result[3];
+                const claimed = result[4];
+                const winnings = Number(ethers.formatEther(result[5]));
 
-                const tokenAmount = Math.floor(data.payout) || data.amount;
+                if (!participated) return; // Didn't bet in this round
 
-                // Update balance from server
-                loadUserStats();
+                // Update balance from blockchain
+                await loadTokenBalance();
 
-                showResult(data.result, tokenAmount);
+                if (won && !claimed) {
+                    // Show WIN popup
+                    showResult('win', winnings);
+                } else if (!won) {
+                    // Show LOSE popup
+                    showResult('lose', BET_AMOUNT);
+                }
+
                 loadLastCycle();
-            } catch (error) { console.error('Failed to check result:', error); }
+            } catch (error) {
+                console.error('Failed to check result:', error);
+            }
         }
 
         function showMessage(text, type) {
