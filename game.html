@@ -942,6 +942,7 @@
         let gameContract = null;
         let userTokenBalance = 0;
         let currentBlockchainRoundId = null; // Track blockchain round for result checking
+        let reportedRounds = new Set(); // Prevent duplicate result reporting
 
         // Local timer for smooth countdown (prevents jumping)
         let localTimerValue = 0;
@@ -1159,6 +1160,10 @@
                 // Update button text and style (click again to disconnect)
                 document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
                 document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
+
+                // Save session to localStorage
+                localStorage.setItem('scandals_wallet', walletAddress);
+                localStorage.setItem('scandals_lastActive', Date.now().toString());
 
                 // Load real SCNDL balance and pool from contract
                 await loadTokenBalance();
@@ -1464,7 +1469,14 @@
         async function checkMyResult(roundId) {
             if (!walletAddress || !gameContract) return;
 
+            // Prevent duplicate reporting
+            if (reportedRounds.has(roundId)) {
+                console.log('[DEBUG] Round already reported:', roundId);
+                return;
+            }
+
             try {
+                console.log('[DEBUG] Checking result for round:', roundId);
                 // Check result from blockchain contract
                 const result = await gameContract.checkResult(roundId, walletAddress);
                 // result = [participated, prediction, result, won, claimed, potentialWinnings]
@@ -1474,20 +1486,27 @@
                 const claimed = result[4];
                 const winnings = Number(ethers.formatEther(result[5]));
 
-                if (!participated) return; // Didn't bet in this round
+                console.log('[DEBUG] Result:', { participated, won, claimed, winnings });
+
+                if (!participated) {
+                    console.log('[DEBUG] Did not participate in this round');
+                    return;
+                }
 
                 // Update balance from blockchain
                 await loadTokenBalance();
 
                 if (won && !claimed) {
+                    console.log('[DEBUG] WIN! Showing claim button...');
                     // Show WIN popup and Claim button
                     showResult('win', winnings);
                     showClaimButton(roundId, winnings);
-                    // Notify server about win for stats
+                    // Notify server about win for stats (net profit = winnings - original bet)
+                    const netProfit = Math.max(0, winnings - BET_AMOUNT);
                     fetch('/api/report-result', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ wallet: walletAddress, roundId, won: true, amount: winnings })
+                        body: JSON.stringify({ wallet: walletAddress, roundId, won: true, amount: netProfit })
                     }).catch(() => { });
                 } else if (!won) {
                     // Show LOSE popup
@@ -1501,6 +1520,9 @@
                         body: JSON.stringify({ wallet: walletAddress, roundId, won: false, amount: BET_AMOUNT })
                     }).catch(() => { });
                 }
+
+                // Mark this round as reported to prevent duplicates
+                reportedRounds.add(roundId);
 
                 loadLastCycle();
             } catch (error) {
@@ -1626,7 +1648,67 @@
             }
         }
 
+        // Restore session from localStorage if not expired (10 min timeout)
+        async function restoreSession() {
+            const savedWallet = localStorage.getItem('scandals_wallet');
+            const lastActive = parseInt(localStorage.getItem('scandals_lastActive') || '0');
+            const TEN_MINUTES = 10 * 60 * 1000;
+
+            if (!savedWallet) return;
+
+            // Check if session expired (10 minutes of inactivity)
+            if (Date.now() - lastActive > TEN_MINUTES) {
+                localStorage.removeItem('scandals_wallet');
+                localStorage.removeItem('scandals_lastActive');
+                console.log('Session expired, please reconnect');
+                return;
+            }
+
+            // Try to restore connection
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0 && accounts[0].toLowerCase() === savedWallet.toLowerCase()) {
+                        // Same wallet still connected, restore session
+                        walletAddress = accounts[0];
+                        web3Provider = new ethers.BrowserProvider(window.ethereum);
+                        web3Signer = await web3Provider.getSigner();
+                        tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
+                        gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
+
+                        document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+                        document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
+
+                        // Update last active time
+                        localStorage.setItem('scandals_lastActive', Date.now().toString());
+
+                        await loadTokenBalance();
+                        await loadPoolFromContract();
+                        await loadUserStats();
+                        await checkUnclaimedWinnings();
+
+                        console.log('Session restored for:', walletAddress);
+                    }
+                } catch (e) {
+                    console.log('Could not restore session:', e);
+                }
+            }
+        }
+
+        // Update activity timestamp on user actions
+        function updateActivity() {
+            if (walletAddress) {
+                localStorage.setItem('scandals_lastActive', Date.now().toString());
+            }
+        }
+
+        // Track user activity
+        document.addEventListener('click', updateActivity);
+        document.addEventListener('keypress', updateActivity);
+
         init();
+        // Try to restore session after init
+        restoreSession();
     </script>
 </body>
 
