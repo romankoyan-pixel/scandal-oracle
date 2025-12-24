@@ -147,8 +147,17 @@ class ScandalOracle {
 
     async fetchNews() {
         try {
-            const response = await fetch(`${API_URL}/api/news`);
-            const data = await response.json();
+            // Fetch news and status in parallel
+            const [newsResponse, statusResponse] = await Promise.all([
+                fetch(`${API_URL}/api/news`),
+                fetch(`${API_URL}/api/status`)
+            ]);
+
+            const data = await newsResponse.json();
+            const statusData = await statusResponse.json();
+
+            // Update sync state from server
+            this.isSyncing = statusData.sync?.isSyncing || false;
 
             if (data.currentCycle) {
                 const prevCycleId = this.currentCycle?.id;
@@ -241,8 +250,16 @@ class ScandalOracle {
         const minutes = Math.floor(remaining / 60000);
         const seconds = Math.floor((remaining % 60000) / 1000);
 
-        document.getElementById('cycleTimer').textContent =
-            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const timerEl = document.getElementById('cycleTimer');
+
+        // Check if we're syncing with blockchain
+        if (this.isSyncing) {
+            timerEl.textContent = '⏳ Syncing...';
+            timerEl.style.color = '#fbbf24'; // Yellow
+        } else {
+            timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timerEl.style.color = ''; // Reset to default
+        }
     }
 
     updateUI() {

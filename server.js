@@ -52,6 +52,18 @@ if (process.env.PRIVATE_KEY) {
     console.log('⚠️ No PRIVATE_KEY - blockchain features disabled');
 }
 
+// ============================================
+// SYNC STATE - Server/Blockchain synchronization
+// ============================================
+let syncState = {
+    isSyncing: false,           // True while waiting for blockchain confirmation
+    pendingCycle: null,         // Cycle waiting for blockchain confirmation
+    retryCount: 0,              // Current retry attempt
+    maxRetries: 3,              // Max retries before giving up
+    lastBlockchainRoundId: 0,   // Last confirmed blockchain round
+    lastError: null             // Last error message
+};
+
 const app = express();
 const parser = new Parser();
 
@@ -688,13 +700,39 @@ async function closeCycleAndStartNew() {
     // No limit - keep all cycles for complete news archive
 
     // ============================================
-    // CLOSE ROUND ON BLOCKCHAIN
+    // CLOSE ROUND ON BLOCKCHAIN (with sync check)
     // ============================================
+    syncState.isSyncing = true;
+    syncState.pendingCycle = completedCycle;
+
     const blockchainResult = await closeRoundOnBlockchain(
         completedCycle.action,
         completedCycle.ratePercentage.replace('%', '')
     );
+
+    // Check if blockchain call succeeded
+    if (!blockchainResult.success) {
+        syncState.lastError = blockchainResult.error || blockchainResult.reason;
+        syncState.retryCount++;
+
+        if (syncState.retryCount < syncState.maxRetries) {
+            console.error(`⚠️ Blockchain sync failed (${syncState.retryCount}/${syncState.maxRetries}): ${syncState.lastError}`);
+            console.log(`⏳ Retrying in 10 seconds...`);
+            setTimeout(() => closeCycleAndStartNew(), 10000);
+            return; // DON'T start new cycle yet
+        } else {
+            console.error(`❌ Blockchain sync failed after ${syncState.maxRetries} retries. Continuing anyway...`);
+        }
+    }
+
+    // Blockchain success or max retries reached
+    syncState.isSyncing = false;
+    syncState.retryCount = 0;
+    syncState.lastError = null;
+    syncState.pendingCycle = null;
+
     completedCycle.blockchainTx = blockchainResult.txHash || null;
+    completedCycle.blockchainSuccess = blockchainResult.success;
 
     // Handle predictions based on article count
     if (completedCycle.articles.length === 0) {
@@ -717,6 +755,8 @@ async function closeCycleAndStartNew() {
     console.log(`🎯 ${completedCycle.action} @ ${completedCycle.ratePercentage}`);
     if (blockchainResult.txHash) {
         console.log(`🔗 Blockchain TX: ${blockchainResult.txHash}`);
+    } else if (!blockchainResult.success) {
+        console.log(`⚠️ Blockchain: FAILED - ${syncState.lastError || 'unknown error'}`);
     }
     console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 
@@ -766,7 +806,14 @@ app.get('/api/status', (req, res) => {
         score: avgScore,
         articlesCount: currentCycle.articles.length,
         totalCycles: cycles.length,
-        cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime))
+        cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime)),
+        // Sync state for frontend
+        sync: {
+            isSyncing: syncState.isSyncing,
+            retryCount: syncState.retryCount,
+            maxRetries: syncState.maxRetries,
+            lastError: syncState.lastError
+        }
     });
 });
 
