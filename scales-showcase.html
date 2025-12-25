@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scales Design Showcase - Choose Your Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%);
+            min-height: 100vh;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00f0ff;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .variant {
+            background: rgba(0, 20, 40, 0.8);
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .variant:hover {
+            border-color: rgba(0, 240, 255, 0.8);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+
+        .variant-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: #00f0ff;
+            color: #000;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .variant-title {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .variant-desc {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .scales-demo {
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .demo-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-btn.mint {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .demo-btn.neutral {
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+        }
+
+        .demo-btn.burn {
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .demo-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ======== VARIANT 1: SVG Realistic ======== */
+        .v1-svg {
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .v1-mint {
+            fill: #00ff88;
+        }
+
+        .v1-burn {
+            fill: #ff4444;
+        }
+
+        /* ======== VARIANT 2: Minimalist CSS ======== */
+        .v2-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .v2-beam {
+            width: 280px;
+            height: 6px;
+            background: linear-gradient(90deg, #00ff88, #fff, #ff4444);
+            border-radius: 3px;
+            transform-origin: center;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .v2-beam.tilt-mint {
+            transform: rotate(-10deg);
+        }
+
+        .v2-beam.tilt-burn {
+            transform: rotate(10deg);
+        }
+
+        .v2-bowls {
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            margin-top: -3px;
+        }
+
+        .v2-bowl {
+            width: 60px;
+            height: 35px;
+            border-radius: 0 0 50% 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transform-origin: top center;
+            transition: transform 0.8s ease;
+        }
+
+        .v2-bowl.mint {
+            background: linear-gradient(180deg, rgba(0, 255, 136, 0.3), rgba(0, 200, 100, 0.6));
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .v2-bowl.burn {
+            background: linear-gradient(180deg, rgba(255, 68, 68, 0.3), rgba(200, 40, 40, 0.6));
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            box-shadow: 0 5px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        .v2-pivot {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffd700, #ffaa00);
+            border-radius: 50%;
+            margin-top: -13px;
+            box-shadow: 0 0 15px rgba(255, 200, 0, 0.6);
+            z-index: 10;
+        }
+
+        /* ======== VARIANT 3: Neon Glow ======== */
+        .v3-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .v3-beam {
+            width: 280px;
+            height: 4px;
+            background: #fff;
+            border-radius: 2px;
+            box-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+            transform-origin: center;
+            transition: transform 0.8s ease;
+        }
+
+        .v3-bowls {
+            display: flex;
+            justify-content: space-between;
+            width: 320px;
+            margin-top: 10px;
+        }
+
+        .v3-bowl {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            transition: all 0.5s;
+        }
+
+        .v3-bowl.mint {
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.4), transparent 70%);
+            border: 3px solid #00ff88;
+            box-shadow: 0 0 30px #00ff88, inset 0 0 20px rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+
+        .v3-bowl.burn {
+            background: radial-gradient(circle, rgba(255, 68, 68, 0.4), transparent 70%);
+            border: 3px solid #ff4444;
+            box-shadow: 0 0 30px #ff4444, inset 0 0 20px rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+        }
+
+        .v3-percent {
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        /* ======== VARIANT 4: Classic Justice ======== */
+        .v4-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .v4-beam-wrapper {
+            position: relative;
+            width: 300px;
+            height: 150px;
+        }
+
+        .v4-beam {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, #8B4513, #D2691E, #8B4513);
+            border-radius: 4px;
+            transform-origin: center;
+            transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .v4-chain {
+            position: absolute;
+            width: 2px;
+            height: 40px;
+            background: repeating-linear-gradient(180deg, #8B4513 0px, #8B4513 8px, transparent 8px, transparent 12px);
+        }
+
+        .v4-chain.left {
+            left: 30px;
+            top: 48px;
+        }
+
+        .v4-chain.right {
+            right: 30px;
+            top: 48px;
+        }
+
+        .v4-pan {
+            position: absolute;
+            width: 70px;
+            height: 35px;
+            border-radius: 0 0 35px 35px;
+            top: 88px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.65rem;
+        }
+
+        .v4-pan.left {
+            left: 0;
+            background: linear-gradient(180deg, #228B22, #006400);
+            border: 2px solid #32CD32;
+        }
+
+        .v4-pan.right {
+            right: 0;
+            background: linear-gradient(180deg, #B22222, #8B0000);
+            border: 2px solid #DC143C;
+        }
+
+        .v4-pivot {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .v4-pivot-ball {
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #B8860B);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .v4-pivot-stem {
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(90deg, #696969, #A9A9A9, #696969);
+        }
+
+        /* ======== VARIANT 5: Futuristic Hologram ======== */
+        .v5-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .v5-hologram {
+            width: 300px;
+            height: 150px;
+            position: relative;
+            background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.05) 50%, transparent);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .v5-hologram::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 240, 255, 0.03) 2px, rgba(0, 240, 255, 0.03) 4px);
+            pointer-events: none;
+        }
+
+        .v5-scale {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            height: 6px;
+            background: linear-gradient(90deg, #00ff88, #00f0ff, #ff4444);
+            border-radius: 3px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+        .v5-indicator {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #00f0ff;
+            filter: drop-shadow(0 0 10px #00f0ff);
+            transition: left 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .v5-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 250px;
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+        }
+
+        .v5-labels .mint {
+            color: #00ff88;
+        }
+
+        .v5-labels .burn {
+            color: #ff4444;
+        }
+
+        .v5-value {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            font-weight: 900;
+            color: #00f0ff;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>⚖️ SCALES DESIGN SHOWCASE</h1>
+    <p class="subtitle">Выбери понравившийся вариант весов для Oracle Arena</p>
+
+    <div class="showcase-grid">
+        <!-- VARIANT 1: SVG Realistic -->
+        <div class="variant" id="variant1">
+            <span class="variant-number">1</span>
+            <div class="variant-title">SVG Реалистичные</div>
+            <div class="variant-desc">Чаши + цепи + градиенты с glow эффектами</div>
+            <div class="scales-demo">
+                <svg viewBox="0 0 400 200" class="v1-svg">
+                    <defs>
+                        <filter id="glow1" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="beam1" x1="0%" y1="0%" x2="100%">
+                            <stop offset="0%" stop-color="#00ff88" />
+                            <stop offset="50%" stop-color="#fff" />
+                            <stop offset="100%" stop-color="#ff4444" />
+                        </linearGradient>
+                    </defs>
+                    <g id="v1-balance" transform-origin="200 30">
+                        <rect x="60" y="26" width="280" height="8" rx="4" fill="url(#beam1)" />
+                        <g class="chain">
+                            <ellipse cx="90" cy="45" rx="3" ry="8" fill="none" stroke="#8B5A2B" stroke-width="2" />
+                            <ellipse cx="90" cy="60" rx="3" ry="8" fill="none" stroke="#8B5A2B" stroke-width="2" />
+                        </g>
+                        <g class="chain">
+                            <ellipse cx="310" cy="45" rx="3" ry="8" fill="none" stroke="#8B5A2B" stroke-width="2" />
+                            <ellipse cx="310" cy="60" rx="3" ry="8" fill="none" stroke="#8B5A2B" stroke-width="2" />
+                        </g>
+                        <path d="M50 75 Q50 115 90 125 Q130 115 130 75 Z" fill="rgba(0,255,136,0.3)" stroke="#00ff88"
+                            stroke-width="2" filter="url(#glow1)" />
+                        <path d="M270 75 Q270 115 310 125 Q350 115 350 75 Z" fill="rgba(255,68,68,0.3)" stroke="#ff4444"
+                            stroke-width="2" filter="url(#glow1)" />
+                    </g>
+                    <circle cx="200" cy="30" r="12" fill="#ffd700" />
+                    <rect x="197" y="40" width="6" height="30" fill="#666" />
+                    <text x="90" y="145" text-anchor="middle" class="v1-mint" font-size="12"
+                        font-weight="bold">MINT</text>
+                    <text x="90" y="165" text-anchor="middle" class="v1-mint" font-size="18" font-weight="bold"
+                        id="v1-mint-pct">35%</text>
+                    <text x="310" y="145" text-anchor="middle" class="v1-burn" font-size="12"
+                        font-weight="bold">BURN</text>
+                    <text x="310" y="165" text-anchor="middle" class="v1-burn" font-size="18" font-weight="bold"
+                        id="v1-burn-pct">45%</text>
+                </svg>
+            </div>
+            <div class="controls">
+                <button class="demo-btn mint" onclick="tiltV1('mint')">← MINT</button>
+                <button class="demo-btn neutral" onclick="tiltV1('neutral')">NEUTRAL</button>
+                <button class="demo-btn burn" onclick="tiltV1('burn')">BURN →</button>
+            </div>
+        </div>
+
+        <!-- VARIANT 2: Minimalist CSS -->
+        <div class="variant" id="variant2">
+            <span class="variant-number">2</span>
+            <div class="variant-title">Минималистичный CSS</div>
+            <div class="variant-desc">Чистый дизайн без SVG, только CSS градиенты</div>
+            <div class="scales-demo">
+                <div class="v2-container">
+                    <div class="v2-beam" id="v2-beam"></div>
+                    <div class="v2-pivot"></div>
+                    <div class="v2-bowls">
+                        <div class="v2-bowl mint">
+                            <div>MINT</div>
+                            <div id="v2-mint-pct">35%</div>
+                        </div>
+                        <div class="v2-bowl burn">
+                            <div>BURN</div>
+                            <div id="v2-burn-pct">45%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="demo-btn mint" onclick="tiltV2('mint')">← MINT</button>
+                <button class="demo-btn neutral" onclick="tiltV2('neutral')">NEUTRAL</button>
+                <button class="demo-btn burn" onclick="tiltV2('burn')">BURN →</button>
+            </div>
+        </div>
+
+        <!-- VARIANT 3: Neon Glow Circles -->
+        <div class="variant" id="variant3">
+            <span class="variant-number">3</span>
+            <div class="variant-title">Неоновые круги</div>
+            <div class="variant-desc">Светящиеся орбы вместо чаш</div>
+            <div class="scales-demo">
+                <div class="v3-container">
+                    <div class="v3-beam" id="v3-beam"></div>
+                    <div class="v3-bowls">
+                        <div class="v3-bowl mint">
+                            <div>MINT</div>
+                            <div class="v3-percent" id="v3-mint-pct">35%</div>
+                        </div>
+                        <div class="v3-bowl burn">
+                            <div>BURN</div>
+                            <div class="v3-percent" id="v3-burn-pct">45%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="demo-btn mint" onclick="tiltV3('mint')">← MINT</button>
+                <button class="demo-btn neutral" onclick="tiltV3('neutral')">NEUTRAL</button>
+                <button class="demo-btn burn" onclick="tiltV3('burn')">BURN →</button>
+            </div>
+        </div>
+
+        <!-- VARIANT 4: Classic Justice -->
+        <div class="variant" id="variant4">
+            <span class="variant-number">4</span>
+            <div class="variant-title">Классические весы правосудия</div>
+            <div class="variant-desc">Традиционный стиль с деревянным балансиром</div>
+            <div class="scales-demo">
+                <div class="v4-container">
+                    <div class="v4-beam-wrapper">
+                        <div class="v4-pivot">
+                            <div class="v4-pivot-ball"></div>
+                            <div class="v4-pivot-stem"></div>
+                        </div>
+                        <div class="v4-beam" id="v4-beam"></div>
+                        <div class="v4-chain left"></div>
+                        <div class="v4-chain right"></div>
+                        <div class="v4-pan left">
+                            <div>MINT</div>
+                            <div id="v4-mint-pct">35%</div>
+                        </div>
+                        <div class="v4-pan right">
+                            <div>BURN</div>
+                            <div id="v4-burn-pct">45%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="demo-btn mint" onclick="tiltV4('mint')">← MINT</button>
+                <button class="demo-btn neutral" onclick="tiltV4('neutral')">NEUTRAL</button>
+                <button class="demo-btn burn" onclick="tiltV4('burn')">BURN →</button>
+            </div>
+        </div>
+
+        <!-- VARIANT 5: Futuristic Hologram -->
+        <div class="variant" id="variant5">
+            <span class="variant-number">5</span>
+            <div class="variant-title">Футуристический слайдер</div>
+            <div class="variant-desc">Голографический индикатор баланса</div>
+            <div class="scales-demo">
+                <div class="v5-container">
+                    <div class="v5-hologram">
+                        <div class="v5-value" id="v5-value">50</div>
+                        <div class="v5-labels">
+                            <span class="mint">MINT 35%</span>
+                            <span class="burn">BURN 45%</span>
+                        </div>
+                        <div class="v5-scale">
+                            <div class="v5-indicator" id="v5-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="demo-btn mint" onclick="tiltV5('mint')">← MINT</button>
+                <button class="demo-btn neutral" onclick="tiltV5('neutral')">NEUTRAL</button>
+                <button class="demo-btn burn" onclick="tiltV5('burn')">BURN →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variant 1: SVG
+        function tiltV1(dir) {
+            const balance = document.getElementById('v1-balance');
+            let angle = dir === 'mint' ? -12 : dir === 'burn' ? 12 : 0;
+            anime({ targets: balance, rotate: angle, duration: 800, easing: 'easeOutElastic(1, 0.5)' });
+        }
+
+        // Variant 2: Minimalist CSS
+        function tiltV2(dir) {
+            const beam = document.getElementById('v2-beam');
+            beam.classList.remove('tilt-mint', 'tilt-burn');
+            if (dir === 'mint') beam.classList.add('tilt-mint');
+            else if (dir === 'burn') beam.classList.add('tilt-burn');
+        }
+
+        // Variant 3: Neon Glow
+        function tiltV3(dir) {
+            const beam = document.getElementById('v3-beam');
+            let angle = dir === 'mint' ? -12 : dir === 'burn' ? 12 : 0;
+            anime({ targets: beam, rotate: angle, duration: 600, easing: 'easeOutBack' });
+        }
+
+        // Variant 4: Classic
+        function tiltV4(dir) {
+            const beam = document.getElementById('v4-beam');
+            let angle = dir === 'mint' ? -10 : dir === 'burn' ? 10 : 0;
+            anime({ targets: beam, rotate: angle, duration: 1000, easing: 'easeOutElastic(1, 0.3)' });
+        }
+
+        // Variant 5: Hologram slider
+        function tiltV5(dir) {
+            const indicator = document.getElementById('v5-indicator');
+            const value = document.getElementById('v5-value');
+            let pos = dir === 'mint' ? '20%' : dir === 'burn' ? '80%' : '50%';
+            let val = dir === 'mint' ? 25 : dir === 'burn' ? 75 : 50;
+            anime({ targets: indicator, left: pos, duration: 800, easing: 'easeOutElastic(1, 0.5)' });
+            value.textContent = val;
+        }
+    </script>
+</body>
+
+</html>

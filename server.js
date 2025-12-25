@@ -868,8 +868,11 @@ async function saveCycleToMongo(cycle) {
 }
 
 // Refund V2 bets when no articles
-async function refundV2Bets(cycleId) {
+async function refundV2Bets(cycleId, blockchainRoundId) {
     try {
+        // Use blockchain roundId for contract calls, cycleId for DB queries
+        const contractRoundId = blockchainRoundId || cycleId;
+
         const betsThisRound = await GameBalance.find({ 'pendingBet.roundId': cycleId });
 
         if (betsThisRound.length === 0) {
@@ -877,12 +880,38 @@ async function refundV2Bets(cycleId) {
             return;
         }
 
+        // First, mark round as refunded on blockchain
+        if (gameContract) {
+            try {
+                console.log(`💸 V2: Calling refundRound(${contractRoundId}) on blockchain...`);
+                const tx = await gameContract.refundRound(contractRoundId);
+                await tx.wait();
+                console.log(`✅ V2: Round ${contractRoundId} marked as refunded on blockchain`);
+            } catch (e) {
+                // Round might already be refunded or closed, continue with player refunds
+                console.log(`⚠️ refundRound failed: ${e.message}`);
+            }
+        }
+
+        // Then refund each player
         for (const balance of betsThisRound) {
             const bet = balance.pendingBet;
             if (!bet || !bet.amount) continue;
 
-            // Return bet amount
+            // Return bet amount to player's balance
             balance.balance += bet.amount;
+
+            // Mark this bet as refunded (for UI display)
+            balance.betHistory.push({
+                roundId: cycleId,
+                prediction: bet.prediction,
+                amount: bet.amount,
+                won: false,
+                payout: bet.amount, // Full refund
+                refunded: true,
+                timestamp: new Date()
+            });
+
             balance.pendingBet = { roundId: null, amount: 0, prediction: null };
             await balance.save();
 
@@ -892,7 +921,7 @@ async function refundV2Bets(cycleId) {
             if (gameContract) {
                 gameContract.refundPlayer(
                     balance.wallet,
-                    cycleId,
+                    contractRoundId,
                     ethers.parseEther(bet.amount.toString())
                 ).catch(e => console.log('Blockchain refund failed:', e.message));
             }
@@ -1138,8 +1167,10 @@ async function closeCycleAndStartNew() {
     // Handle predictions based on article count
     if (completedCycle.articles.length === 0) {
         // No articles = refund all bets without house fee
+        completedCycle.refunded = true; // Mark cycle as refunded for UI
+        completedCycle.action = 'REFUNDED'; // Override NEUTRAL to show properly
         await refundPredictions(completedCycle.id);
-        await refundV2Bets(completedCycle.id); // V2 refunds
+        await refundV2Bets(completedCycle.id, closedBlockchainRoundId); // V2 refunds with blockchain roundId
     } else {
         // Has articles = process predictions normally
         await processPredictions(completedCycle);
@@ -1619,6 +1650,84 @@ app.get('/api/user-stats/:wallet', async (req, res) => {
     } catch (err) {
         console.error('User stats error:', err);
         res.json({ balance: 10000, totalWon: 0, totalLost: 0, wins: 0, losses: 0, winRate: 0, streak: 0, maxStreak: 0 });
+    }
+});
+
+// ============================================
+// PENDING REFUNDS API - for Oracle Arena UI
+// ============================================
+app.get('/api/v2/pending-refunds/:wallet', async (req, res) => {
+    try {
+        const wallet = req.params.wallet.toLowerCase();
+        const balance = await GameBalance.findOne({ wallet });
+
+        if (!balance || !balance.betHistory) {
+            return res.json({ pendingRefunds: [], totalRefundable: 0 });
+        }
+
+        // Find refunded bets that haven't been claimed
+        const pendingRefunds = balance.betHistory
+            .filter(bet => bet.refunded && bet.payout > 0)
+            .map(bet => ({
+                roundId: bet.roundId,
+                amount: bet.payout,
+                prediction: bet.prediction,
+                timestamp: bet.timestamp
+            }));
+
+        const totalRefundable = pendingRefunds.reduce((sum, r) => sum + r.amount, 0);
+
+        res.json({ pendingRefunds, totalRefundable });
+    } catch (err) {
+        console.error('Pending refunds error:', err);
+        res.json({ pendingRefunds: [], totalRefundable: 0, error: err.message });
+    }
+});
+
+// Pool statistics for Oracle Arena scales
+app.get('/api/v2/pool-stats', async (req, res) => {
+    try {
+        // Get all pending bets for current round
+        const bets = await GameBalance.find({ 'pendingBet.roundId': currentCycle.id });
+
+        let pools = { mint: 0, neutral: 0, burn: 0 };
+        let betters = { mint: 0, neutral: 0, burn: 0 };
+
+        bets.forEach(b => {
+            if (b.pendingBet?.prediction && b.pendingBet?.amount) {
+                const pred = b.pendingBet.prediction.toLowerCase();
+                if (pools[pred] !== undefined) {
+                    pools[pred] += b.pendingBet.amount;
+                    betters[pred]++;
+                }
+            }
+        });
+
+        const totalPool = pools.mint + pools.neutral + pools.burn;
+        const totalBetters = betters.mint + betters.neutral + betters.burn;
+
+        // Calculate percentages
+        const percentages = {
+            mint: totalPool > 0 ? Math.round((pools.mint / totalPool) * 100) : 0,
+            neutral: totalPool > 0 ? Math.round((pools.neutral / totalPool) * 100) : 0,
+            burn: totalPool > 0 ? Math.round((pools.burn / totalPool) * 100) : 0
+        };
+
+        // Calculate scale tilt: positive = MINT heavier, negative = BURN heavier
+        const scaleTilt = percentages.mint - percentages.burn;
+
+        res.json({
+            roundId: currentCycle.id,
+            pools,
+            percentages,
+            totalPool,
+            betters,
+            totalBetters,
+            scaleTilt  // -100 to +100, 0 = balanced
+        });
+    } catch (err) {
+        console.error('Pool stats error:', err);
+        res.json({ pools: { mint: 0, neutral: 0, burn: 0 }, totalPool: 0, percentages: { mint: 0, neutral: 0, burn: 0 }, scaleTilt: 0 });
     }
 });
 

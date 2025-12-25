@@ -356,6 +356,8 @@ class ScandalOracle {
                                     if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
                                 } else if (h.action === 'GENESIS') {
                                     lines.push(`⚡ GENESIS: Initial supply`);
+                                } else if (h.action === 'REFUNDED' || h.refunded) {
+                                    lines.push(`⚠️ REFUNDED: No news this round`);
                                 } else {
                                     lines.push(`🔵 NEUTRAL: No change`);
                                 }
@@ -559,6 +561,8 @@ class ScandalOracle {
                                     if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
                                 } else if (h.action === 'GENESIS') {
                                     lines.push(`⚡ GENESIS: Initial supply`);
+                                } else if (h.action === 'REFUNDED' || h.refunded) {
+                                    lines.push(`⚠️ REFUNDED: No news this round`);
                                 } else {
                                     lines.push(`🔵 NEUTRAL: No change`);
                                 }
