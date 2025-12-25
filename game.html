@@ -3449,9 +3449,9 @@
                     canVote = true;
                 }
 
-                document.getElementById('voteMint').disabled = !canVote;
-                document.getElementById('voteNeutral').disabled = !canVote;
-                document.getElementById('voteBurn').disabled = !canVote;
+                document.getElementById('arenaMint').disabled = !canVote;
+                document.getElementById('arenaNeutral').disabled = !canVote;
+                document.getElementById('arenaBurn').disabled = !canVote;
             } catch (error) {
                 console.log('updateGameStatus error:', error);
             }
@@ -3465,9 +3465,9 @@
             }
 
             // DISABLE BUTTONS IMMEDIATELY to prevent double-clicks
-            document.getElementById('voteMint').disabled = true;
-            document.getElementById('voteNeutral').disabled = true;
-            document.getElementById('voteBurn').disabled = true;
+            document.getElementById('arenaMint').disabled = true;
+            document.getElementById('arenaNeutral').disabled = true;
+            document.getElementById('arenaBurn').disabled = true;
 
             try {
                 // Check game balance from API afresh
@@ -3547,9 +3547,9 @@
                     document.getElementById('yourBetChoice').textContent = data.pendingBet.prediction;
 
                     // Disable vote buttons since there's a pending bet
-                    document.getElementById('voteMint').disabled = true;
-                    document.getElementById('voteNeutral').disabled = true;
-                    document.getElementById('voteBurn').disabled = true;
+                    document.getElementById('arenaMint').disabled = true;
+                    document.getElementById('arenaNeutral').disabled = true;
+                    document.getElementById('arenaBurn').disabled = true;
                 } else {
                     // No pending bet - reset UI
                     myVote = null;
