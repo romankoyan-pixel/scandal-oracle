@@ -30,6 +30,11 @@ const CycleSchema = new mongoose.Schema({
     rate: { type: Number, default: 0 },
     ratePercentage: { type: String, default: '0%' },
 
+    // Supply tracking for chart
+    supplyBefore: { type: Number, default: 1000000000 },
+    supplyAfter: { type: Number, default: 1000000000 },
+    supplyChange: { type: Number, default: 0 },
+
     // Pool statistics
     pool: {
         mint: { type: Number, default: 0 },

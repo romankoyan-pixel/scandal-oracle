@@ -1,10 +1,10 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\contracts\\PredictionGame.sol": {
-      "lastModificationDate": 1766476797073,
-      "contentHash": "1185f5fd4056e8004262aaf003269c25",
-      "sourceName": "contracts/PredictionGame.sol",
+    "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\contracts\\PredictionGameV2.sol": {
+      "lastModificationDate": 1766673464831,
+      "contentHash": "164e2fb49fc8ddbcdec4ab7f3d39ad3f",
+      "sourceName": "contracts/PredictionGameV2.sol",
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
@@ -32,19 +32,20 @@
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/utils/Pausable.sol",
         "@openzeppelin/contracts/token/ERC20/IERC20.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "PredictionGame"
+        "PredictionGameV2"
       ]
     },
-    "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
-      "lastModificationDate": 1766482639582,
-      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
-      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+    "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\node_modules\\@openzeppelin\\contracts\\utils\\Pausable.sol": {
+      "lastModificationDate": 1766482639579,
+      "contentHash": "0d47b53e10b1985efbb396f937626279",
+      "sourceName": "@openzeppelin/contracts/utils/Pausable.sol",
       "solcConfig": {
         "version": "0.8.20",
         "settings": {
@@ -69,12 +70,14 @@
           }
         }
       },
-      "imports": [],
+      "imports": [
+        "../utils/Context.sol"
+      ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
-        "ReentrancyGuard"
+        "Pausable"
       ]
     },
     "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
@@ -113,6 +116,42 @@
       ],
       "artifacts": [
         "Ownable"
+      ]
+    },
+    "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
+      "lastModificationDate": 1766482639582,
+      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
       ]
     },
     "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
@@ -305,8 +344,8 @@
       ]
     },
     "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\contracts\\SCANDALToken.sol": {
-      "lastModificationDate": 1766475743191,
-      "contentHash": "8f7cba5f959419a8d9dae17332be7d18",
+      "lastModificationDate": 1766610227774,
+      "contentHash": "73ac36af2295995443f7209c7c2ee24f",
       "sourceName": "contracts/SCANDALToken.sol",
       "solcConfig": {
         "version": "0.8.20",

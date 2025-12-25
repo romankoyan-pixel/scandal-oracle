@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SCANDAL - Prediction Game</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -202,7 +203,7 @@
         }
 
         .vote-btn {
-            border: 2px solid var(--border-color);
+            border: 2px solid rgba(100, 200, 255, 0.3);
             border-radius: 10px;
             background: var(--bg-secondary);
             cursor: pointer;
@@ -217,16 +218,19 @@
 
         .vote-btn.mint {
             color: var(--accent-green);
+            border: 2px solid rgba(0, 255, 136, 0.4);
             border-bottom: 4px solid var(--accent-green);
         }
 
         .vote-btn.burn {
             color: var(--accent-red);
+            border: 2px solid rgba(239, 68, 68, 0.4);
             border-bottom: 4px solid var(--accent-red);
         }
 
         .vote-btn.neutral {
             color: var(--accent-cyan);
+            border: 2px solid rgba(6, 182, 212, 0.4);
             border-bottom: 4px solid var(--accent-cyan);
         }
 
@@ -254,6 +258,358 @@
             cursor: not-allowed;
         }
 
+        /* Compact Vote Buttons */
+        .vote-buttons.compact {
+            flex: 0;
+            gap: 0.5rem;
+        }
+
+        .vote-btn.compact {
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            gap: 0.3rem;
+        }
+
+        .coin-icon {
+            font-size: 1rem;
+        }
+
+        /* Race Track Styles */
+        .race-track {
+            background: linear-gradient(180deg, rgba(0, 20, 40, 0.8) 0%, rgba(0, 40, 60, 0.6) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.8rem;
+        }
+
+        .race-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .race-lanes {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .race-lane {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lane-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
+            width: 55px;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        .mint-lane .lane-label {
+            color: var(--accent-green);
+        }
+
+        .neutral-lane .lane-label {
+            color: var(--accent-cyan);
+        }
+
+        .burn-lane .lane-label {
+            color: var(--accent-red);
+        }
+
+        .lane-track {
+            flex: 1;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mint-lane .lane-track {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .neutral-lane .lane-track {
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .burn-lane .lane-track {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .coin-racer {
+            position: absolute;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            transition: left 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            filter: drop-shadow(0 0 5px currentColor);
+            animation: coinBounce 0.5s ease-in-out infinite;
+        }
+
+        .mint-racer {
+            color: #22c55e;
+        }
+
+        .neutral-racer {
+            color: #00f0ff;
+        }
+
+        .burn-racer {
+            color: #ef4444;
+        }
+
+        @keyframes coinBounce {
+
+            0%,
+            100% {
+                transform: translateY(-50%) scale(1);
+            }
+
+            50% {
+                transform: translateY(-50%) scale(1.1);
+            }
+        }
+
+        .finish-line {
+            position: absolute;
+            right: 10px;
+            top: 2px;
+            bottom: 2px;
+            width: 3px;
+            background: repeating-linear-gradient(0deg,
+                    #fff 0px,
+                    #fff 4px,
+                    #000 4px,
+                    #000 8px);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        .race-score {
+            text-align: center;
+            margin-top: 0.6rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .race-score span {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+        }
+
+        /* Winner Celebration Overlay */
+        .race-winner-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            animation: overlayFadeIn 0.5s ease-out;
+        }
+
+        .race-winner-overlay.active {
+            display: flex;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .confetti {
+            position: absolute;
+            font-size: 1.2rem;
+            animation: confettiFall 2s ease-in-out infinite;
+        }
+
+        .confetti.c1 {
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .confetti.c2 {
+            left: 25%;
+            animation-delay: 0.3s;
+        }
+
+        .confetti.c3 {
+            left: 40%;
+            animation-delay: 0.1s;
+        }
+
+        .confetti.c4 {
+            left: 60%;
+            animation-delay: 0.4s;
+        }
+
+        .confetti.c5 {
+            left: 75%;
+            animation-delay: 0.2s;
+        }
+
+        .confetti.c6 {
+            left: 90%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(120px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .finish-flag {
+            font-size: 2.5rem;
+            animation: flagWave 0.5s ease-in-out infinite alternate;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes flagWave {
+            from {
+                transform: rotate(-5deg) scale(1);
+            }
+
+            to {
+                transform: rotate(5deg) scale(1.1);
+            }
+        }
+
+        .winner-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.1));
+            border: 2px solid var(--accent-green);
+            animation: badgePulse 1s ease-in-out infinite;
+        }
+
+        .winner-badge.mint {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 200, 100, 0.1));
+            border-color: var(--accent-green);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .winner-badge.neutral {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(0, 180, 220, 0.1));
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+        }
+
+        .winner-badge.burn {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(200, 50, 50, 0.1));
+            border-color: var(--accent-red);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes badgePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .winner-icon {
+            font-size: 2rem;
+        }
+
+        .winner-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .winner-action {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .winner-badge.mint .winner-action {
+            color: var(--accent-green);
+        }
+
+        .winner-badge.neutral .winner-action {
+            color: var(--accent-cyan);
+        }
+
+        .winner-badge.burn .winner-action {
+            color: var(--accent-red);
+        }
+
+        /* Make race-track position relative for overlay */
+        .race-track {
+            position: relative;
+        }
+
+        /* Winner animation */
+        .coin-racer.winner {
+            animation: winnerPulse 0.3s ease-in-out infinite;
+        }
+
+        @keyframes winnerPulse {
+
+            0%,
+            100% {
+                transform: translateY(-50%) scale(1.2);
+                filter: drop-shadow(0 0 15px currentColor);
+            }
+
+            50% {
+                transform: translateY(-50%) scale(1.4);
+                filter: drop-shadow(0 0 25px currentColor);
+            }
+        }
+
         .vote-message {
             text-align: center;
             padding: 0.8rem;
@@ -274,12 +630,13 @@
             color: var(--accent-red);
         }
 
-        /* Right: Stats + Leaderboard */
+        /* Right: Stats + Panels */
         .right-panel {
-            display: grid;
-            grid-template-rows: auto auto 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 0.8rem;
             min-height: 0;
+            align-items: stretch;
         }
 
         .stats-row {
@@ -408,11 +765,23 @@
         }
 
         .modal-close {
-            background: none;
+            background: transparent;
             border: none;
             color: var(--text-secondary);
             font-size: 1.5rem;
             cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: white;
         }
 
         .rules-list {
@@ -519,18 +888,82 @@
             font-weight: bold;
         }
 
-        /* Last Cycle Panel */
-        .last-cycle-panel {
+        /* Panel Button - Thin clickable row (for Last Cycle) */
+        .panel-btn {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 1rem;
             background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+            flex-shrink: 0;
+            flex-grow: 0;
+            height: auto;
         }
 
-        .last-cycle-panel:hover {
-            border-color: var(--accent-cyan);
+        .panel-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .panel-btn .btn-left {
+            color: var(--text-secondary);
+        }
+
+        .panel-btn .btn-right {
+            font-weight: bold;
+        }
+
+        /* Last Cycle Button color variants */
+        .last-cycle-btn.mint {
+            border-color: var(--accent-green) !important;
+        }
+
+        .last-cycle-btn.mint .btn-right {
+            color: var(--accent-green);
+        }
+
+        .last-cycle-btn.burn {
+            border-color: #ef4444 !important;
+        }
+
+        .last-cycle-btn.burn .btn-right {
+            color: #ef4444 !important;
+        }
+
+        .last-cycle-btn.neutral {
+            border-color: var(--accent-cyan) !important;
+        }
+
+        .last-cycle-btn.neutral .btn-right {
+            color: var(--accent-cyan);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-green);
         }
 
         .last-cycle-header {
@@ -566,6 +999,238 @@
             font-size: 0.75rem;
             color: var(--text-secondary);
             margin-top: 0.3rem;
+        }
+
+        /* Preview Panel - Same size for Bet History and Leaderboard */
+        .preview-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preview-panel:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.05);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .preview-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .preview-expand {
+            color: var(--accent-cyan);
+            font-size: 0.7rem;
+        }
+
+        .preview-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0.4rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            margin-bottom: 0.2rem;
+            font-size: 0.65rem;
+        }
+
+        .preview-item.win {
+            border-left: 2px solid var(--accent-green);
+        }
+
+        .preview-item.lose {
+            border-left: 2px solid var(--accent-red);
+        }
+
+        /* Expandable panels - flex: 1 to fill remaining space */
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Leaderboard Items */
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .leaderboard-item.top-3 {
+            border-color: gold;
+        }
+
+        .leaderboard-rank {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            min-width: 30px;
+        }
+
+        .leaderboard-wallet {
+            flex: 1;
+            margin-left: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .leaderboard-balance {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-green);
+        }
+
+        .bet-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            margin-bottom: 0.3rem;
+            font-size: 0.75rem;
+        }
+
+        .bet-history-item.win {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .bet-history-item.lose {
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .bet-history-item.pending {
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .bet-history-round {
+            color: var(--text-secondary);
+        }
+
+        .bet-history-choice {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .bet-history-result {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .bet-history-result.win {
+            color: var(--accent-green);
+        }
+
+        .bet-history-result.lose {
+            color: var(--accent-red);
+        }
+
+
+        /* V2 Game Balance Panel */
+        .game-balance-panel {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(0, 255, 136, 0.1));
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .game-balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .game-balance-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .game-balance-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .balance-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .balance-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .balance-btn.deposit {
+            background: linear-gradient(135deg, var(--accent-green), #00b894);
+            color: white;
+        }
+
+        .balance-btn.deposit:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .balance-btn.withdraw {
+            background: linear-gradient(135deg, var(--accent-cyan), #00b4d8);
+            color: white;
+        }
+
+        .balance-btn.withdraw:hover {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .balance-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pending-bet-info {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem 0.8rem;
+            margin-top: 0.8rem;
+            display: none;
+        }
+
+        .pending-bet-info.active {
+            display: block;
+        }
+
+        .pending-bet-text {
+            font-size: 0.8rem;
+            color: #ffc107;
         }
 
         /* Unclaimed Winnings Panel */
@@ -781,11 +1446,65 @@
 
                 <div class="vote-section">
                     <div class="vote-label">Your Prediction</div>
-                    <div class="vote-buttons">
-                        <button class="vote-btn mint" id="voteMint" onclick="vote('MINT')" disabled>MINT</button>
-                        <button class="vote-btn neutral" id="voteNeutral" onclick="vote('NEUTRAL')"
-                            disabled>NEUTRAL</button>
-                        <button class="vote-btn burn" id="voteBurn" onclick="vote('BURN')" disabled>BURN</button>
+                    <div class="vote-buttons compact">
+                        <button class="vote-btn mint compact" id="voteMint" onclick="vote('MINT')" disabled>
+                            <span class="coin-icon">🟢</span> MINT
+                        </button>
+                        <button class="vote-btn neutral compact" id="voteNeutral" onclick="vote('NEUTRAL')" disabled>
+                            <span class="coin-icon">🔵</span> NEUTRAL
+                        </button>
+                        <button class="vote-btn burn compact" id="voteBurn" onclick="vote('BURN')" disabled>
+                            <span class="coin-icon">🔴</span> BURN
+                        </button>
+                    </div>
+
+                    <!-- Coin Race Track -->
+                    <div class="race-track">
+                        <div class="race-title">⚔️ ORACLE ARENA</div>
+                        <div class="race-lanes">
+                            <div class="race-lane mint-lane">
+                                <div class="lane-label">MINT</div>
+                                <div class="lane-track">
+                                    <div class="coin-racer mint-racer" id="mintRacer">🟢</div>
+                                    <div class="finish-line"></div>
+                                </div>
+                            </div>
+                            <div class="race-lane neutral-lane">
+                                <div class="lane-label">NEUTRAL</div>
+                                <div class="lane-track">
+                                    <div class="coin-racer neutral-racer" id="neutralRacer">🔵</div>
+                                    <div class="finish-line"></div>
+                                </div>
+                            </div>
+                            <div class="race-lane burn-lane">
+                                <div class="lane-label">BURN</div>
+                                <div class="lane-track">
+                                    <div class="coin-racer burn-racer" id="burnRacer">🔴</div>
+                                    <div class="finish-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="race-score">
+                            Current Score: <span id="raceScore">50</span>
+                        </div>
+
+                        <!-- Winner Celebration Overlay -->
+                        <div class="race-winner-overlay" id="raceWinnerOverlay">
+                            <div class="confetti-container">
+                                <div class="confetti c1">🎉</div>
+                                <div class="confetti c2">✨</div>
+                                <div class="confetti c3">🎊</div>
+                                <div class="confetti c4">⭐</div>
+                                <div class="confetti c5">🎉</div>
+                                <div class="confetti c6">✨</div>
+                            </div>
+                            <div class="finish-flag">🏁</div>
+                            <div class="winner-badge" id="winnerBadge">
+                                <span class="winner-icon" id="winnerIcon">🟢</span>
+                                <span class="winner-text">WINNER!</span>
+                                <span class="winner-action" id="winnerAction">MINT</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -821,7 +1540,7 @@
                 <div class="stats-row">
                     <div class="stat-card">
                         <div class="stat-value" id="userBalance" style="color: var(--accent-cyan);">0</div>
-                        <div class="stat-label">$SCNDL Balance</div>
+                        <div class="stat-label">WALLET BALANCE</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="userWon" style="color: var(--accent-green);">0</div>
@@ -837,39 +1556,48 @@
                     </div>
                 </div>
 
-                <!-- Unclaimed Winnings Panel -->
-                <div class="unclaimed-panel" id="unclaimedPanel" style="display: none;">
-                    <div class="unclaimed-header">
-                        <span class="unclaimed-title">🎉 UNCLAIMED WINNINGS</span>
-                        <span class="unclaimed-total" id="unclaimedTotal">0 SCNDL</span>
+                <!-- V2 Game Balance Panel -->
+                <div class="game-balance-panel" id="gameBalancePanel" style="display: none;">
+                    <div class="game-balance-header">
+                        <span class="game-balance-title">GAME BALANCE</span>
+                        <span class="game-balance-amount" id="gameBalance">0 SCNDL</span>
                     </div>
-                    <div class="unclaimed-list" id="unclaimedList">
-                        <div class="no-unclaimed">Loading...</div>
+                    <div class="balance-actions">
+                        <button class="balance-btn deposit" onclick="openDepositModal()">DEPOSIT</button>
+                        <button class="balance-btn withdraw" onclick="openWithdrawModal()">WITHDRAW</button>
                     </div>
-                    <button id="claimAllBtn" onclick="claimAllWinnings()" class="claim-all-btn" style="display: none;">
-                        💰 CLAIM ALL
-                    </button>
-                </div>
-
-                <!-- Last Cycle -->
-                <div class="last-cycle-panel" id="lastCyclePanel" onclick="openLastCycle()">
-                    <div class="last-cycle-header">
-                        <span class="last-cycle-title">LAST CYCLE #<span id="lastCycleNumber">--</span></span>
-                        <span class="last-cycle-result" id="lastCycleResult">--</span>
-                    </div>
-                    <div class="last-cycle-info">
-                        <span id="lastCycleArticles">0 articles</span> •
-                        <span id="lastCycleScore">Score: --</span>
+                    <div class="pending-bet-info" id="pendingBetInfo">
+                        <span class="pending-bet-text">⏳ Pending bet: <span id="pendingBetAmount">0</span> SCNDL on
+                            <span id="pendingBetChoice">-</span></span>
                     </div>
                 </div>
 
-                <!-- Leaderboard -->
-                <div class="leaderboard-panel">
-                    <div class="panel-header">
-                        <h2 class="panel-title">Leaderboard</h2>
+
+                <!-- Last Cycle Button (thin, click for modal) -->
+                <button class="panel-btn last-cycle-btn neutral" id="lastCyclePanel" onclick="openLastCycle()">
+                    <span class="btn-left">LAST #<span id="lastCycleNumber">--</span></span>
+                    <span class="btn-right" id="lastCycleResult">--</span>
+                </button>
+
+                <!-- Bet History Preview Panel -->
+                <div class="preview-panel" id="betHistoryPanel" onclick="openBetHistoryModal()" style="display: none;">
+                    <div class="preview-header">
+                        <span class="preview-title">YOUR BET HISTORY</span>
+                        <span class="preview-expand">▶</span>
                     </div>
-                    <div class="leaderboard-list" id="leaderboard">
-                        <p class="text-secondary" style="text-align: center;">Loading...</p>
+                    <div class="preview-list" id="betHistoryPreview">
+                        <p class="text-secondary" style="text-align: center; font-size: 0.7rem;">No bets yet</p>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Preview Panel (expands when wallet not connected) -->
+                <div class="preview-panel leaderboard-expand" id="leaderboardPanel" onclick="openLeaderboardModal()">
+                    <div class="preview-header">
+                        <span class="preview-title">LEADERBOARD</span>
+                        <span class="preview-expand">▶</span>
+                    </div>
+                    <div class="preview-list" id="leaderboardPreview" style="max-height: none; overflow-y: auto;">
+                        <p class="text-secondary" style="text-align: center; font-size: 0.7rem;">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -884,7 +1612,7 @@
                 <button class="modal-close" onclick="closeRules()">&times;</button>
             </div>
             <ul class="rules-list">
-                <li><span class="rule-name">Bet Amount</span><span class="rule-val">100 $SCNDL</span></li>
+                <li><span class="rule-name">Bet Amount</span><span class="rule-val">1,000 $SCNDL</span></li>
                 <li><span class="rule-name">Voting Window</span><span class="rule-val">First 60 seconds</span></li>
                 <li><span class="rule-name">House Fee</span><span class="rule-val">5%</span></li>
                 <li><span class="rule-name">Win Payout</span><span class="rule-val">Pool ÷ Winners</span></li>
@@ -920,12 +1648,401 @@
                 </div>
                 <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">News Articles:
                 </div>
-                <div id="modalArticlesList">
-                    <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+                <div id="modalArticlesList" style="max-height: 200px; overflow-y: auto;">
+                    <p class="text-secondary" style="text-align: center; font-size: 0.8rem;">No articles</p>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End lastCycleModal -->
+
+    <!-- Leaderboard Modal -->
+    <div class="modal-overlay" id="leaderboardModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🏆 LEADERBOARD</h3>
+                <button class="modal-close" onclick="closeLeaderboardModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem;">
+                <input type="text" id="leaderboardSearch" placeholder="Search by wallet (last 4 chars) or ENS..."
+                    style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-family: 'Orbitron';"
+                    oninput="filterLeaderboard(this.value)">
+                <div id="leaderboardList" style="max-height: 400px; overflow-y: auto;">
+                    <p class="text-secondary" style="text-align: center;">Loading...</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Bet History Modal -->
+    <div class="modal-overlay" id="betHistoryModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📜 YOUR BET HISTORY</h3>
+                <button class="modal-close" onclick="closeBetHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem;">
+                <div id="betHistoryList" style="max-height: 400px; overflow-y: auto;">
+                    <p class="text-secondary" style="text-align: center;">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit/Withdraw Modal (MUST be outside lastCycleModal!) -->
+    <div class="modal-overlay" id="depositModal">
+        <div class="modal-content deposit-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="depositModalTitle">DEPOSIT SCNDL</h3>
+                <button class="modal-close" onclick="closeDepositModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="deposit-info">
+                    <div class="deposit-balance">
+                        <span class="label">Wallet Balance:</span>
+                        <span class="value" id="modalWalletBalance">0 SCNDL</span>
+                    </div>
+                    <div class="deposit-balance">
+                        <span class="label">Game Balance:</span>
+                        <span class="value" id="modalGameBalance">0 SCNDL</span>
+                    </div>
+                </div>
+                <div class="deposit-input-group">
+                    <label>Amount (SCNDL)</label>
+                    <input type="number" id="depositAmountInput" placeholder="Enter amount..." min="1000" step="1000">
+                    <div class="quick-amounts">
+                        <button onclick="setDepositAmount(1000)">1K</button>
+                        <button onclick="setDepositAmount(5000)">5K</button>
+                        <button onclick="setDepositAmount(10000)">10K</button>
+                        <button onclick="setDepositAmount(50000)">50K</button>
+                        <button onclick="setMaxDeposit()">MAX</button>
+                    </div>
+                </div>
+                <div class="deposit-note" id="depositNote">
+                    Minimum: 1,000 SCNDL
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeDepositModal()">Cancel</button>
+                <button class="btn-confirm" id="depositConfirmBtn" onclick="confirmDeposit()">DEPOSIT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Popup (Win/Lose) -->
+    <div class="result-popup" id="resultPopup">
+        <div class="result-popup-content">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <h3 class="result-title" id="resultTitle">YOU WON!</h3>
+            <p class="result-amount" id="resultAmount">+1,000 SCNDL</p>
+            <button class="result-close-btn" onclick="closeResultPopup()">CLOSE</button>
+        </div>
+    </div>
+
+    <style>
+        /* Result Popup Styles */
+        .result-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-popup.active {
+            display: flex;
+            animation: popupFadeIn 0.3s ease;
+        }
+
+        @keyframes popupFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .result-popup-content {
+            text-align: center;
+            padding: 2rem 3rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            animation: popupBounce 0.5s ease;
+        }
+
+        @keyframes popupBounce {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-popup.win .result-popup-content {
+            border: 3px solid var(--accent-green);
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.5);
+        }
+
+        .result-popup.lose .result-popup-content {
+            border: 3px solid var(--accent-red);
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.5);
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-popup.win .result-title {
+            color: var(--accent-green);
+        }
+
+        .result-popup.lose .result-title {
+            color: var(--accent-red);
+        }
+
+        .result-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-popup.win .result-amount {
+            color: var(--accent-green);
+        }
+
+        .result-popup.lose .result-amount {
+            color: var(--accent-red);
+        }
+
+        .result-close-btn {
+            padding: 0.8rem 2rem;
+            background: transparent;
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .result-close-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+    </style>
+
+    <style>
+        /* Modal Overlay - MUST be hidden by default! */
+        #depositModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #depositModal.active {
+            display: flex;
+        }
+
+        /* Deposit Modal Styles */
+        .deposit-modal {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 16px;
+            max-width: 420px;
+            width: 90%;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .deposit-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .deposit-modal .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+            margin: 0;
+        }
+
+        .deposit-modal .modal-body {
+            padding: 1.5rem;
+        }
+
+        .deposit-info {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .deposit-balance {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+        }
+
+        .deposit-balance .label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .deposit-balance .value {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+        }
+
+        .deposit-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .deposit-input-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .deposit-input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .deposit-input-group input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+
+        .quick-amounts button {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-amounts button:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            border-color: var(--accent-cyan);
+        }
+
+        .deposit-note {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .deposit-modal .modal-footer {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem 1.5rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 0.8rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .btn-confirm {
+            flex: 2;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, var(--accent-green), #00b894);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-confirm.withdraw {
+            background: linear-gradient(135deg, var(--accent-cyan), #00b4d8);
+        }
+
+        .btn-confirm.withdraw:hover {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+    </style>
 
     <!-- Result Popup -->
     <div class="result-popup" id="resultPopup">
@@ -1026,10 +2143,194 @@
         let lastCycleId = null;
 
         // Pool simulation
-        const BET_AMOUNT = 100; // $SCNDL per bet
+        const BET_AMOUNT = 1000; // $SCNDL per bet (V2 minimum)
         let poolData = { mint: 0, neutral: 0, burn: 0 };
         let myBetAmount = 0;
         let lastCycleData = null;
+
+        // Coin Race variables
+        let currentRaceScore = 50;
+        let currentCycleProgress = 0;
+
+        // Update coin race positions based on time progress and score
+        // progress: 0 to 1 (cycle progress)
+        // score: 0-100 (Oracle score - lower = MINT, higher = BURN)
+        // articlesCount: number of news articles (0 = no news yet)
+        function updateCoinRace(progress, score, articlesCount = 0) {
+            currentRaceScore = score;
+            currentCycleProgress = progress;
+
+            const raceScoreEl = document.getElementById('raceScore');
+            if (raceScoreEl) raceScoreEl.textContent = Math.round(score);
+
+            const mintRacer = document.getElementById('mintRacer');
+            const neutralRacer = document.getElementById('neutralRacer');
+            const burnRacer = document.getElementById('burnRacer');
+
+            if (!mintRacer || !neutralRacer || !burnRacer) return;
+
+            // Remove winner class during race
+            if (progress < 0.95) {
+                mintRacer.classList.remove('winner');
+                neutralRacer.classList.remove('winner');
+                burnRacer.classList.remove('winner');
+            }
+
+            // Base position: all coins move together based on time (5% to 85%)
+            const startPos = 5;
+            const endPos = 85;
+            const basePos = startPos + progress * (endPos - startPos);
+
+            // Score determines lead/lag offset (max 12% difference)
+            // If no news yet (articlesCount === 0), all coins move together
+            const maxOffset = 12;
+            let mintOffset = 0, neutralOffset = 0, burnOffset = 0;
+
+            if (articlesCount > 0) {
+                // News has arrived - apply score-based offsets
+                // Rules: score < 40 = MINT, 40-60 = NEUTRAL, > 60 = BURN
+                if (score < 40) {
+                    // MINT zone - MINT leads
+                    const intensity = (40 - score) / 40; // 0 at 40, 1 at 0
+                    mintOffset = intensity * maxOffset;
+                    neutralOffset = -intensity * maxOffset * 0.4;
+                    burnOffset = -intensity * maxOffset * 0.8;
+                } else if (score > 60) {
+                    // BURN zone - BURN leads
+                    const intensity = (score - 60) / 40; // 0 at 60, 1 at 100
+                    burnOffset = intensity * maxOffset;
+                    neutralOffset = -intensity * maxOffset * 0.4;
+                    mintOffset = -intensity * maxOffset * 0.8;
+                } else {
+                    // NEUTRAL zone (40-60) - NEUTRAL leads
+                    const distFromCenter = Math.abs(50 - score);
+                    const intensity = 1 - (distFromCenter / 10); // strongest at 50
+                    neutralOffset = intensity * maxOffset * 0.6;
+                    // Slight lean based on which side of 50
+                    if (score < 50) {
+                        mintOffset = -intensity * maxOffset * 0.2;
+                        burnOffset = -intensity * maxOffset * 0.4;
+                    } else {
+                        burnOffset = -intensity * maxOffset * 0.2;
+                        mintOffset = -intensity * maxOffset * 0.4;
+                    }
+                }
+            }
+            // When score === 50, all offsets remain 0 (coins move together)
+
+            // Calculate final positions (clamped between 5% and 90%)
+            const mintPos = Math.max(5, Math.min(90, basePos + mintOffset));
+            const neutralPos = Math.max(5, Math.min(90, basePos + neutralOffset));
+            const burnPos = Math.max(5, Math.min(90, basePos + burnOffset));
+
+            mintRacer.style.left = `${mintPos}%`;
+            neutralRacer.style.left = `${neutralPos}%`;
+            burnRacer.style.left = `${burnPos}%`;
+
+            // If near end (95%+), determine winner and show celebration at 98%
+            if (progress >= 0.95) {
+                // Remove winner from all first
+                mintRacer.classList.remove('winner');
+                neutralRacer.classList.remove('winner');
+                burnRacer.classList.remove('winner');
+
+                let winner;
+                if (score <= 40) {
+                    mintRacer.classList.add('winner');
+                    winner = 'MINT';
+                } else if (score >= 60) {
+                    burnRacer.classList.add('winner');
+                    winner = 'BURN';
+                } else {
+                    neutralRacer.classList.add('winner');
+                    winner = 'NEUTRAL';
+                }
+
+                // Show celebration at 98% (only once per cycle)
+                if (progress >= 0.98 && !window.celebrationShown) {
+                    console.log('🏆 Showing celebration! Winner:', winner, 'Score:', score);
+                    window.celebrationShown = true;
+                    showWinnerCelebration(winner);
+                }
+            } else {
+                // Reset celebration flag when progress resets
+                window.celebrationShown = false;
+            }
+        }
+
+        // Show race winner with animation and celebration
+        function showRaceWinner(result) {
+            const mintRacer = document.getElementById('mintRacer');
+            const neutralRacer = document.getElementById('neutralRacer');
+            const burnRacer = document.getElementById('burnRacer');
+
+            if (!mintRacer || !neutralRacer || !burnRacer) return;
+
+            // Move winner to finish line
+            if (result === 'MINT') {
+                mintRacer.style.left = '90%';
+                mintRacer.classList.add('winner');
+            } else if (result === 'BURN') {
+                burnRacer.style.left = '90%';
+                burnRacer.classList.add('winner');
+            } else {
+                neutralRacer.style.left = '90%';
+                neutralRacer.classList.add('winner');
+            }
+
+            // Show winner celebration overlay
+            showWinnerCelebration(result);
+        }
+
+        // Show winner celebration overlay
+        function showWinnerCelebration(result) {
+            const overlay = document.getElementById('raceWinnerOverlay');
+            const badge = document.getElementById('winnerBadge');
+            const icon = document.getElementById('winnerIcon');
+            const action = document.getElementById('winnerAction');
+
+            if (!overlay || !badge || !icon || !action) return;
+
+            // Set winner info
+            badge.className = 'winner-badge ' + result.toLowerCase();
+            action.textContent = result;
+
+            if (result === 'MINT') {
+                icon.textContent = '🟢';
+            } else if (result === 'BURN') {
+                icon.textContent = '🔴';
+            } else {
+                icon.textContent = '🔵';
+            }
+
+            // Show overlay
+            overlay.classList.add('active');
+        }
+
+        // Hide winner celebration
+        function hideWinnerCelebration() {
+            const overlay = document.getElementById('raceWinnerOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        // Reset race for new cycle
+        function resetCoinRace() {
+            currentRaceScore = 50;
+            currentCycleProgress = 0;
+            const raceScoreEl = document.getElementById('raceScore');
+            if (raceScoreEl) raceScoreEl.textContent = '50';
+
+            const mintRacer = document.getElementById('mintRacer');
+            const neutralRacer = document.getElementById('neutralRacer');
+            const burnRacer = document.getElementById('burnRacer');
+
+            if (mintRacer) { mintRacer.style.left = '5%'; mintRacer.classList.remove('winner'); }
+            if (neutralRacer) { neutralRacer.style.left = '5%'; neutralRacer.classList.remove('winner'); }
+            if (burnRacer) { burnRacer.style.left = '5%'; burnRacer.classList.remove('winner'); }
+
+            // Hide winner celebration overlay
+            hideWinnerCelebration();
+        }
 
         // Web3 / Contract variables
         let web3Provider = null;
@@ -1047,13 +2348,19 @@
 
         // Load real SCNDL balance from blockchain
         async function loadTokenBalance() {
-            if (!tokenContract || !walletAddress) return;
+            if (!tokenContract || !walletAddress) {
+                console.log('loadTokenBalance: No contract or wallet');
+                return;
+            }
             try {
+                console.log('loadTokenBalance: Fetching from blockchain...');
                 const balance = await tokenContract.balanceOf(walletAddress);
                 userTokenBalance = Number(ethers.formatEther(balance));
+                console.log('loadTokenBalance: Got balance =', userTokenBalance);
                 document.getElementById('userBalance').textContent = userTokenBalance.toLocaleString();
             } catch (error) {
                 console.error('Error loading token balance:', error);
+                // Don't change display on error - keep previous value or 0
             }
         }
 
@@ -1257,20 +2564,24 @@
                 document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
                 document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
 
+                // Reset wallet balance to 0 before loading (will be updated from blockchain)
+                document.getElementById('userBalance').textContent = '0';
+
                 // Save session to localStorage
                 localStorage.setItem('scandals_wallet', walletAddress);
                 localStorage.setItem('scandals_lastActive', Date.now().toString());
 
                 // Load data independently (don't let one failure block others)
                 try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
-                try { await loadPoolFromContract(); } catch (e) { console.log('Pool load error:', e); }
-                try { await loadUserStats(); } catch (e) { console.log('Stats load error:', e); }
+                try { await loadV2GameBalance(); } catch (e) { console.log('V2 game balance error:', e); }
+                try { await loadV2RoundInfo(); } catch (e) { console.log('V2 round info error:', e); }
+                // loadUserStats removed - stats now loaded via loadV2GameBalance
                 try { await updateGameStatus(); } catch (e) { console.log('Status update error:', e); }
-                try { await checkUnclaimedWinnings(); } catch (e) { console.log('Unclaimed check error:', e); }
                 try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
+                try { await loadBetHistory(); } catch (e) { console.log('Bet history load error:', e); }
 
-                // Always update unclaimed UI
-                updateUnclaimedUI();
+                // Show game balance panel when wallet connected
+                document.getElementById('gameBalancePanel').style.display = 'block';
 
             } catch (error) {
                 console.error('Wallet connection failed:', error);
@@ -1343,28 +2654,118 @@
 
                 // Detect cycle change - check result and reset
                 if (lastCycleId && lastCycleId !== data.cycleId) {
-                    if (myVote) checkMyResult(currentBlockchainRoundId || lastCycleId);
-                    // Reset for new cycle IMMEDIATELY (don't wait for blockchain)
+                    // Show result popup if had bet
+                    if (myVote) {
+                        checkLastBetResult(lastCycleId);
+                    }
+                    // Reset UI for new cycle
                     myVote = null;
                     myBetAmount = 0;
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                     document.getElementById('yourBet').style.display = 'none';
-                    // IMMEDIATELY reset pool display
-                    poolData = { mint: 0, neutral: 0, burn: 0 };
-                    updatePoolDisplay();
-                    // Then refresh from blockchain in background
-                    loadPoolFromContract();
+                    document.getElementById('pendingBetInfo').classList.remove('active');
+
+                    // Refresh last cycle data after delay (allow MongoDB to save)
+                    setTimeout(() => loadLastCycleData(), 2000);
+
+                    // Show winner celebration briefly if not shown yet
+                    if (!window.celebrationShown && currentRaceScore !== 50) {
+                        let winner = 'NEUTRAL';
+                        if (currentRaceScore <= 40) winner = 'MINT';
+                        else if (currentRaceScore >= 60) winner = 'BURN';
+                        console.log('🏆 Cycle ended! Winner:', winner, 'Score:', currentRaceScore);
+                        showWinnerCelebration(winner);
+                        // Hide celebration after 3 seconds
+                        setTimeout(() => hideWinnerCelebration(), 3000);
+                    }
+
+                    // Reset coin race immediately for new round
+                    resetCoinRace();
+
+                    // Refresh balance and history
+                    if (walletAddress) {
+                        loadTokenBalance();
+                        loadV2GameBalance();
+                        setTimeout(() => loadBetHistory(), 2000);
+                    }
                 }
                 lastCycleId = data.cycleId;
 
-                // Restore vote UI if already voted this cycle
-                if (data.userVote && !myVote) {
+                // ===== USE SERVER DATA FOR BET STATE (single source of truth) =====
+                if (data.userPendingBet) {
+                    // User has pending bet for this round from server
+                    myVote = data.userPendingBet.prediction;
+                    myBetAmount = data.userPendingBet.amount || BET_AMOUNT;
+
+                    // Update UI to show bet is placed
+                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                    const btnId = `vote${myVote.charAt(0).toUpperCase() + myVote.slice(1).toLowerCase()}`;
+                    document.getElementById(btnId)?.classList.add('selected');
+
+                    document.getElementById('yourBet').style.display = 'block';
+                    document.getElementById('yourBetAmount').textContent = myBetAmount;
+                    document.getElementById('yourBetChoice').textContent = myVote;
+                } else if (data.userVote && !myVote) {
+                    // Legacy vote check (fallback)
                     myVote = data.userVote;
                     myBetAmount = BET_AMOUNT;
-                    document.getElementById(`vote${data.userVote.charAt(0) + data.userVote.slice(1).toLowerCase()}`).classList.add('selected');
+                    const btnId = `vote${myVote.charAt(0).toUpperCase() + myVote.slice(1).toLowerCase()}`;
+                    document.getElementById(btnId)?.classList.add('selected');
                     document.getElementById('yourBet').style.display = 'block';
                     document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
-                    document.getElementById('yourBetChoice').textContent = data.userVote;
+                    document.getElementById('yourBetChoice').textContent = myVote;
+                }
+
+                // ===== USE SERVER POOL DATA =====
+                if (data.pools && typeof data.pools.mint === 'number') {
+                    const total = data.poolTotal || (data.pools.mint + data.pools.neutral + data.pools.burn);
+                    const poolTotalEl = document.getElementById('poolTotal');
+                    if (poolTotalEl && total >= 0) poolTotalEl.textContent = total.toLocaleString() + ' $SCNDL';
+
+                    if (total > 0) {
+                        const mintPct = (data.pools.mint / total * 100).toFixed(0);
+                        const neutralPct = (data.pools.neutral / total * 100).toFixed(0);
+                        const burnPct = (data.pools.burn / total * 100).toFixed(0);
+
+                        const barMint = document.getElementById('poolBarMint');
+                        const barNeutral = document.getElementById('poolBarNeutral');
+                        const barBurn = document.getElementById('poolBarBurn');
+                        if (barMint) barMint.style.width = mintPct + '%';
+                        if (barNeutral) barNeutral.style.width = neutralPct + '%';
+                        if (barBurn) barBurn.style.width = burnPct + '%';
+
+                        const amtMint = document.getElementById('poolMint');
+                        const amtNeutral = document.getElementById('poolNeutral');
+                        const amtBurn = document.getElementById('poolBurn');
+                        if (amtMint) amtMint.textContent = data.pools.mint.toLocaleString();
+                        if (amtNeutral) amtNeutral.textContent = data.pools.neutral.toLocaleString();
+                        if (amtBurn) amtBurn.textContent = data.pools.burn.toLocaleString();
+                    } else {
+                        const barMint = document.getElementById('poolBarMint');
+                        const barNeutral = document.getElementById('poolBarNeutral');
+                        const barBurn = document.getElementById('poolBarBurn');
+                        if (barMint) barMint.style.width = '33%';
+                        if (barNeutral) barNeutral.style.width = '34%';
+                        if (barBurn) barBurn.style.width = '33%';
+
+                        const amtMint = document.getElementById('poolMint');
+                        const amtNeutral = document.getElementById('poolNeutral');
+                        const amtBurn = document.getElementById('poolBurn');
+                        if (amtMint) amtMint.textContent = '0';
+                        if (amtNeutral) amtNeutral.textContent = '0';
+                        if (amtBurn) amtBurn.textContent = '0';
+                    }
+                }
+
+                // ===== UPDATE COIN RACE based on Oracle score and cycle time =====
+                if (typeof data.cycleProgress === 'number' && typeof data.averageScore === 'number') {
+                    // Use Oracle score and cycle progress for race
+                    updateCoinRace(data.cycleProgress, data.averageScore, data.articlesCount || 0);
+                } else if (typeof data.cycleTimeRemaining === 'number' && typeof data.cycleTotal === 'number') {
+                    // Fallback: calculate progress from time
+                    const progress = 1 - (data.cycleTimeRemaining / data.cycleTotal);
+                    const score = data.averageScore || 50;
+                    updateCoinRace(Math.max(0, Math.min(1, progress)), score, data.articlesCount || 0);
                 }
 
                 document.getElementById('currentCycle').textContent = '#' + data.cycleId;
@@ -1372,7 +2773,6 @@
 
                 const timerEl = document.getElementById('votingTimer');
                 if (data.votingOpen) {
-                    // Sync local timer from server
                     localTimerValue = Math.floor(data.votingTimeRemaining / 1000);
                     localTimerMode = 'OPEN';
                     timerEl.classList.remove('closed');
@@ -1382,102 +2782,722 @@
                     timerEl.classList.add('closed');
                 }
                 lastServerSync = Date.now();
-                // Display is updated by tickLocalTimer()
 
-                // Can only vote if not already voted
-                const canVote = walletAddress && data.votingOpen && !myVote;
+                // ===== VOTE BUTTON STATE (use server pendingBet as truth) =====
+                let canVote = false;
+                const gameBalText = document.getElementById('gameBalance').textContent || '0';
+                const currentGameBalance = Number(gameBalText.replace(/[^0-9.-]/g, '')) || 0;
+
+                // Can vote if: wallet connected, voting open, has balance, NO pending bet
+                const hasPendingBet = !!data.userPendingBet || !!myVote;
+                if (walletAddress && data.votingOpen && currentGameBalance >= BET_AMOUNT && !hasPendingBet) {
+                    canVote = true;
+                }
+
                 document.getElementById('voteMint').disabled = !canVote;
                 document.getElementById('voteNeutral').disabled = !canVote;
                 document.getElementById('voteBurn').disabled = !canVote;
-            } catch (error) { }
+            } catch (error) {
+                console.log('updateGameStatus error:', error);
+            }
         }
 
+        // V2: Instant bet via API (no blockchain call per bet!)
         async function vote(choice) {
             if (!walletAddress) {
                 showMessage('Connect wallet first!', 'error');
                 return;
             }
+
+            // DISABLE BUTTONS IMMEDIATELY to prevent double-clicks
+            document.getElementById('voteMint').disabled = true;
+            document.getElementById('voteNeutral').disabled = true;
+            document.getElementById('voteBurn').disabled = true;
+
+            try {
+                // Check game balance from API afresh
+                const balanceData = await GameAPI.getBalance(walletAddress);
+
+                if (balanceData.balance < BET_AMOUNT) {
+                    showMessage(`Insufficient game balance! Need ${BET_AMOUNT} SCNDL. You have ${balanceData.balance}. Deposit first!`, 'error');
+                    updateGameStatus(); // Re-enable buttons
+                    return;
+                }
+
+                // Note: Server will check if already bet - don't duplicate check here 
+                // (frontend currentCycleId may be stale)
+
+                showMessage('Placing bet...', 'info');
+
+                // V2: Instant API call - NO MetaMask popup!
+                const result = await GameAPI.placeBet(walletAddress, choice, BET_AMOUNT);
+
+                if (!result.success) {
+                    showMessage(result.error || 'Bet failed', 'error');
+                    setTimeout(updateGameStatus, 500); // Re-enable on error
+                    return;
+                }
+
+                // Success - KEEP BUTTONS DISABLED (already bet this round)
+                myVote = choice;
+                myBetAmount = BET_AMOUNT;
+
+                showMessage(`✓ Bet placed: ${BET_AMOUNT} SCNDL on ${choice}`, 'success');
+                document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
+
+                // Show bet info
+                document.getElementById('yourBet').style.display = 'block';
+                document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                document.getElementById('yourBetChoice').textContent = choice;
+
+                // Update game balance display
+                document.getElementById('gameBalance').textContent = result.newBalance.toLocaleString() + ' SCNDL';
+
+                // Show pending bet info
+                document.getElementById('pendingBetInfo').classList.add('active');
+                document.getElementById('pendingBetAmount').textContent = BET_AMOUNT;
+                document.getElementById('pendingBetChoice').textContent = choice;
+
+                // Refresh V2 round info for pool display
+                loadV2RoundInfo();
+
+                // Buttons stay disabled until next round!
+
+            } catch (error) {
+                console.error('V2 Bet error:', error);
+                showMessage('Bet failed: ' + (error.message || 'Unknown error'), 'error');
+                setTimeout(updateGameStatus, 1000); // Re-enable on error
+            }
+        }
+
+        // V2: Load game balance from API
+        async function loadV2GameBalance() {
+            if (!walletAddress) return;
+            try {
+                const data = await GameAPI.getBalance(walletAddress);
+                document.getElementById('gameBalance').textContent = data.balance.toLocaleString() + ' SCNDL';
+                document.getElementById('gameBalancePanel').style.display = 'block';
+
+                // Show pending bet if exists (trust server data, don't compare with local roundId)
+                if (data.pendingBet && data.pendingBet.roundId) {
+                    myVote = data.pendingBet.prediction;
+                    document.getElementById('pendingBetInfo').classList.add('active');
+                    document.getElementById('pendingBetAmount').textContent = data.pendingBet.amount;
+                    document.getElementById('pendingBetChoice').textContent = data.pendingBet.prediction;
+
+                    // Also show in "Your Bet" section
+                    document.getElementById('yourBet').style.display = 'block';
+                    document.getElementById('yourBetAmount').textContent = data.pendingBet.amount;
+                    document.getElementById('yourBetChoice').textContent = data.pendingBet.prediction;
+
+                    // Disable vote buttons since there's a pending bet
+                    document.getElementById('voteMint').disabled = true;
+                    document.getElementById('voteNeutral').disabled = true;
+                    document.getElementById('voteBurn').disabled = true;
+                } else {
+                    // No pending bet - reset UI
+                    myVote = null;
+                    document.getElementById('pendingBetInfo').classList.remove('active');
+                    document.getElementById('yourBet').style.display = 'none';
+                }
+
+                // Update stats
+                if (data.stats) {
+                    console.log('Updating stats:', data.stats);
+                    document.getElementById('userWon').textContent = data.stats.totalWon.toLocaleString();
+                    document.getElementById('userLost').textContent = data.stats.totalLost.toLocaleString();
+                    document.getElementById('winRate').textContent = data.stats.winRate + '%';
+                } else {
+                    console.log('No stats in response!');
+                }
+            } catch (e) {
+                console.log('Load V2 balance error:', e);
+            }
+        }
+
+        // V2: Load round info from API
+        async function loadV2RoundInfo() {
+            try {
+                const data = await GameAPI.getRound();
+
+                // Update pool display
+                poolData = {
+                    mint: data.pools?.mint || 0,
+                    neutral: data.pools?.neutral || 0,
+                    burn: data.pools?.burn || 0
+                };
+                updatePoolDisplay();
+                document.getElementById('poolTotal').textContent = data.totalPool.toLocaleString() + ' $SCNDL';
+            } catch (e) {
+                console.log('Load V2 round error:', e);
+            }
+        }
+
+        // Deposit modal state
+        let depositMode = 'deposit'; // 'deposit' or 'withdraw'
+
+        // V2: Open styled deposit modal
+        function openDepositModal() {
+            try {
+                depositMode = 'deposit';
+                const title = document.getElementById('depositModalTitle');
+                const btn = document.getElementById('depositConfirmBtn');
+                const note = document.getElementById('depositNote');
+                const walletBal = document.getElementById('modalWalletBalance');
+
+                if (!title || !btn) {
+                    console.error('Critical: Modal elements not found');
+                    alert('Error: Modal elements missing');
+                    return;
+                }
+
+                title.textContent = 'DEPOSIT SCNDL';
+                btn.textContent = 'DEPOSIT';
+                btn.classList.remove('withdraw');
+                note.textContent = 'Minimum: 1,000 SCNDL';
+                walletBal.textContent = userTokenBalance.toLocaleString() + ' SCNDL';
+
+                // Get game balance
+                const gameBalEl = document.getElementById('gameBalance');
+                document.getElementById('modalGameBalance').textContent = gameBalEl?.textContent || '0 SCNDL';
+
+                document.getElementById('depositAmountInput').value = '';
+                document.getElementById('depositModal').classList.add('active');
+                console.log('Deposit modal opened');
+            } catch (e) {
+                console.error('Error opening deposit modal:', e);
+            }
+        }
+
+        // V2: Open styled withdraw modal
+        function openWithdrawModal() {
+            depositMode = 'withdraw';
+            document.getElementById('depositModalTitle').textContent = 'WITHDRAW SCNDL';
+            document.getElementById('depositConfirmBtn').textContent = 'WITHDRAW';
+            document.getElementById('depositConfirmBtn').classList.add('withdraw');
+            document.getElementById('depositNote').textContent = 'Withdraw to your wallet';
+            document.getElementById('modalWalletBalance').textContent = userTokenBalance.toLocaleString() + ' SCNDL';
+
+            const gameBalEl = document.getElementById('gameBalance');
+            document.getElementById('modalGameBalance').textContent = gameBalEl?.textContent || '0 SCNDL';
+
+            document.getElementById('depositAmountInput').value = '';
+            document.getElementById('depositModal').classList.add('active');
+        }
+
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.remove('active');
+        }
+
+        // Result Popup - Show win/lose after round ends
+        function showRoundResult(won, amount, prediction, actualResult) {
+            const popup = document.getElementById('resultPopup');
+            const icon = document.getElementById('resultIcon');
+            const text = document.getElementById('resultText');
+            const points = document.getElementById('resultPoints');
+            const streak = document.getElementById('resultStreak');
+
+            if (won) {
+                icon.textContent = '🎉';
+                text.textContent = 'YOU WON!';
+                text.style.color = 'var(--accent-green)';
+                points.textContent = `+${amount.toLocaleString()} SCNDL`;
+                points.style.color = 'var(--accent-green)';
+            } else {
+                icon.textContent = '😔';
+                text.textContent = 'YOU LOST';
+                text.style.color = 'var(--accent-red)';
+                points.textContent = `-${amount.toLocaleString()} SCNDL`;
+                points.style.color = 'var(--accent-red)';
+            }
+
+            streak.textContent = `You bet ${prediction} • Result: ${actualResult}`;
+
+            popup.classList.add('active');
+
+            // Auto-close after 4 seconds
+            setTimeout(() => {
+                popup.classList.remove('active');
+            }, 4000);
+        }
+
+        function closeResultPopup() {
+            document.getElementById('resultPopup').classList.remove('active');
+        }
+
+        // Check last bet result after cycle change
+        async function checkLastBetResult(previousCycleId) {
+            if (!walletAddress) return;
+
+            try {
+                // Get the completed cycle result
+                const res = await fetch('/api/news');
+                const data = await res.json();
+
+                if (data.completedCycles && data.completedCycles.length > 0) {
+                    const lastCycle = data.completedCycles.find(c => c.id === previousCycleId);
+
+                    if (lastCycle && betHistoryData.length > 0) {
+                        // Find bet for this cycle
+                        const myBet = betHistoryData.find(b => b.roundId === previousCycleId);
+
+                        if (myBet) {
+                            const actualResult = (lastCycle.action || 'NEUTRAL').toUpperCase();
+                            const won = myBet.prediction === actualResult;
+                            const amount = won ? (myBet.payout || myBet.amount) : myBet.amount;
+
+                            showRoundResult(won, amount, myBet.prediction, actualResult);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Check last bet result error:', e);
+            }
+        }
+
+        // Rules Modal
+        function openRules() {
+            document.getElementById('rulesModal').classList.add('active');
+        }
+
+        function closeRules() {
+            document.getElementById('rulesModal').classList.remove('active');
+        }
+
+        // Last Cycle Modal
+
+        async function openLastCycle() {
+            console.log('openLastCycle called, data:', lastCycleData);
+
+            // If no data, try to load it first
+            if (!lastCycleData) {
+                console.log('No last cycle data, fetching...');
+                await loadLastCycleData();
+            }
+
+            if (!lastCycleData) {
+                console.log('Still no data after fetch');
+                alert('No completed cycles yet');
+                return;
+            }
+
+            document.getElementById('modalCycleId').textContent = lastCycleData.id;
+            document.getElementById('modalCycleAction').textContent = lastCycleData.action || 'NEUTRAL';
+            document.getElementById('modalCycleScore').textContent = (lastCycleData.averageScore || 50).toFixed(1);
+            document.getElementById('modalCycleRate').textContent = lastCycleData.ratePercentage || '0%';
+
+            // Color the action
+            const actionEl = document.getElementById('modalCycleAction');
+            actionEl.className = '';
+            if (lastCycleData.action === 'MINT') actionEl.style.color = 'var(--accent-green)';
+            else if (lastCycleData.action === 'BURN') actionEl.style.color = 'var(--accent-red)';
+            else actionEl.style.color = 'var(--accent-cyan)';
+
+            // Render articles list
+            const articlesEl = document.getElementById('modalArticlesList');
+            if (lastCycleData.articles && lastCycleData.articles.length > 0) {
+                articlesEl.innerHTML = lastCycleData.articles.map(article => {
+                    const scoreColor = article.score >= 60 ? 'var(--accent-green)' :
+                        article.score <= 40 ? 'var(--accent-red)' : 'var(--accent-cyan)';
+                    return `
+                        <div style="padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.75rem;">
+                            <div style="color: var(--text-primary); margin-bottom: 0.2rem;">${article.title || 'Untitled'}</div>
+                            <div style="display: flex; justify-content: space-between; color: var(--text-secondary);">
+                                <span>${article.category || 'news'}</span>
+                                <span style="color: ${scoreColor}; font-family: 'Orbitron';">Score: ${article.score}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                articlesEl.innerHTML = '<p class="text-secondary" style="text-align: center; font-size: 0.8rem;">No articles in this cycle</p>';
+            }
+
+            document.getElementById('lastCycleModal').classList.add('active');
+        }
+
+        function closeLastCycle() {
+            document.getElementById('lastCycleModal').classList.remove('active');
+        }
+
+        // Result Popup Functions
+        async function checkLastBetResult(prevCycleId) {
+            if (!walletAddress) return;
+
+            console.log('Checking result for cycle:', prevCycleId);
+
+            // Wait for server to process results
+            await new Promise(resolve => setTimeout(resolve, 2500));
+
+            try {
+                // Fetch updated bet history which includes the result
+                const res = await fetch(`/api/v2/history/${walletAddress}`);
+                const data = await res.json();
+
+                if (!data.history || data.history.length === 0) return;
+
+                // Find the bet for the previous cycle
+                const bet = data.history.find(b => b.roundId === prevCycleId);
+                if (!bet || bet.pending) return;
+
+                // Show popup
+                const popup = document.getElementById('resultPopup');
+                const icon = document.getElementById('resultIcon');
+                const title = document.getElementById('resultTitle');
+                const amount = document.getElementById('resultAmount');
+
+                popup.classList.remove('win', 'lose');
+
+                if (bet.won) {
+                    popup.classList.add('win');
+                    icon.textContent = '🎉';
+                    title.textContent = 'YOU WON!';
+                    amount.textContent = `+${bet.payout.toLocaleString()} SCNDL`;
+                } else {
+                    popup.classList.add('lose');
+                    icon.textContent = '😢';
+                    title.textContent = 'YOU LOST';
+                    amount.textContent = `-${bet.amount.toLocaleString()} SCNDL`;
+                }
+
+                popup.classList.add('active');
+
+                // Auto-close after 5 seconds
+                setTimeout(() => {
+                    popup.classList.remove('active');
+                }, 5000);
+
+            } catch (e) {
+                console.log('Error checking bet result:', e);
+            }
+        }
+
+        function closeResultPopup() {
+            document.getElementById('resultPopup').classList.remove('active');
+        }
+
+        // Load Last Cycle Data
+        async function loadLastCycleData() {
+            try {
+                const res = await fetch('/api/last-cycle');
+                const data = await res.json();
+
+                if (data.lastCycle) {
+                    lastCycleData = data.lastCycle;
+
+                    // Update button display
+                    document.getElementById('lastCycleNumber').textContent = lastCycleData.id;
+
+                    const resultEl = document.getElementById('lastCycleResult');
+                    const panelEl = document.getElementById('lastCyclePanel');
+                    const action = (lastCycleData.action || 'NEUTRAL').toUpperCase();
+                    resultEl.textContent = action;
+
+                    // Remove ALL color classes first
+                    panelEl.classList.remove('mint', 'burn', 'neutral');
+
+                    // Add correct color class based on action
+                    if (action === 'MINT') {
+                        panelEl.classList.add('mint');
+                    } else if (action === 'BURN') {
+                        panelEl.classList.add('burn');
+                    } else {
+                        panelEl.classList.add('neutral');
+                    }
+
+                    console.log('Last cycle loaded:', action, 'Panel classes:', panelEl.className);
+                }
+            } catch (e) {
+                console.log('Load last cycle error:', e);
+            }
+        }
+
+        // Load Bet History for player (preview and full list)
+        let betHistoryData = [];
+
+        async function loadBetHistory() {
+            if (!walletAddress) {
+                document.getElementById('betHistoryPanel').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('betHistoryPanel').style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/v2/history/${walletAddress}`);
+                const data = await res.json();
+                betHistoryData = data.history || [];
+
+                // Preview panel (show first 2-3 items)
+                const previewEl = document.getElementById('betHistoryPreview');
+                if (betHistoryData.length === 0) {
+                    previewEl.innerHTML = '<p class="text-secondary" style="text-align: center; font-size: 0.65rem;">No bets yet</p>';
+                } else {
+                    // Preview panel shows first 5 items
+                    previewEl.innerHTML = betHistoryData.slice(0, 5).map(bet => {
+                        const statusClass = bet.won ? 'win' : (bet.pending ? 'pending' : 'lose');
+                        const statusText = bet.won ? `+${bet.payout}` : (bet.pending ? '⏳' : `-${bet.amount}`);
+                        return `<div class="preview-item ${statusClass}"><span>#${bet.roundId} ${bet.prediction}</span><span>${statusText}</span></div>`;
+                    }).join('');
+                }
+            } catch (e) {
+                console.log('Load bet history error:', e);
+            }
+        }
+
+        // Bet History Modal
+        function openBetHistoryModal() {
+            document.getElementById('betHistoryModal').classList.add('active');
+            renderBetHistoryModal();
+        }
+
+        function closeBetHistoryModal() {
+            document.getElementById('betHistoryModal').classList.remove('active');
+        }
+
+        function renderBetHistoryModal() {
+            const listEl = document.getElementById('betHistoryList');
+            if (betHistoryData.length === 0) {
+                listEl.innerHTML = '<p class="text-secondary" style="text-align: center;">No bets yet</p>';
+                return;
+            }
+
+            listEl.innerHTML = betHistoryData.slice(0, 20).map(bet => {
+                const statusClass = bet.won ? 'win' : (bet.pending ? 'pending' : 'lose');
+                const statusText = bet.won ? `+${bet.payout} SCNDL` : (bet.pending ? 'Pending' : `-${bet.amount} SCNDL`);
+                const statusColor = bet.won ? 'var(--accent-green)' : (bet.pending ? 'var(--accent-cyan)' : 'var(--accent-red)');
+                return `
+                    <div class="leaderboard-item" style="border-left: 3px solid ${statusColor};">
+                        <span>#${bet.roundId}</span>
+                        <span>${bet.prediction}</span>
+                        <span style="color: ${statusColor};">${statusText}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Leaderboard Modal
+        let leaderboardData = [];
+
+        async function openLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.add('active');
+            document.getElementById('leaderboardSearch').value = '';
+            await loadLeaderboard();
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboardModal').classList.remove('active');
+        }
+
+        async function loadLeaderboard() {
+            const listEl = document.getElementById('leaderboardList');
+            const previewEl = document.getElementById('leaderboardPreview');
+
+            if (listEl) listEl.innerHTML = '<p class="text-secondary" style="text-align: center;">Loading...</p>';
+
+            try {
+                // Use V2 API for leaderboard (only real game results)
+                const res = await fetch('/api/v2/leaderboard?sortBy=profit');
+                const data = await res.json();
+                leaderboardData = data.leaderboard || [];
+
+                // Render full list in modal
+                renderLeaderboard(leaderboardData);
+
+                // Render preview (top 5 players)
+                if (previewEl && leaderboardData.length > 0) {
+                    previewEl.innerHTML = leaderboardData.slice(0, 5).map((player, index) => {
+                        const rank = index + 1;
+                        const wallet = player.wallet.slice(0, 6) + '...' + player.wallet.slice(-4);
+                        const profit = player.profit || 0;
+                        const profitColor = profit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                        const profitSign = profit >= 0 ? '+' : '';
+                        return `<div class="preview-item"><span>#${rank} ${wallet}</span><span style="color: ${profitColor};">${profitSign}${profit.toLocaleString()}</span></div>`;
+                    }).join('');
+                } else if (previewEl) {
+                    previewEl.innerHTML = '<p class="text-secondary" style="text-align: center; font-size: 0.65rem;">No players yet</p>';
+                }
+            } catch (e) {
+                if (listEl) listEl.innerHTML = '<p class="text-secondary" style="text-align: center;">Error loading</p>';
+                if (previewEl) previewEl.innerHTML = '<p class="text-secondary" style="text-align: center; font-size: 0.65rem;">Error</p>';
+            }
+        }
+
+        function renderLeaderboard(data) {
+            const listEl = document.getElementById('leaderboardList');
+
+            if (!data || data.length === 0) {
+                listEl.innerHTML = '<p class="text-secondary" style="text-align: center;">No players yet</p>';
+                return;
+            }
+
+            listEl.innerHTML = data.map((player, index) => {
+                const rank = index + 1;
+                const isTop3 = rank <= 3 ? 'top-3' : '';
+                const wallet = player.wallet.slice(0, 6) + '...' + player.wallet.slice(-4);
+                const profit = player.profit || 0;
+                const profitColor = profit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                const profitSign = profit >= 0 ? '+' : '';
+                return `
+                    <div class="leaderboard-item ${isTop3}">
+                        <span class="leaderboard-rank">#${rank}</span>
+                        <span class="leaderboard-wallet">${wallet}</span>
+                        <span class="leaderboard-balance" style="color: ${profitColor};">${profitSign}${profit.toLocaleString()} SCNDL</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterLeaderboard(query) {
+            if (!query) {
+                renderLeaderboard(leaderboardData);
+                return;
+            }
+
+            const q = query.toLowerCase();
+            const filtered = leaderboardData.filter(p =>
+                p.wallet.toLowerCase().includes(q) ||
+                p.wallet.slice(-4).toLowerCase().includes(q)
+            );
+            renderLeaderboard(filtered);
+        }
+
+        function setDepositAmount(amount) {
+            document.getElementById('depositAmountInput').value = amount;
+        }
+
+        function setMaxDeposit() {
+            if (depositMode === 'deposit') {
+                document.getElementById('depositAmountInput').value = Math.floor(userTokenBalance);
+            } else {
+                // For withdraw - use game balance
+                const gameBalText = document.getElementById('modalGameBalance').textContent;
+                const gameBalance = parseInt(gameBalText.replace(/[^\d]/g, '')) || 0;
+                document.getElementById('depositAmountInput').value = gameBalance;
+            }
+        }
+
+        async function confirmDeposit() {
+            const amount = Number(document.getElementById('depositAmountInput').value);
+
+            if (!amount || isNaN(amount) || amount <= 0) {
+                showMessage('Enter a valid amount', 'error');
+                return;
+            }
+
+            closeDepositModal();
+
+            if (depositMode === 'deposit') {
+                if (amount < 1000) {
+                    showMessage('Minimum deposit is 1,000 SCNDL', 'error');
+                    return;
+                }
+                await depositToGame(amount);
+            } else {
+                await withdrawFromGame(amount);
+            }
+        }
+
+        // Load V2 game balance from server
+        async function loadV2GameBalance() {
+            if (!walletAddress) return;
+
+            try {
+                const data = await GameAPI.getBalance(walletAddress);
+                const gameBalance = data.balance || 0;
+
+                // Update any game balance displays
+                const gameBalanceEl = document.getElementById('gameBalance');
+                if (gameBalanceEl) {
+                    gameBalanceEl.textContent = gameBalance.toLocaleString();
+                }
+
+                // Also update user balance stat card
+                // Update deposit modal game balance (NOT userBalance - that's wallet balance!)
+                const modalGameBalance = document.getElementById('modalGameBalance');
+                if (modalGameBalance) {
+                    modalGameBalance.textContent = gameBalance.toLocaleString() + ' SCNDL';
+                }
+
+                console.log('Game balance loaded:', gameBalance);
+
+                // Update stats
+                if (data.stats) {
+                    console.log('Updating stats:', data.stats);
+                    document.getElementById('userWon').textContent = data.stats.totalWon.toLocaleString();
+                    document.getElementById('userLost').textContent = data.stats.totalLost.toLocaleString();
+                    document.getElementById('winRate').textContent = data.stats.winRate + '%';
+                }
+
+                return gameBalance;
+            } catch (e) {
+                console.error('Error loading game balance:', e);
+                return 0;
+            }
+        }
+
+        // V2: Deposit to game contract
+        async function depositToGame(amount) {
             if (!gameContract || !tokenContract) {
-                showMessage('Wallet not properly connected', 'error');
+                alert('Connect wallet first');
                 return;
             }
 
             try {
-                // Convert prediction choice to contract format (1=MINT, 2=BURN, 3=NEUTRAL)
-                const predictionMap = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 };
-                const prediction = predictionMap[choice];
-
-                // Bet amount (100 SCNDL with 18 decimals)
-                const betAmount = ethers.parseEther(BET_AMOUNT.toString());
-
                 showMessage('Checking allowance...', 'info');
+                const depositAmount = ethers.parseEther(amount.toString());
 
-                // Step 1: Check current allowance
+                // Check allowance
                 const allowance = await tokenContract.allowance(walletAddress, WEB3_CONFIG.contracts.game);
-
-                // Step 2: If allowance insufficient, request approval
-                if (allowance < betAmount) {
-                    showMessage('Approve SCNDL spending in MetaMask...', 'info');
-
-                    // Approve a large amount so user doesn't have to approve every time
-                    const approveAmount = ethers.parseEther('10000000'); // 10M SCNDL
-                    const approveTx = await tokenContract.approve(WEB3_CONFIG.contracts.game, approveAmount);
-
-                    showMessage('Waiting for approval confirmation...', 'info');
+                if (allowance < depositAmount) {
+                    showMessage('Approve SCNDL in MetaMask...', 'info');
+                    const approveTx = await tokenContract.approve(WEB3_CONFIG.contracts.game, ethers.parseEther('10000000'));
                     await approveTx.wait();
-                    showMessage('Approved! Now placing bet...', 'success');
                 }
 
-                // Step 3: Place the bet
-                showMessage('Confirm bet in MetaMask...', 'info');
-                const betTx = await gameContract.placeBet(prediction, betAmount);
+                // Deposit
+                showMessage('Confirm deposit in MetaMask...', 'info');
+                const depositTx = await gameContract.deposit(depositAmount);
+                showMessage('Waiting for confirmation...', 'info');
+                await depositTx.wait();
 
-                showMessage('Waiting for transaction...', 'info');
-                await betTx.wait();
-
-                // Success!
-                myVote = choice;
-                myBetAmount = BET_AMOUNT;
-
-                // Notify server about the bet (for leaderboard tracking)
-                try {
-                    await fetch('/api/predict', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            wallet: walletAddress,
-                            prediction: choice,
-                            amount: BET_AMOUNT,
-                            txHash: betTx.hash
-                        })
-                    });
-                } catch (e) { console.log('Server sync skipped'); }
-
-                // Reload balance from blockchain
+                // Sync balance with server
+                await GameAPI.syncBalance(walletAddress);
+                await loadV2GameBalance();
                 await loadTokenBalance();
-                await loadPoolFromContract();
 
-                showMessage(`Bet placed: ${BET_AMOUNT} $SCNDL on ${choice} ✓`, 'success');
-                document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-                document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
-
-                // Show your bet info
-                document.getElementById('yourBet').style.display = 'block';
-                document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
-                document.getElementById('yourBetChoice').textContent = choice;
-                updatePoolDisplay();
-
+                showMessage(`✓ Deposited ${amount} SCNDL to game!`, 'success');
             } catch (error) {
-                console.error('Bet error:', error);
-                if (error.code === 'ACTION_REJECTED') {
-                    showMessage('Transaction rejected by user', 'error');
-                } else if (error.message.includes('Bet too small')) {
-                    showMessage('Bet amount too small (min 100 SCNDL)', 'error');
-                } else if (error.message.includes('Already bet')) {
-                    showMessage('Already bet this round', 'error');
-                } else {
-                    showMessage('Bet failed: ' + (error.reason || error.message), 'error');
-                }
+                console.error('Deposit error:', error);
+                showMessage('Deposit failed: ' + (error.reason || error.message), 'error');
+            }
+        }
+
+        // V2: Withdraw from game contract
+        async function withdrawFromGame(amount) {
+            if (!gameContract) {
+                alert('Connect wallet first');
+                return;
+            }
+
+            try {
+                showMessage('Confirm withdraw in MetaMask...', 'info');
+                const withdrawAmount = ethers.parseEther(amount.toString());
+                const withdrawTx = await gameContract.withdraw(withdrawAmount);
+
+                showMessage('Waiting for confirmation...', 'info');
+                await withdrawTx.wait();
+
+                // Sync balance with server
+                await GameAPI.syncBalance(walletAddress);
+                await loadV2GameBalance();
+                await loadTokenBalance();
+
+                showMessage(`✓ Withdrew ${amount} SCNDL from game!`, 'success');
+            } catch (error) {
+                console.error('Withdraw error:', error);
+                showMessage('Withdraw failed: ' + (error.reason || error.message), 'error');
             }
         }
 
@@ -1730,33 +3750,6 @@
             setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
         }
 
-        async function loadLeaderboard() {
-            try {
-                const res = await fetch('/api/leaderboard');
-                const data = await res.json();
-                const container = document.getElementById('leaderboard');
-
-                if (data.leaderboard.length === 0) {
-                    container.innerHTML = '<p class="text-secondary" style="text-align: center; padding: 2rem;">No predictions yet</p>';
-                    return;
-                }
-
-                container.innerHTML = data.leaderboard.map((user, i) => {
-                    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-                    const profit = user.profit || 0;
-                    const balance = user.balance || 10000;
-                    const profitColor = profit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-                    const profitSign = profit >= 0 ? '+' : '';
-                    return `
-                        <div class="leaderboard-item">
-                            <div class="leaderboard-rank ${rankClass}">#${i + 1}</div>
-                            <div class="leaderboard-wallet">${user.wallet}</div>
-                            <div class="leaderboard-points" style="color: ${profitColor}">${profitSign}${profit.toLocaleString()} $SCNDL</div>
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) { }
-        }
 
         async function loadLastCycle() {
             try {
@@ -1786,16 +3779,22 @@
 
         async function init() {
             // Load initial data without auto-connecting wallet
-            loadPoolFromContract();
+            // Note: Pool data comes from updateGameStatus() to avoid flickering
             await updateGameStatus();
             await loadLeaderboard();
             await loadLastCycle();
 
-            // Server sync every 3 seconds (for data updates)
+            // Server sync every 3 seconds (for data updates including pool)
             setInterval(updateGameStatus, 3000);
-            setInterval(loadPoolFromContract, 10000);
             setInterval(loadLeaderboard, 30000);
             setInterval(loadLastCycle, 30000);
+
+            // Refresh wallet balance periodically (if wallet connected)
+            setInterval(() => {
+                if (walletAddress && tokenContract) {
+                    loadTokenBalance();
+                }
+            }, 30000);
 
             // Local timer ticks every second (smooth countdown)
             setInterval(tickLocalTimer, 1000);
@@ -1815,125 +3814,60 @@
             await loadUnclaimedWinnings();
         }
 
-        // Restore current bet state from blockchain (after page refresh)
+        // Restore current bet state from server (after page refresh)
         async function restoreCurrentBet() {
-            if (!gameContract || !walletAddress) return;
+            if (!walletAddress) return;
 
             try {
-                const round = await gameContract.getCurrentRound();
-                const roundId = Number(round.id);
-                currentBlockchainRoundId = roundId;
+                // Use server API to get pending bet info
+                const res = await fetch(`/api/v2/balance/${walletAddress}`);
+                const data = await res.json();
 
-                // Check if user has bet in current round
-                const result = await gameContract.checkResult(roundId, walletAddress);
-                const participated = result[0];
-                const prediction = Number(result[1]); // 0=MINT, 1=NEUTRAL, 2=BURN
-
-                if (participated) {
-                    // Restore bet state
-                    const choices = ['MINT', 'NEUTRAL', 'BURN'];
-                    myVote = choices[prediction];
-                    myBetAmount = BET_AMOUNT;
+                if (data.pendingBet && data.pendingBet.roundId && data.pendingBet.prediction) {
+                    // User has pending bet in current round
+                    myVote = data.pendingBet.prediction;
+                    myBetAmount = data.pendingBet.amount || BET_AMOUNT;
 
                     // Highlight the button
-                    const choiceNames = ['Mint', 'Neutral', 'Burn'];
                     document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-                    document.getElementById(`vote${choiceNames[prediction]}`).classList.add('selected');
+                    const btnId = `vote${myVote.charAt(0).toUpperCase() + myVote.slice(1).toLowerCase()}`;
+                    document.getElementById(btnId)?.classList.add('selected');
 
                     // Show bet info
                     document.getElementById('yourBet').style.display = 'block';
-                    document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
+                    document.getElementById('yourBetAmount').textContent = myBetAmount;
                     document.getElementById('yourBetChoice').textContent = myVote;
 
-                    console.log('Restored bet state:', myVote);
+                    console.log('Restored bet state from server:', myVote);
                 }
             } catch (e) {
                 console.error('Restore bet error:', e);
             }
         }
 
-        // Restore session from localStorage if not expired (10 min timeout)
-        async function restoreSession() {
-            console.log('[SESSION] restoreSession called');
-            const savedWallet = localStorage.getItem('scandals_wallet');
-            const lastActive = parseInt(localStorage.getItem('scandals_lastActive') || '0');
-            const TEN_MINUTES = 10 * 60 * 1000;
-
-            if (!savedWallet) {
-                console.log('[SESSION] No saved wallet found');
-                return;
-            }
-
-            console.log('[SESSION] Found saved wallet:', savedWallet);
-            console.log('[SESSION] Last active:', new Date(lastActive).toISOString());
-
-            // Check if session expired (10 minutes of inactivity)
-            if (Date.now() - lastActive > TEN_MINUTES) {
-                localStorage.removeItem('scandals_wallet');
-                localStorage.removeItem('scandals_lastActive');
-                console.log('[SESSION] Session expired, please reconnect');
-                return;
-            }
-
-            console.log('[SESSION] Session valid, restoring...');
-
-            // Try to restore connection
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                    if (accounts.length > 0 && accounts[0].toLowerCase() === savedWallet.toLowerCase()) {
-                        // Same wallet still connected, restore session
-                        walletAddress = accounts[0];
-                        web3Provider = new ethers.BrowserProvider(window.ethereum);
-                        web3Signer = await web3Provider.getSigner();
-                        tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
-                        gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
-
-                        document.getElementById('connectWallet').textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
-                        document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
-
-                        // Update last active time
-                        localStorage.setItem('scandals_lastActive', Date.now().toString());
-
-                        // Load data independently (don't let one failure block others)
-                        try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
-                        try { await loadPoolFromContract(); } catch (e) { console.log('Pool load error:', e); }
-                        try { await loadUserStats(); } catch (e) { console.log('Stats load error:', e); }
-                        try { await checkUnclaimedWinnings(); } catch (e) { console.log('Unclaimed check error:', e); }
-                        try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
-
-                        // Always update unclaimed UI even if some load failed
-                        updateUnclaimedUI();
-
-                        console.log('[SESSION] Session restored for:', walletAddress);
-                    }
-                } catch (e) {
-                    console.log('Could not restore session:', e);
-                }
-            }
+        // Clear session on page load (user requested NO persistence)
+        function clearSessionOnLoad() {
+            console.log('[SESSION] Clearing session on page load');
+            localStorage.removeItem('scandals_wallet');
+            localStorage.removeItem('scandals_lastActive');
+            // Reset all wallet state
+            walletAddress = null;
+            web3Provider = null;
+            web3Signer = null;
+            tokenContract = null;
+            gameContract = null;
+            myVote = null;
+            myBetAmount = 0;
         }
 
-        // Update activity timestamp on user actions
-        function updateActivity() {
-            if (walletAddress) {
-                localStorage.setItem('scandals_lastActive', Date.now().toString());
-            }
-        }
+        // Call immediately on load - forces fresh connection each time
+        clearSessionOnLoad();
 
-        // Track user activity
-        document.addEventListener('click', updateActivity);
-        document.addEventListener('keypress', updateActivity);
+        // Load last cycle data for panel display
+        loadLastCycleData();
 
+        // Start game status updates
         init();
-        // Try to restore session after init (async)
-        (async () => {
-            console.log('[SESSION] Checking for saved session...');
-            const saved = localStorage.getItem('scandals_wallet');
-            console.log('[SESSION] Saved wallet:', saved);
-            if (saved) {
-                await restoreSession();
-            }
-        })();
     </script>
 </body>
 

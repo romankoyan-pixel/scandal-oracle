@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCANDAL - Litepaper</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,9 +159,9 @@
                             <h4>Cycle Calculation</h4>
                             <p>Every 2 minutes, articles are averaged to determine the cycle's overall sentiment:</p>
                             <ul>
-                                <li><strong>0-32:</strong> MINT Zone — Tokens released from reserve</li>
-                                <li><strong>33-66:</strong> NEUTRAL — No supply change</li>
-                                <li><strong>67-100:</strong> BURN Zone — Tokens burned from reserve</li>
+                                <li><strong>0-39:</strong> MINT Zone — Tokens released from reserve</li>
+                                <li><strong>40-60:</strong> NEUTRAL — No supply change</li>
+                                <li><strong>61-100:</strong> BURN Zone — Tokens burned from reserve</li>
                             </ul>
                         </div>
                     </div>
@@ -187,67 +188,67 @@
                     </thead>
                     <tbody>
                         <tr class="mint-row">
-                            <td>0-6</td>
+                            <td>0-8</td>
                             <td>MINT</td>
                             <td>0.30%</td>
                             <td>Strong positive sentiment</td>
                         </tr>
                         <tr class="mint-row">
-                            <td>7-13</td>
+                            <td>9-16</td>
                             <td>MINT</td>
                             <td>0.25%</td>
                             <td>Positive sentiment</td>
                         </tr>
                         <tr class="mint-row">
-                            <td>14-19</td>
+                            <td>17-24</td>
                             <td>MINT</td>
                             <td>0.20%</td>
                             <td>Moderate positive</td>
                         </tr>
                         <tr class="mint-row">
-                            <td>20-26</td>
+                            <td>25-32</td>
                             <td>MINT</td>
                             <td>0.15%</td>
                             <td>Slight positive</td>
                         </tr>
                         <tr class="mint-row">
-                            <td>27-32</td>
+                            <td>33-39</td>
                             <td>MINT</td>
                             <td>0.10%</td>
                             <td>Minimal positive</td>
                         </tr>
                         <tr class="neutral-row">
-                            <td>33-66</td>
+                            <td>40-60</td>
                             <td>NEUTRAL</td>
                             <td>0%</td>
                             <td>No change</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>67-73</td>
+                            <td>61-67</td>
                             <td>BURN</td>
                             <td>0.10%</td>
                             <td>Minimal negative</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>74-80</td>
+                            <td>68-75</td>
                             <td>BURN</td>
                             <td>0.15%</td>
                             <td>Slight negative</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>81-86</td>
+                            <td>76-83</td>
                             <td>BURN</td>
                             <td>0.20%</td>
                             <td>Moderate scandal</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>87-93</td>
+                            <td>84-91</td>
                             <td>BURN</td>
                             <td>0.25%</td>
                             <td>Major scandal</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>94-100</td>
+                            <td>92-100</td>
                             <td>BURN</td>
                             <td>0.30%</td>
                             <td>Critical crisis</td>
@@ -276,62 +277,102 @@
                     </div>
                     <div class="token-stat">
                         <span class="token-label">Network</span>
-                        <span class="token-value">TBD</span>
+                        <span class="token-value">Base</span>
                     </div>
                 </div>
 
                 <h3>Distribution</h3>
                 <div class="distribution-chart">
-                    <div class="distribution-item" style="--percent: 40%;">
+                    <div class="distribution-item" style="--percent: 60%;">
                         <div class="distribution-bar liquidity"></div>
                         <div class="distribution-info">
-                            <span class="distribution-label">Liquidity Pool</span>
-                            <span class="distribution-value">400,000,000 (40%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 20%;">
-                        <div class="distribution-bar public"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Public Sale</span>
-                            <span class="distribution-value">200,000,000 (20%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 20%;">
-                        <div class="distribution-bar reserve"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Oracle Reserve</span>
-                            <span class="distribution-value">200,000,000 (20%)</span>
+                            <span class="distribution-label">Liquidity Pool (DEX)</span>
+                            <span class="distribution-value">600,000,000 (60%)</span>
                         </div>
                     </div>
                     <div class="distribution-item" style="--percent: 10%;">
                         <div class="distribution-bar team"></div>
                         <div class="distribution-info">
-                            <span class="distribution-label">Team (Vested)</span>
-                            <span class="distribution-value">100,000,000 (10%)</span>
+                            <span class="distribution-label">Team & Development</span>
+                            <span class="distribution-value">100,000,000 (10%) — 24mo vesting</span>
                         </div>
                     </div>
                     <div class="distribution-item" style="--percent: 10%;">
                         <div class="distribution-bar marketing"></div>
                         <div class="distribution-info">
-                            <span class="distribution-label">Marketing & Development</span>
+                            <span class="distribution-label">Marketing</span>
                             <span class="distribution-value">100,000,000 (10%)</span>
+                        </div>
+                    </div>
+                    <div class="distribution-item" style="--percent: 10%;">
+                        <div class="distribution-bar public"></div>
+                        <div class="distribution-info">
+                            <span class="distribution-label">Community & Airdrops</span>
+                            <span class="distribution-value">100,000,000 (10%)</span>
+                        </div>
+                    </div>
+                    <div class="distribution-item" style="--percent: 5%;">
+                        <div class="distribution-bar reserve"></div>
+                        <div class="distribution-info">
+                            <span class="distribution-label">Advisors & Partners</span>
+                            <span class="distribution-value">50,000,000 (5%)</span>
+                        </div>
+                    </div>
+                    <div class="distribution-item" style="--percent: 5%;">
+                        <div class="distribution-bar reserve"></div>
+                        <div class="distribution-info">
+                            <span class="distribution-label">Treasury</span>
+                            <span class="distribution-value">50,000,000 (5%)</span>
                         </div>
                     </div>
                 </div>
 
-                <h3>Oracle Reserve Mechanics</h3>
+                <h3>Oracle Reserve (Dynamic Supply)</h3>
                 <p>
-                    The Oracle Reserve is the heart of SCANDAL's dynamic tokenomics. This 200M token reserve
-                    is managed exclusively by the Oracle smart contract:
+                    In addition to the fixed distribution, the Oracle manages a <strong>virtual reserve</strong>
+                    of up to 200M tokens that can be minted or burned based on news sentiment:
                 </p>
                 <ul>
-                    <li><strong>BURN Events:</strong> Tokens are sent from Oracle Reserve to the dead address
-                        (0x000...dEaD), permanently removing them from circulation.</li>
-                    <li><strong>MINT Events:</strong> Tokens are released from Oracle Reserve back into the
-                        Liquidity Pool, increasing circulating supply.</li>
-                    <li><strong>Reserve Limits:</strong> Minimum 50M tokens must remain in reserve to prevent
-                        excessive burning. Maximum 400M cap prevents over-minting.</li>
+                    <li><strong>BURN Events:</strong> When sentiment is negative (scandals, crises), tokens are sent
+                        to dead address, permanently reducing supply.</li>
+                    <li><strong>MINT Events:</strong> When sentiment is positive, new tokens are released into the
+                        Liquidity Pool.</li>
+                    <li><strong>Reserve Limits:</strong> Min 50M, Max 400M — prevents extreme supply changes.</li>
+                    <li><strong>Cooldown:</strong> 60 seconds minimum between Oracle actions.</li>
                 </ul>
+
+                <h3>Prediction Game</h3>
+                <p>
+                    SCANDAL features a unique <strong>Prediction Game</strong> where players bet on the next
+                    Oracle action (<span style="color: #22c55e;">MINT</span>, <span
+                        style="color: #3b82f6;">NEUTRAL</span>, or <span style="color: #ef4444;">BURN</span>) based on
+                    their reading of global news sentiment.
+                </p>
+                <div class="solution-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="solution-card">
+                        <div class="solution-icon">🎮</div>
+                        <h3>How It Works</h3>
+                        <ul style="text-align: left; font-size: 0.9rem;">
+                            <li>Deposit SCNDL tokens to your game balance</li>
+                            <li>Place bets on MINT, NEUTRAL, or BURN during voting window</li>
+                            <li>Oracle announces result after news analysis</li>
+                            <li>Winners share the losing pool (totalizator)</li>
+                            <li>Withdraw winnings anytime</li>
+                        </ul>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">💰</div>
+                        <h3>Game Fees</h3>
+                        <ul style="text-align: left; font-size: 0.9rem;">
+                            <li><strong>3%</strong> — Platform fee (operations)</li>
+                            <li><strong>2%</strong> — Auto-burn (deflationary)</li>
+                            <li><strong>95%</strong> — Winners pool</li>
+                        </ul>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            No limit on winnings — depends on pool ratio!
+                        </p>
+                    </div>
+                </div>
 
                 <h3>Transaction Tax</h3>
                 <p>
@@ -354,10 +395,22 @@
                         <p>Automatically added to liquidity pool, ensuring stable trading.</p>
                     </div>
                 </div>
-                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
-                    <strong>Note:</strong> The 3% tax applies to both buying and selling. This creates a sustainable
-                    revenue model while providing additional deflationary pressure through auto-burns.
-                </p>
+
+                <h3>Security Features</h3>
+                <div class="highlight-box">
+                    <ul style="margin: 0; padding-left: 1.2rem;">
+                        <li><strong>24h Oracle Timelock:</strong> Any change to Oracle address requires 24h delay —
+                            users can withdraw before changes take effect.</li>
+                        <li><strong>Bet Verification:</strong> All bets are stored on-chain and verified before payouts.
+                        </li>
+                        <li><strong>Double-Claim Protection:</strong> Each bet can only be claimed once.</li>
+                        <li><strong>Payout Limits:</strong> Total payouts cannot exceed the prize pool.</li>
+                        <li><strong>Emergency Withdraw:</strong> Users can always withdraw their funds, even if contract
+                            is paused.</li>
+                        <li><strong>Reentrancy Protection:</strong> All financial functions are protected against
+                            reentrancy attacks.</li>
+                    </ul>
+                </div>
             </section>
 
             <!-- Section 6: Roadmap -->
@@ -368,39 +421,43 @@
                     <div class="roadmap-phase">
                         <div class="phase-marker active"></div>
                         <div class="phase-content">
-                            <h3>Phase 1: Foundation</h3>
+                            <h3>Phase 1: Foundation ✅</h3>
                             <ul>
-                                <li>Oracle development and testing</li>
-                                <li>AI sentiment analysis integration</li>
-                                <li>Dashboard and visualization</li>
-                                <li>Smart contract development</li>
-                                <li>Security audits</li>
+                                <li>✅ Oracle development and testing</li>
+                                <li>✅ AI sentiment analysis (Gemini 2.0)</li>
+                                <li>✅ Real-time dashboard</li>
+                                <li>✅ Smart contracts (Token + Game V2)</li>
+                                <li>✅ Security audit and hardening</li>
+                                <li>✅ Prediction Game development</li>
+                                <li>✅ Base Sepolia testnet deployment</li>
                             </ul>
                         </div>
                     </div>
                     <div class="roadmap-phase">
-                        <div class="phase-marker"></div>
+                        <div class="phase-marker active"></div>
                         <div class="phase-content">
-                            <h3>Phase 2: Launch</h3>
+                            <h3>Phase 2: Launch 🚀</h3>
                             <ul>
-                                <li>Token launch and initial DEX listing</li>
-                                <li>Oracle goes live on mainnet</li>
-                                <li>Community building</li>
+                                <li>Base mainnet deployment</li>
+                                <li>Uniswap V3 liquidity</li>
+                                <li>Prediction Game live</li>
+                                <li>Community building (Telegram, Twitter)</li>
                                 <li>Marketing campaign</li>
-                                <li>Influencer partnerships</li>
+                                <li>First 1000 holders milestone</li>
                             </ul>
                         </div>
                     </div>
                     <div class="roadmap-phase">
                         <div class="phase-marker"></div>
                         <div class="phase-content">
-                            <h3>Phase 3: Expansion</h3>
+                            <h3>Phase 3: Growth</h3>
                             <ul>
-                                <li>CEX listings</li>
-                                <li>Additional news sources integration</li>
-                                <li>Mobile app development</li>
+                                <li>CEX listings (MEXC, Gate.io)</li>
+                                <li>Additional news sources</li>
+                                <li>Leaderboard & tournaments</li>
+                                <li>Mobile-optimized interface</li>
                                 <li>API for third-party integrations</li>
-                                <li>Governance token launch</li>
+                                <li>Influencer partnerships</li>
                             </ul>
                         </div>
                     </div>
@@ -409,11 +466,12 @@
                         <div class="phase-content">
                             <h3>Phase 4: Evolution</h3>
                             <ul>
-                                <li>Cross-chain deployment</li>
-                                <li>Advanced AI models (few-shot learning)</li>
-                                <li>Prediction markets integration</li>
+                                <li>Cross-chain deployment (Arbitrum, Polygon)</li>
+                                <li>Advanced AI models</li>
+                                <li>DAO governance</li>
+                                <li>NFT integration (betting skins)</li>
                                 <li>Institutional partnerships</li>
-                                <li>Full decentralization</li>
+                                <li>Mobile app</li>
                             </ul>
                         </div>
                     </div>

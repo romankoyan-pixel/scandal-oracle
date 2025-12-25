@@ -9,26 +9,39 @@ const { ethers } = require('ethers');
 require('dotenv').config();
 
 // Import MongoDB models
-const { Player, Prediction, Cycle, SystemState } = require('./models');
+const { Player, Prediction, Cycle, SystemState, GameBalance } = require('./models');
 
 // ============================================
-// BLOCKCHAIN / SMART CONTRACT CONFIG
+// BLOCKCHAIN / SMART CONTRACT CONFIG (V2)
 // ============================================
 const BLOCKCHAIN_CONFIG = {
-    rpcUrl: process.env.BASE_SEPOLIA_RPC || 'https://sepolia.base.org',
-    tokenAddress: '0x0F71E2d170dCdBE32E54D961C31e2101f8826a48',
-    gameAddress: '0x15B1787F5a9BD937954EB8111F1Cc513AB41f0DB',
-    // Game ABI for closeRound
+    rpcUrl: process.env.BASE_SEPOLIA_RPC || 'https://base-sepolia-rpc.publicnode.com',
+    tokenAddress: process.env.TOKEN_ADDRESS || '0x6E1a42496F19173FA8081598e6a312A7ED56FEc2',
+    gameAddress: process.env.GAME_CONTRACT_ADDRESS || '0x9CA0B4e427Fd4A79B510a4A5542c804046210F36',
+    // V2 Game ABI - Hybrid model with deposit/withdraw
     gameABI: [
         'function closeRound(uint8 result, uint256 rate) external',
-        'function getCurrentRound() view returns (uint256 roundId, uint8 status, uint256 mintPool, uint256 burnPool, uint256 neutralPool, uint256 startTime)',
-        'function currentRoundId() view returns (uint256)'
+        'function recordBet(address player, uint256 roundId, uint8 prediction, uint256 amount) external',
+        'function recordBetResult(address player, uint256 roundId, bool won, uint256 payout) external',
+        'function refundRound(uint256 roundId) external',
+        'function refundPlayer(address player, uint256 roundId, uint256 amount) external',
+        'function getCurrentRound() view returns (uint256 id, uint256 startTime, uint256 totalPool, uint256 mintPool, uint256 burnPool, uint256 neutralPool, bool closed)',
+        'function currentRoundId() view returns (uint256)',
+        'function balances(address) view returns (uint256)',
+        'event Deposited(address indexed user, uint256 amount, uint256 newBalance)',
+        'event Withdrawn(address indexed user, uint256 amount, uint256 newBalance)',
+        'event BetRecorded(address indexed user, uint256 roundId, uint8 prediction, uint256 amount)',
+        'event RoundClosed(uint256 indexed roundId, uint8 result, uint256 totalPool)'
     ],
     // Token ABI for oracle operations
     tokenABI: [
-        'function oracleMint(uint256 amount) external',
-        'function oracleBurn(uint256 amount) external',
-        'function totalSupply() view returns (uint256)'
+        'function oracleMint(uint256 rate) external',
+        'function oracleBurn(uint256 rate) external',
+        'function totalSupply() view returns (uint256)',
+        'function balanceOf(address) view returns (uint256)',
+        'function oracleReserve() view returns (uint256)',
+        'function totalBurned() view returns (uint256)',
+        'function getTokenomics() view returns (uint256 currentSupply, uint256 currentReserve, uint256 burned, uint256 reserveMin, uint256 reserveMax, bool isTaxEnabled)'
     ]
 };
 
@@ -85,38 +98,50 @@ app.use(express.json());
 app.use(express.static(__dirname)); // Serve static files (HTML, CSS, JS)
 
 // ============================================
-// MONGODB + FILE-BASED PERSISTENCE (Hybrid during migration)
+// MONGODB PERSISTENCE (No more JSON files)
 // ============================================
-const DATA_FILE = path.join(__dirname, 'oracle_data.json');
 
-// Load from file (fallback during migration)
-function loadDataFromFile() {
+// Load cycles and state from MongoDB only
+async function loadDataFromMongo() {
     try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            console.log(`📂 Loaded ${data.cycles?.length || 0} cycles from file`);
-            return data;
-        }
+        // Load system state
+        const systemState = await SystemState.findOne({ key: 'main' });
+
+        // Load recent cycles for in-memory array
+        const recentCycles = await Cycle.find({ status: 'completed' })
+            .sort({ cycleId: -1 })
+            .limit(50)
+            .lean();
+
+        const result = {
+            cycles: recentCycles.map(c => ({
+                id: c.cycleId,
+                startTime: c.startTime?.getTime() || Date.now(),
+                endTime: c.endTime?.getTime() || Date.now(),
+                status: c.status,
+                articles: c.articles || [],
+                averageScore: c.averageScore || 50,
+                action: c.action || 'NEUTRAL',
+                rate: c.rate || 0,
+                ratePercentage: c.ratePercentage || '0%'
+            })).reverse(),
+            lastCycleId: systemState?.lastCycleId || 0,
+            seenLinks: systemState?.seenLinks || [],
+            seenTitles: systemState?.seenTitles || []
+        };
+
+        console.log(`🗄️ Loaded ${result.cycles.length} cycles from MongoDB`);
+        return result;
     } catch (e) {
-        console.error('Error loading data:', e.message);
+        console.error('Error loading from MongoDB:', e.message);
+        return { cycles: [], lastCycleId: 0, seenLinks: [], seenTitles: [] };
     }
-    return { cycles: [], lastCycleId: 0, seenLinks: [], seenTitles: [] };
 }
 
-// Save to both MongoDB and file (during migration)
+// Save state to MongoDB only (no file)
 async function saveData() {
     try {
-        // Save to file as backup
-        const data = {
-            cycles: cycles.slice(0, 50), // Keep last 50 in file
-            lastCycleId: currentCycle.id,
-            seenLinks: [...seenLinks].slice(-300),
-            seenTitles: [...seenTitles].slice(-300),
-            savedAt: new Date().toISOString()
-        };
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-
-        // Also update MongoDB SystemState
+        // Update MongoDB SystemState
         await SystemState.findOneAndUpdate(
             { key: 'main' },
             {
@@ -128,7 +153,7 @@ async function saveData() {
             { upsert: true }
         );
 
-        console.log(`💾 Saved cycle data`);
+        console.log(`💾 Saved state to MongoDB`);
     } catch (e) {
         console.error('Error saving data:', e.message);
     }
@@ -155,7 +180,9 @@ async function saveCycleToMongo(cycle) {
                 averageScore: cycle.averageScore || 50,
                 action: cycle.action || 'NEUTRAL',
                 rate: cycle.rate || 0,
-                ratePercentage: cycle.ratePercentage || '0%'
+                ratePercentage: cycle.ratePercentage || '0%',
+                supplyAfter: cycle.supplyAfter || null,
+                supplyChange: cycle.supplyChange || 0
             },
             { upsert: true, new: true }
         );
@@ -166,7 +193,7 @@ async function saveCycleToMongo(cycle) {
     }
 }
 
-// Initialize from MongoDB or file
+// Initialize from MongoDB only
 async function initializeFromMongo() {
     try {
         // Try to get system state from MongoDB
@@ -174,34 +201,66 @@ async function initializeFromMongo() {
 
         if (systemState) {
             console.log(`🗄️ Found system state in MongoDB: lastCycleId=${systemState.lastCycleId}`);
+
+            // Load ALL cycles from MongoDB (full archive)
+            const recentCycles = await Cycle.find({ status: 'completed' })
+                .sort({ cycleId: -1 })
+                .lean();
+
             return {
                 lastCycleId: systemState.lastCycleId,
                 seenLinks: systemState.seenLinks || [],
-                seenTitles: systemState.seenTitles || []
+                seenTitles: systemState.seenTitles || [],
+                cycles: recentCycles.map(c => ({
+                    id: c.cycleId,
+                    startTime: c.startTime?.getTime() || Date.now(),
+                    endTime: c.endTime?.getTime() || Date.now(),
+                    status: c.status,
+                    articles: c.articles || [],
+                    averageScore: c.averageScore || 50,
+                    action: c.action || 'NEUTRAL',
+                    rate: c.rate || 0,
+                    ratePercentage: c.ratePercentage || '0%'
+                })).reverse()
             };
         }
 
-        // Fallback to file
-        const fileData = loadDataFromFile();
-
-        // Create system state in MongoDB from file data
+        // No state found - create new
+        console.log(`🗄️ No system state in MongoDB - starting fresh`);
         await SystemState.create({
             key: 'main',
-            lastCycleId: fileData.lastCycleId || 0,
-            seenLinks: fileData.seenLinks || [],
-            seenTitles: fileData.seenTitles || []
+            lastCycleId: 0,
+            seenLinks: [],
+            seenTitles: []
         });
-        console.log(`🗄️ Migrated system state to MongoDB`);
 
-        return fileData;
+        return { lastCycleId: 0, seenLinks: [], seenTitles: [], cycles: [] };
     } catch (e) {
-        console.error('MongoDB init error, falling back to file:', e.message);
-        return loadDataFromFile();
+        console.error('MongoDB init error:', e.message);
+        return { lastCycleId: 0, seenLinks: [], seenTitles: [], cycles: [] };
     }
 }
 
-// Load saved data (sync for now, will be replaced after mongoose connects)
-let savedData = loadDataFromFile();
+// Sync cycle ID with blockchain at startup
+async function syncCycleWithBlockchain() {
+    if (!gameContract) {
+        console.log('⚠️ No game contract - skipping blockchain cycle sync');
+        return null;
+    }
+
+    try {
+        const blockchainRoundId = await gameContract.currentRoundId();
+        const currentBlockchainRound = Number(blockchainRoundId);
+        console.log(`⛓️ Blockchain current round: ${currentBlockchainRound}`);
+        return currentBlockchainRound;
+    } catch (e) {
+        console.error('❌ Failed to get blockchain round:', e.message);
+        return null;
+    }
+}
+
+// Initial empty data (will be populated after MongoDB connects)
+let savedData = { cycles: [], lastCycleId: 0, seenLinks: [], seenTitles: [] };
 
 // EXPANDED RSS Feed Sources - Trusted Worldwide
 const RSS_FEEDS = {
@@ -218,11 +277,11 @@ const RSS_FEEDS = {
         'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
         'https://www.aljazeera.com/xml/rss/all.xml',
         'https://www.theguardian.com/world/rss',
-        'https://feeds.reuters.com/reuters/worldNews',
         'https://rss.dw.com/rdf/rss-en-world',
         'https://www.france24.com/en/rss',
         'https://feeds.skynews.com/feeds/rss/world.xml',
-        'https://www.euronews.com/rss?level=theme&name=news'
+        'https://www.euronews.com/rss?level=theme&name=news',
+        'https://abcnews.go.com/abcnews/internationalheadlines'
     ],
     crypto: [
         'https://www.coindesk.com/arc/outboundfeeds/rss/',
@@ -235,9 +294,10 @@ const RSS_FEEDS = {
         'https://feeds.bbci.co.uk/news/business/rss.xml',
         'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
         'https://feeds.bloomberg.com/markets/news.rss',
-        'https://www.ft.com/?format=rss',
-        'https://feeds.reuters.com/reuters/businessNews',
-        'https://www.cnbc.com/id/100003114/device/rss/rss.html'
+        'https://www.cnbc.com/id/100003114/device/rss/rss.html',
+        'https://feeds.marketwatch.com/marketwatch/topstories/',
+        'https://www.investing.com/rss/news.rss',
+        'https://seekingalpha.com/feed.xml'
     ],
     tech: [
         'https://feeds.arstechnica.com/arstechnica/index',
@@ -263,31 +323,86 @@ const RSS_FEEDS = {
         'https://www.sciencedaily.com/rss/all.xml',
         'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml',
         'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
-        'https://www.nature.com/nature.rss'
+        'https://www.newscientist.com/feed/home/?cmpid=RSS|NSNS-Home',
+        'https://phys.org/rss-feed/',
+        'https://www.livescience.com/feeds/all'
     ],
     breaking: [
         'https://feeds.bbci.co.uk/news/rss.xml',
         'https://rss.cnn.com/rss/edition.rss',
-        'https://feeds.reuters.com/reuters/topNews',
-        'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml'
+        'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+        'https://abcnews.go.com/abcnews/topstories',
+        'https://feeds.nbcnews.com/nbcnews/public/news',
+        'https://www.cbsnews.com/latest/rss/main'
     ]
 };
 
 // ============================================
-// DYNAMIC RATE CALCULATION - DISCRETE STEPS
-// 0.10%, 0.15%, 0.20%, 0.25%, 0.30%
+// CATEGORY WEIGHTS FOR SCORING
+// ============================================
+const CATEGORY_WEIGHTS = {
+    politics: 1.5,    // Government/policy - major market impact
+    breaking: 1.5,    // Breaking news - immediate impact
+    crypto: 1.4,      // Crypto news - direct relevance
+    business: 1.3,    // Corporate/economy news
+    world: 1.0,       // Global events - varied impact
+    tech: 1.0,        // Technology news
+    science: 0.8,     // Science discoveries - lower financial impact
+    sports: 0.6,      // Sports - low market impact
+    esports: 0.5      // Gaming/esports - minimal market impact
+};
+
+// Calculate weighted average score for a cycle
+function calculateWeightedCycleScore(articles) {
+    if (!articles || articles.length === 0) {
+        console.log('📊 No articles - returning default score 50');
+        return 50;
+    }
+
+    let weightedSum = 0;
+    let totalWeight = 0;
+
+    console.log('📊 Calculating weighted score for', articles.length, 'articles:');
+
+    articles.forEach((article, i) => {
+        const score = article.score || 50;
+        const category = (article.category || 'world').toLowerCase();
+
+        // Base weight from category
+        let baseWeight = CATEGORY_WEIGHTS[category] || 1.0;
+        let weight = baseWeight;
+
+        // Extreme score multiplier (x2 for scores <=15 or >=85)
+        const isExtreme = score <= 15 || score >= 85;
+        if (isExtreme) {
+            weight *= 2;
+        }
+
+        weightedSum += score * weight;
+        totalWeight += weight;
+
+        console.log(`   [${i + 1}] ${category}: score=${score} | baseWeight=${baseWeight}${isExtreme ? ' x2 EXTREME' : ''} = ${weight.toFixed(2)} | contrib=${(score * weight).toFixed(1)}`);
+    });
+
+    const finalScore = totalWeight > 0 ? weightedSum / totalWeight : 50;
+    console.log(`📊 Total: weightedSum=${weightedSum.toFixed(1)} / totalWeight=${totalWeight.toFixed(2)} = ${finalScore.toFixed(1)}`);
+
+    return finalScore;
+}
+
+// ============================================
+// DYNAMIC RATE CALCULATION - NEW THRESHOLDS
+// NEUTRAL zone: 40-60 (21 points) 
 // ============================================
 function calculateDynamicRate(avgScore) {
-    // MINT zone: 0-32
-    if (avgScore < 33) {
-        // 5 steps based on score ranges
-        // 0-6 → 0.30%, 7-13 → 0.25%, 14-19 → 0.20%, 20-26 → 0.15%, 27-32 → 0.10%
+    // MINT zone: 0-39 (40 points)
+    if (avgScore < 40) {
         let rate;
-        if (avgScore <= 6) rate = 0.0030;       // 0.30%
-        else if (avgScore <= 13) rate = 0.0025; // 0.25%
-        else if (avgScore <= 19) rate = 0.0020; // 0.20%
-        else if (avgScore <= 26) rate = 0.0015; // 0.15%
-        else rate = 0.0010;                      // 0.10%
+        if (avgScore <= 8) rate = 0.0030;        // 0.30%
+        else if (avgScore <= 16) rate = 0.0025;  // 0.25%
+        else if (avgScore <= 24) rate = 0.0020;  // 0.20%
+        else if (avgScore <= 32) rate = 0.0015;  // 0.15%
+        else rate = 0.0010;                       // 0.10%
 
         return {
             action: 'MINT',
@@ -296,16 +411,14 @@ function calculateDynamicRate(avgScore) {
         };
     }
 
-    // BURN zone: 67-100
-    if (avgScore > 66) {
-        // 5 steps based on score ranges
-        // 67-73 → 0.10%, 74-80 → 0.15%, 81-86 → 0.20%, 87-93 → 0.25%, 94-100 → 0.30%
+    // BURN zone: 61-100 (40 points)
+    if (avgScore > 60) {
         let rate;
-        if (avgScore >= 94) rate = 0.0030;      // 0.30%
-        else if (avgScore >= 87) rate = 0.0025; // 0.25%
-        else if (avgScore >= 81) rate = 0.0020; // 0.20%
-        else if (avgScore >= 74) rate = 0.0015; // 0.15%
-        else rate = 0.0010;                      // 0.10%
+        if (avgScore >= 92) rate = 0.0030;       // 0.30%
+        else if (avgScore >= 84) rate = 0.0025;  // 0.25%
+        else if (avgScore >= 76) rate = 0.0020;  // 0.20%
+        else if (avgScore >= 68) rate = 0.0015;  // 0.15%
+        else rate = 0.0010;                       // 0.10%
 
         return {
             action: 'BURN',
@@ -314,7 +427,7 @@ function calculateDynamicRate(avgScore) {
         };
     }
 
-    // NEUTRAL zone: 33-66
+    // NEUTRAL zone: 40-60 (21 points - narrower!)
     return {
         action: 'NEUTRAL',
         rate: 0,
@@ -548,6 +661,229 @@ async function refundPredictions(cycleId) {
     }
 }
 
+// ============================================
+// V2 GAME RESULTS PROCESSING
+// ============================================
+
+// Process V2 game results - update GameBalance with winnings
+async function processV2GameResults(cycle, closedBlockchainRoundId = null) {
+    const cycleId = cycle.id;
+    const blockchainRoundId = closedBlockchainRoundId || cycleId; // Use blockchain round if provided
+    const correctAnswer = cycle.action; // MINT, BURN, or NEUTRAL
+
+    try {
+        // Get all pending bets for this round from GameBalance
+        const betsThisRound = await GameBalance.find({ 'pendingBet.roundId': cycleId });
+
+        if (betsThisRound.length === 0) {
+            console.log(`🎮 V2: No bets for round ${cycleId}`);
+            return;
+        }
+
+        // Calculate pools
+        const pools = { MINT: 0, BURN: 0, NEUTRAL: 0 };
+        betsThisRound.forEach(b => {
+            if (b.pendingBet?.prediction) {
+                pools[b.pendingBet.prediction] += b.pendingBet.amount;
+            }
+        });
+
+        const totalPool = pools.MINT + pools.BURN + pools.NEUTRAL;
+        const winningPool = pools[correctAnswer];
+
+        // Apply 5% fee (3% owner + 2% burn)
+        const TOTAL_FEE = 0.05;
+        const prizePool = totalPool * (1 - TOTAL_FEE);
+
+        console.log(`🎮 V2 Round ${cycleId}: ${betsThisRound.length} bets, Total: ${totalPool}, Winner: ${correctAnswer}`);
+        console.log(`   Pools: M=${pools.MINT} B=${pools.BURN} N=${pools.NEUTRAL}`);
+
+        // Process each bet
+        let winnersCount = 0;
+        let losersCount = 0;
+
+        for (const balance of betsThisRound) {
+            const bet = balance.pendingBet;
+            if (!bet) continue;
+
+            const won = bet.prediction === correctAnswer;
+
+            // Initialize betHistory if not exists
+            if (!balance.betHistory) balance.betHistory = [];
+
+            if (won && winningPool > 0) {
+                // Pari-mutuel: payout proportional to bet / winning pool
+                const payout = (bet.amount / winningPool) * prizePool;
+                const roundedPayout = Math.floor(payout);
+
+                balance.balance += roundedPayout;
+                balance.totalWon = (balance.totalWon || 0) + roundedPayout;
+                balance.wins = (balance.wins || 0) + 1;
+                winnersCount++;
+
+                // Record in bet history
+                balance.betHistory.push({
+                    roundId: cycleId,
+                    prediction: bet.prediction,
+                    amount: bet.amount,
+                    won: true,
+                    payout: roundedPayout,
+                    timestamp: new Date()
+                });
+
+                console.log(`   ✅ ${balance.wallet.slice(0, 8)}: +${roundedPayout} SCNDL`);
+
+                // Record on blockchain (async)
+                if (gameContract) {
+                    gameContract.recordBetResult(
+                        balance.wallet,
+                        blockchainRoundId,
+                        true,
+                        ethers.parseEther(roundedPayout.toString())
+                    ).catch(e => console.log('Blockchain result record failed:', e.message));
+                }
+            } else {
+                // Lost - bet already deducted
+                balance.totalLost = (balance.totalLost || 0) + bet.amount;
+                balance.losses = (balance.losses || 0) + 1;
+                losersCount++;
+
+                // Record in bet history
+                balance.betHistory.push({
+                    roundId: cycleId,
+                    prediction: bet.prediction,
+                    amount: bet.amount,
+                    won: false,
+                    payout: 0,
+                    timestamp: new Date()
+                });
+
+                console.log(`   ❌ ${balance.wallet.slice(0, 8)}: -${bet.amount} SCNDL`);
+
+                // Record loss on blockchain (async)
+                if (gameContract) {
+                    gameContract.recordBetResult(
+                        balance.wallet,
+                        blockchainRoundId,
+                        false,
+                        0
+                    ).catch(e => console.log('Blockchain result record failed:', e.message));
+                }
+            }
+
+            // Keep only last 20 bets in history
+            if (balance.betHistory.length > 20) {
+                balance.betHistory = balance.betHistory.slice(-20);
+            }
+
+            // Clear pending bet
+            balance.pendingBet = { roundId: null, amount: 0, prediction: null };
+            await balance.save();
+        }
+
+        console.log(`🎮 V2 Result: ${winnersCount} winners, ${losersCount} losers, Prize pool: ${prizePool.toFixed(0)} SCNDL`);
+
+    } catch (err) {
+        console.error('V2 game results error:', err);
+    }
+}
+
+// Save cycle to MongoDB with supply tracking
+async function saveCycleToMongo(cycle) {
+    try {
+        // Get current supply from blockchain
+        let supplyAfter = 1000000000; // Default
+        let supplyChange = 0;
+
+        if (tokenContract) {
+            try {
+                const tokenomics = await tokenContract.getTokenomics();
+                supplyAfter = Number(ethers.formatEther(tokenomics.currentSupply));
+            } catch (e) {
+                console.log('Could not fetch supply from blockchain:', e.message);
+            }
+        }
+
+        // Calculate change based on rate
+        if (cycle.action === 'MINT' && cycle.rate) {
+            supplyChange = Math.floor(supplyAfter * cycle.rate / (1 + cycle.rate));
+        } else if (cycle.action === 'BURN' && cycle.rate) {
+            supplyChange = -Math.floor((supplyAfter / (1 - cycle.rate)) * cycle.rate);
+        }
+
+        const supplyBefore = supplyAfter - supplyChange;
+
+        // Save to MongoDB
+        await Cycle.findOneAndUpdate(
+            { cycleId: cycle.id },
+            {
+                cycleId: cycle.id,
+                startTime: new Date(cycle.startTime),
+                endTime: new Date(cycle.endTime),
+                status: 'completed',
+                articles: cycle.articles.map(a => ({
+                    title: a.title,
+                    description: a.description,
+                    source: a.source,
+                    url: a.link,
+                    score: a.score
+                })),
+                averageScore: cycle.averageScore,
+                action: cycle.action,
+                rate: cycle.rate,
+                ratePercentage: cycle.ratePercentage,
+                supplyBefore,
+                supplyAfter,
+                supplyChange
+            },
+            { upsert: true, new: true }
+        );
+
+        console.log(`📊 Saved cycle ${cycle.id} to MongoDB (Supply: ${supplyBefore.toLocaleString()} → ${supplyAfter.toLocaleString()})`);
+    } catch (err) {
+        console.error('Save cycle error:', err);
+    }
+}
+
+// Refund V2 bets when no articles
+async function refundV2Bets(cycleId) {
+    try {
+        const betsThisRound = await GameBalance.find({ 'pendingBet.roundId': cycleId });
+
+        if (betsThisRound.length === 0) {
+            console.log(`💸 V2: No bets to refund for round ${cycleId}`);
+            return;
+        }
+
+        for (const balance of betsThisRound) {
+            const bet = balance.pendingBet;
+            if (!bet || !bet.amount) continue;
+
+            // Return bet amount
+            balance.balance += bet.amount;
+            balance.pendingBet = { roundId: null, amount: 0, prediction: null };
+            await balance.save();
+
+            console.log(`💸 V2 Refund: ${balance.wallet.slice(0, 8)} +${bet.amount} SCNDL`);
+
+            // Record refund on blockchain (async)
+            if (gameContract) {
+                gameContract.refundPlayer(
+                    balance.wallet,
+                    cycleId,
+                    ethers.parseEther(bet.amount.toString())
+                ).catch(e => console.log('Blockchain refund failed:', e.message));
+            }
+        }
+
+        console.log(`💸 V2: Refunded ${betsThisRound.length} bets for round ${cycleId}`);
+
+    } catch (err) {
+        console.error('V2 refund error:', err);
+    }
+}
+
+
 // Normalize title
 function normalizeTitle(title) {
     return title.toLowerCase().replace(/[^a-z0-9]/gi, '').substring(0, 80);
@@ -664,13 +1000,42 @@ async function closeRoundOnBlockchain(result, ratePercentage) {
 
         console.log(`🔗 Calling closeRound on blockchain: result=${result}(${resultCode}), rate=${rateValue}`);
 
+        // 1. Close game round
         const tx = await gameContract.closeRound(resultCode, rateValue);
         console.log(`📤 Transaction sent: ${tx.hash}`);
+        await tx.wait();
+        console.log(`✅ Game round closed on blockchain!`);
 
-        const receipt = await tx.wait();
-        console.log(`✅ Round closed on blockchain! Block: ${receipt.blockNumber}`);
+        // 2. Execute MINT or BURN on token contract (if not NEUTRAL)
+        if (tokenContract && rateValue > 0 && result !== 'NEUTRAL') {
+            try {
+                if (result === 'MINT') {
+                    console.log(`🟢 Calling oracleMint(${rateValue})...`);
+                    const mintTx = await tokenContract.oracleMint(rateValue);
+                    await mintTx.wait();
+                    console.log(`✅ Oracle MINT executed!`);
+                } else if (result === 'BURN') {
+                    console.log(`🔴 Calling oracleBurn(${rateValue})...`);
+                    const burnTx = await tokenContract.oracleBurn(rateValue);
+                    await burnTx.wait();
+                    console.log(`✅ Oracle BURN executed!`);
+                }
+            } catch (supplyError) {
+                console.error(`⚠️ Supply adjustment failed:`, supplyError.message);
+                // Continue - game round was closed successfully
+            }
+        }
 
-        return { success: true, txHash: tx.hash, blockNumber: receipt.blockNumber };
+        // Update blockchain round ID after successful close
+        try {
+            const newRoundId = await gameContract.currentRoundId();
+            syncState.lastBlockchainRoundId = Number(newRoundId);
+            console.log(`⛓️ New blockchain round: ${syncState.lastBlockchainRoundId}`);
+        } catch (e) {
+            console.log('⚠️ Could not get new round ID');
+        }
+
+        return { success: true, txHash: tx.hash };
     } catch (error) {
         console.error('❌ closeRound blockchain error:', error.message);
         return { success: false, error: error.message };
@@ -680,9 +1045,8 @@ async function closeRoundOnBlockchain(result, ratePercentage) {
 // Close cycle
 async function closeCycleAndStartNew() {
     // Close cycle even if empty - just mark as NEUTRAL with 0 articles
-    const avgScore = currentCycle.articles.length > 0
-        ? currentCycle.articles.reduce((sum, a) => sum + a.score, 0) / currentCycle.articles.length
-        : 50; // Default to neutral if no articles
+    // Use weighted average with category weights and extreme score multipliers
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
 
     const rateInfo = calculateDynamicRate(avgScore);
 
@@ -704,6 +1068,9 @@ async function closeCycleAndStartNew() {
     // ============================================
     syncState.isSyncing = true;
     syncState.pendingCycle = completedCycle;
+
+    // Store the blockchain round that will be closed
+    const closedBlockchainRoundId = syncState.lastBlockchainRoundId || completedCycle.id;
 
     const blockchainResult = await closeRoundOnBlockchain(
         completedCycle.action,
@@ -734,13 +1101,27 @@ async function closeCycleAndStartNew() {
     completedCycle.blockchainTx = blockchainResult.txHash || null;
     completedCycle.blockchainSuccess = blockchainResult.success;
 
+    // Get current supply from blockchain and store in cycle
+    if (tokenContract) {
+        try {
+            const tokenomics = await tokenContract.getTokenomics();
+            const currentSupply = Number(ethers.formatEther(tokenomics[0])); // currentSupply is first element
+            completedCycle.supplyAfter = currentSupply;
+            console.log(`📊 Supply after cycle: ${currentSupply.toLocaleString()}`);
+        } catch (e) {
+            console.log('⚠️ Could not fetch supply from blockchain:', e.message);
+        }
+    }
+
     // Handle predictions based on article count
     if (completedCycle.articles.length === 0) {
         // No articles = refund all bets without house fee
         await refundPredictions(completedCycle.id);
+        await refundV2Bets(completedCycle.id); // V2 refunds
     } else {
         // Has articles = process predictions normally
         await processPredictions(completedCycle);
+        await processV2GameResults(completedCycle, closedBlockchainRoundId); // V2 processing with blockchain roundId
     }
 
     // Save to MongoDB
@@ -772,9 +1153,8 @@ async function closeCycleAndStartNew() {
 
 // API Endpoints
 app.get('/api/news', (req, res) => {
-    const avgScore = currentCycle.articles.length > 0
-        ? currentCycle.articles.reduce((sum, a) => sum + a.score, 0) / currentCycle.articles.length
-        : 50;
+    // Use weighted average with category weights and extreme multipliers
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
 
     const rateInfo = calculateDynamicRate(avgScore);
 
@@ -792,9 +1172,8 @@ app.get('/api/news', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    const avgScore = currentCycle.articles.length > 0
-        ? currentCycle.articles.reduce((sum, a) => sum + a.score, 0) / currentCycle.articles.length
-        : 50;
+    // Use weighted average with category weights and extreme multipliers
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
 
     const rateInfo = calculateDynamicRate(avgScore);
 
@@ -815,6 +1194,84 @@ app.get('/api/status', (req, res) => {
             lastError: syncState.lastError
         }
     });
+});
+
+// Supply history for chart (uses in-memory cycles + MongoDB)
+app.get('/api/supply-history', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 500;
+        let history = [];
+
+        // Try MongoDB first
+        const mongoCycles = await Cycle.find({ status: 'completed' })
+            .sort({ cycleId: -1 })
+            .limit(limit)
+            .select('cycleId action rate supplyAfter supplyChange averageScore endTime')
+            .lean();
+
+        if (mongoCycles.length > 0) {
+            // Use MongoDB data - filter out corrupt entries (exact 1B usually means restart bug)
+            history = mongoCycles
+                .filter(c => c.supplyAfter && c.supplyAfter !== 1000000000)
+                .reverse()
+                .map(c => ({
+                    cycle: c.cycleId,
+                    supply: c.supplyAfter,
+                    action: c.action,
+                    change: c.supplyChange || 0,
+                    rate: c.rate || 0,
+                    score: c.averageScore,
+                    timestamp: c.endTime
+                }));
+        } else {
+            // Fallback: use in-memory cycles array
+            const inMemoryCycles = cycles.slice(-limit).reverse();
+            let currentSupply = 1000000000;
+
+            history = inMemoryCycles.map(c => {
+                const rate = c.rate || 0;
+                let change = 0;
+                if (c.action === 'MINT' && rate > 0) {
+                    change = Math.floor(currentSupply * rate);
+                    currentSupply += change;
+                } else if (c.action === 'BURN' && rate > 0) {
+                    change = Math.floor(currentSupply * rate);
+                    currentSupply -= change;
+                }
+                return {
+                    cycle: c.id,
+                    supply: currentSupply,
+                    action: c.action,
+                    change: change,
+                    rate: rate,
+                    score: c.averageScore,
+                    timestamp: c.endTime
+                };
+            }).reverse();
+
+            // Filter out 1B entries from in-memory too
+            history = history.filter(h => h.supply !== 1000000000);
+        }
+
+        // NO GENESIS POINT - just real data
+        // If empty, return empty array
+        if (history.length === 0) {
+            return res.json({
+                history: [],
+                totalCycles: 0,
+                source: 'empty'
+            });
+        }
+
+        res.json({
+            history,
+            totalCycles: history.length,
+            source: mongoCycles.length > 0 ? 'mongodb' : 'memory'
+        });
+    } catch (error) {
+        console.error('Supply history error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // ============================================
@@ -902,8 +1359,8 @@ app.post('/api/vote', async (req, res) => {
     }
 });
 
-// Game status endpoint
-app.get('/api/game-status', (req, res) => {
+// Game status endpoint - with V2 pool data
+app.get('/api/game-status', async (req, res) => {
     const elapsed = Date.now() - currentCycle.startTime;
     const halfCycle = AGGREGATION_INTERVAL / 2;
     const votingOpen = elapsed < halfCycle;
@@ -911,22 +1368,65 @@ app.get('/api/game-status', (req, res) => {
     const cycleId = currentCycle.id.toString();
     const votes = predictions.cycleVotes[cycleId] || { MINT: 0, BURN: 0, NEUTRAL: 0 };
 
-    // Check if user voted (from query param)
-    const wallet = req.query.wallet;
+    // Check if user voted (from query param) - also check V2 pendingBet
+    const wallet = req.query.wallet?.toLowerCase();
     let userVote = null;
+    let userPendingBet = null;
+
+    // Legacy vote check
     if (wallet && predictions.cycleVotes[cycleId]?.voters?.[wallet]) {
         userVote = predictions.cycleVotes[cycleId].voters[wallet].vote;
     }
+
+    // V2 pending bet check from GameBalance
+    if (wallet) {
+        try {
+            const balance = await GameBalance.findOne({ wallet });
+            if (balance?.pendingBet?.roundId === currentCycle.id) {
+                userPendingBet = balance.pendingBet;
+                userVote = balance.pendingBet.prediction; // Override with V2 bet
+            }
+        } catch (e) {
+            console.log('GameBalance lookup error:', e.message);
+        }
+    }
+
+    // Calculate V2 pool from all pending bets for current round
+    let pools = { mint: 0, neutral: 0, burn: 0 };
+    try {
+        const bets = await GameBalance.find({ 'pendingBet.roundId': currentCycle.id });
+        bets.forEach(b => {
+            if (b.pendingBet?.prediction) {
+                const pred = b.pendingBet.prediction.toLowerCase();
+                if (pools[pred] !== undefined) {
+                    pools[pred] += b.pendingBet.amount || 0;
+                }
+            }
+        });
+    } catch (e) {
+        console.log('Pool calculation error:', e.message);
+    }
+
+    // Calculate current Oracle score for race animation
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
+    const rateInfo = calculateDynamicRate(avgScore);
 
     res.json({
         cycleId: currentCycle.id,
         votingOpen,
         votingTimeRemaining: Math.max(0, halfCycle - elapsed),
         cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+        cycleTotal: AGGREGATION_INTERVAL,
+        cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL), // 0 to 1
+        averageScore: avgScore, // Oracle score for race
+        projectedAction: rateInfo.action, // MINT, BURN, or NEUTRAL
         totalVotes: votes.MINT + votes.BURN + votes.NEUTRAL,
         articlesCount: currentCycle.articles.length,
         minArticlesRequired: MIN_ARTICLES_FOR_GAME,
-        userVote
+        userVote,
+        userPendingBet,
+        pools,
+        poolTotal: pools.mint + pools.neutral + pools.burn
     });
 });
 
@@ -1015,60 +1515,7 @@ app.post('/api/predict', async (req, res) => {
 });
 
 // Report blockchain result for stats tracking
-app.post('/api/report-result', async (req, res) => {
-    const { wallet, roundId, won, amount } = req.body;
-    if (!wallet || !roundId) {
-        return res.status(400).json({ error: 'Wallet and roundId required' });
-    }
-
-    const walletLower = wallet.toLowerCase();
-
-    try {
-        // Check if this round was already reported for this wallet
-        const existingReport = await Prediction.findOne({
-            wallet: walletLower,
-            cycleId: roundId,
-            resultReported: true
-        });
-
-        if (existingReport) {
-            return res.json({ success: true, message: 'Already reported', duplicate: true });
-        }
-
-        let player = await Player.findOne({ wallet: walletLower });
-        if (!player) {
-            player = await Player.create({ wallet: walletLower, balance: 10000 });
-        }
-
-        if (won) {
-            player.wins += 1;
-            player.totalWon += Math.round(amount); // Round to avoid decimals
-            player.currentStreak = (player.currentStreak > 0) ? player.currentStreak + 1 : 1;
-            if (player.currentStreak > player.maxStreak) {
-                player.maxStreak = player.currentStreak;
-            }
-        } else {
-            player.losses += 1;
-            player.totalLost += Math.round(amount);
-            player.currentStreak = (player.currentStreak < 0) ? player.currentStreak - 1 : -1;
-        }
-
-        player.lastActiveAt = new Date();
-        await player.save();
-
-        // Mark this round as reported
-        await Prediction.findOneAndUpdate(
-            { wallet: walletLower, cycleId: roundId },
-            { resultReported: true, won: won, payout: amount },
-            { upsert: true }
-        );
-
-        res.json({ success: true, stats: { wins: player.wins, losses: player.losses, totalWon: player.totalWon, totalLost: player.totalLost } });
-    } catch (err) {
-        console.error('Report result error:', err);
-        res.json({ success: false, error: err.message });
-    }
-});
+// REMOVED INSECURE ENDPOINT
 
 // Get individual user stats
 app.get('/api/user-stats/:wallet', async (req, res) => {
@@ -1097,14 +1544,20 @@ app.get('/api/user-stats/:wallet', async (req, res) => {
 // Get last completed cycle
 app.get('/api/last-cycle', async (req, res) => {
     try {
-        // Try to get from MongoDB first
+        // Try to get from MongoDB first - sort by cycleId, not mongo _id
         const lastCycleFromDB = await Cycle.findOne({ status: 'completed' })
-            .sort({ id: -1 })
+            .sort({ cycleId: -1 })
             .lean();
 
         if (lastCycleFromDB) {
+            // Map cycleId to id for frontend compatibility
+            const responseData = {
+                ...lastCycleFromDB,
+                id: lastCycleFromDB.cycleId, // Frontend expects 'id'
+                action: lastCycleFromDB.action || 'NEUTRAL' // Ensure action is set
+            };
             return res.json({
-                lastCycle: lastCycleFromDB,
+                lastCycle: responseData,
                 currentCycleId: currentCycle.id
             });
         }
@@ -1114,8 +1567,12 @@ app.get('/api/last-cycle', async (req, res) => {
         if (completedCycles.length > 0) {
             // Sort by id descending and get first
             completedCycles.sort((a, b) => b.id - a.id);
+            const lastCycle = {
+                ...completedCycles[0],
+                action: completedCycles[0].action || 'NEUTRAL'
+            };
             return res.json({
-                lastCycle: completedCycles[0],
+                lastCycle,
                 currentCycleId: currentCycle.id
             });
         }
@@ -1291,6 +1748,423 @@ process.on('SIGINT', async () => {
     process.exit();
 });
 
+// ============================================
+// V2 HYBRID GAME API ENDPOINTS
+// ============================================
+
+// Get user's game balance
+app.get('/api/v2/balance/:wallet', async (req, res) => {
+    try {
+        const wallet = req.params.wallet.toLowerCase();
+        let balance = await GameBalance.findOne({ wallet });
+
+        if (!balance) {
+            balance = { wallet, balance: 0, pendingBet: null };
+        }
+        // NOTE: Don't auto-clear stale bets here - processV2GameResults handles them
+
+        // Also get on-chain balance for verification
+        let onChainBalance = 0;
+        if (gameContract) {
+            try {
+                const contractBalance = await gameContract.balances(wallet);
+                onChainBalance = Number(ethers.formatEther(contractBalance));
+            } catch (e) {
+                console.log('Could not fetch on-chain balance');
+            }
+        }
+
+        res.json({
+            wallet,
+            balance: balance.balance,
+            pendingBet: balance.pendingBet,
+            onChainBalance,
+            stats: {
+                totalDeposited: balance.totalDeposited || 0,
+                totalWithdrawn: balance.totalWithdrawn || 0,
+                totalWon: balance.totalWon || 0,
+                totalLost: balance.totalLost || 0,
+                wins: balance.wins || 0,
+                losses: balance.losses || 0,
+                winRate: (balance.wins || 0) + (balance.losses || 0) > 0
+                    ? Math.round(((balance.wins || 0) / ((balance.wins || 0) + (balance.losses || 0))) * 100)
+                    : 0
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Sync balance from blockchain to MongoDB (called after deposit/withdraw)
+app.post('/api/v2/sync-balance', async (req, res) => {
+    const { wallet } = req.body;
+    if (!wallet) {
+        return res.status(400).json({ error: 'Wallet required' });
+    }
+
+    const walletLower = wallet.toLowerCase();
+
+    try {
+        // Get current balance from blockchain
+        let onChainBalance = 0;
+        if (gameContract) {
+            try {
+                const contractBalance = await gameContract.balances(walletLower);
+                onChainBalance = Number(ethers.formatEther(contractBalance));
+            } catch (e) {
+                console.log('Could not fetch on-chain balance:', e.message);
+            }
+        }
+
+        // Update or create GameBalance in MongoDB
+        let balance = await GameBalance.findOne({ wallet: walletLower });
+
+        if (!balance) {
+            balance = new GameBalance({
+                wallet: walletLower,
+                balance: onChainBalance,
+                pendingBet: { roundId: null, amount: 0, prediction: null }
+            });
+        } else {
+            balance.balance = onChainBalance;
+        }
+
+        await balance.save();
+
+        console.log(`🔄 Synced balance for ${walletLower.slice(0, 8)}: ${onChainBalance} SCNDL`);
+
+        res.json({
+            success: true,
+            wallet: walletLower,
+            balance: onChainBalance
+        });
+    } catch (error) {
+        console.error('Sync balance error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Reset player stats (for testing)
+app.post('/api/v2/reset-stats/:wallet', async (req, res) => {
+    try {
+        const wallet = req.params.wallet.toLowerCase();
+
+        // Reset GameBalance stats
+        const gameBalance = await GameBalance.findOne({ wallet });
+        if (gameBalance) {
+            gameBalance.totalWon = 0;
+            gameBalance.totalLost = 0;
+            gameBalance.wins = 0;
+            gameBalance.losses = 0;
+            gameBalance.betHistory = [];
+            await gameBalance.save();
+        }
+
+        // Reset Player stats
+        const player = await Player.findOne({ wallet });
+        if (player) {
+            player.totalWon = 0;
+            player.totalLost = 0;
+            player.wins = 0;
+            player.losses = 0;
+            player.currentStreak = 0;
+            player.maxStreak = 0;
+            player.totalPredictions = 0;
+            await player.save();
+        }
+
+        console.log(`🔄 Stats reset for ${wallet.slice(0, 8)}`);
+        res.json({ success: true, message: 'Stats reset to zero' });
+    } catch (error) {
+        console.error('Reset stats error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get player bet history
+app.get('/api/v2/history/:wallet', async (req, res) => {
+    try {
+        const wallet = req.params.wallet.toLowerCase();
+        const balance = await GameBalance.findOne({ wallet });
+
+        if (!balance) {
+            return res.json({ history: [] });
+        }
+
+        // Build history from bet results stored in GameBalance
+        const history = [];
+
+        // Add pending bet if exists
+        if (balance.pendingBet && balance.pendingBet.roundId) {
+            history.push({
+                roundId: balance.pendingBet.roundId,
+                prediction: balance.pendingBet.prediction,
+                amount: balance.pendingBet.amount,
+                pending: true
+            });
+        }
+
+        // Add past bets from betHistory array (if we track it)
+        if (balance.betHistory) {
+            balance.betHistory.slice(-20).reverse().forEach(bet => {
+                history.push(bet);
+            });
+        }
+
+        res.json({ history });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Leaderboard - Top players by profit (only real game winnings)
+app.get('/api/v2/leaderboard', async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const sortBy = req.query.sortBy || 'profit'; // profit, totalWon, wins, winRate
+
+        // Get all players who have played (wins + losses > 0)
+        const players = await GameBalance.find({
+            $or: [{ wins: { $gt: 0 } }, { losses: { $gt: 0 } }]
+        }).select('wallet totalWon totalLost wins losses balance');
+
+        // Calculate profit and win rate for each player
+        const leaderboard = players.map(p => ({
+            wallet: p.wallet,
+            profit: (p.totalWon || 0) - (p.totalLost || 0),
+            totalWon: p.totalWon || 0,
+            totalLost: p.totalLost || 0,
+            wins: p.wins || 0,
+            losses: p.losses || 0,
+            winRate: (p.wins || 0) + (p.losses || 0) > 0
+                ? Math.round((p.wins / ((p.wins || 0) + (p.losses || 0))) * 100)
+                : 0
+        }));
+
+        // Sort based on requested field
+        if (sortBy === 'totalWon') {
+            leaderboard.sort((a, b) => b.totalWon - a.totalWon);
+        } else if (sortBy === 'wins') {
+            leaderboard.sort((a, b) => b.wins - a.wins);
+        } else if (sortBy === 'winRate') {
+            leaderboard.sort((a, b) => b.winRate - a.winRate);
+        } else {
+            // Default: sort by profit
+            leaderboard.sort((a, b) => b.profit - a.profit);
+        }
+
+        res.json({
+            leaderboard: leaderboard.slice(0, limit),
+            totalPlayers: players.length
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/v2/bet', async (req, res) => {
+    try {
+        const { wallet, prediction, amount } = req.body;
+
+        if (!wallet || !prediction || !amount) {
+            return res.status(400).json({ error: 'Missing wallet, prediction, or amount' });
+        }
+
+        const walletLower = wallet.toLowerCase();
+        const betAmount = Number(amount);
+
+        // Validate prediction
+        const validPredictions = ['MINT', 'BURN', 'NEUTRAL'];
+        if (!validPredictions.includes(prediction.toUpperCase())) {
+            return res.status(400).json({ error: 'Invalid prediction. Use MINT, BURN, or NEUTRAL' });
+        }
+
+        // Get or create user balance
+        let balance = await GameBalance.findOne({ wallet: walletLower });
+        if (!balance) {
+            balance = new GameBalance({ wallet: walletLower });
+        }
+
+        // Check if already bet this round
+        if (balance.pendingBet && balance.pendingBet.roundId === currentCycle.id) {
+            return res.status(400).json({ error: 'Already bet this round' });
+        }
+
+        // Check sufficient balance
+        if (balance.balance < betAmount) {
+            return res.status(400).json({
+                error: 'Insufficient balance',
+                available: balance.balance,
+                requested: betAmount
+            });
+        }
+
+        // Validate bet limits
+        const MIN_BET = 1000;
+        const MAX_BET = 100000;
+        if (betAmount < MIN_BET) {
+            return res.status(400).json({ error: `Minimum bet is ${MIN_BET} SCNDL` });
+        }
+        if (betAmount > MAX_BET) {
+            return res.status(400).json({ error: `Maximum bet is ${MAX_BET} SCNDL` });
+        }
+
+        // Lock bet amount
+        balance.balance -= betAmount;
+        balance.pendingBet = {
+            roundId: currentCycle.id,
+            amount: betAmount,
+            prediction: prediction.toUpperCase()
+        };
+        balance.totalBet = (balance.totalBet || 0) + betAmount;
+        balance.lastBetAt = new Date();
+
+        await balance.save();
+
+        // Record bet on blockchain (async - don't block game)
+        // Use blockchain roundId (may differ from server cycleId)
+        const blockchainRoundId = syncState.lastBlockchainRoundId || currentCycle.id;
+        if (gameContract) {
+            const predictionCode = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 }[prediction.toUpperCase()];
+            // Fire and forget - sync happens at round close
+            gameContract.recordBet(
+                walletLower,
+                blockchainRoundId,
+                predictionCode,
+                ethers.parseEther(betAmount.toString())
+            ).then(tx => {
+                console.log(`⛓️ Bet TX sent: ${tx.hash}`);
+                return tx.wait();
+            }).then(() => {
+                console.log(`✅ Bet confirmed on blockchain`);
+            }).catch(e => {
+                console.error(`❌ Blockchain bet failed (will sync at round close): ${e.message}`);
+            });
+        }
+
+        console.log(`🎲 BET: ${walletLower.slice(0, 8)} → ${prediction} ${betAmount} SCNDL (Round ${currentCycle.id})`);
+
+        res.json({
+            success: true,
+            roundId: currentCycle.id,
+            prediction: prediction.toUpperCase(),
+            amount: betAmount,
+            newBalance: balance.balance
+        });
+
+    } catch (error) {
+        console.error('Bet error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Sync balance from blockchain (after deposit/withdraw on-chain)
+app.post('/api/v2/sync-balance', async (req, res) => {
+    try {
+        const { wallet } = req.body;
+        if (!wallet) {
+            return res.status(400).json({ error: 'Missing wallet' });
+        }
+
+        const walletLower = wallet.toLowerCase();
+
+        // SECURITY: Check for pending bets to prevent 'Double Spend'
+        // User cannot restore balance while a bet is in 'pending' state
+        let balance = await GameBalance.findOne({ wallet: walletLower });
+        if (balance && balance.pendingBet && balance.pendingBet.roundId) {
+            // If bet is older than 5 minutes, assume it failed and allow sync
+            const betAge = balance.lastBetAt ? (Date.now() - new Date(balance.lastBetAt).getTime()) : 0;
+            if (betAge < 300000) { // 5 minutes
+                console.warn(`🛑 Blocked sync-balance for ${walletLower} (Active pending bet)`);
+                return res.status(400).json({
+                    error: 'Cannot sync while bet is pending',
+                    code: 'PENDING_BET'
+                });
+            }
+        }
+
+        // Get on-chain balance
+        if (!gameContract) {
+            return res.status(500).json({ error: 'Blockchain not configured' });
+        }
+
+        const contractBalance = await gameContract.balances(walletLower);
+        const onChainBalance = Number(ethers.formatEther(contractBalance));
+
+        // Update local balance
+        if (!balance) {
+            balance = new GameBalance({ wallet: walletLower });
+        }
+
+        const oldBalance = balance.balance;
+        balance.balance = onChainBalance;
+
+        // Track deposit/withdraw
+        if (onChainBalance > oldBalance) {
+            balance.totalDeposited = (balance.totalDeposited || 0) + (onChainBalance - oldBalance);
+            balance.lastDepositAt = new Date();
+        } else if (onChainBalance < oldBalance) {
+            balance.totalWithdrawn = (balance.totalWithdrawn || 0) + (oldBalance - onChainBalance);
+            balance.lastWithdrawAt = new Date();
+        }
+
+        await balance.save();
+
+        console.log(`💰 SYNC: ${walletLower.slice(0, 8)} balance: ${oldBalance} → ${onChainBalance}`);
+
+        res.json({
+            success: true,
+            wallet: walletLower,
+            oldBalance,
+            newBalance: onChainBalance,
+            change: onChainBalance - oldBalance
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get current round info for V2
+app.get('/api/v2/round', async (req, res) => {
+    try {
+        const avgScore = currentCycle.articles.length > 0
+            ? currentCycle.articles.reduce((sum, a) => sum + a.score, 0) / currentCycle.articles.length
+            : 50;
+
+        const rateInfo = calculateDynamicRate(avgScore);
+
+        // Count pending bets for this round
+        const bets = await GameBalance.find({ 'pendingBet.roundId': currentCycle.id });
+        const totalBets = bets.reduce((sum, b) => sum + (b.pendingBet?.amount || 0), 0);
+        const pools = {
+            mint: bets.filter(b => b.pendingBet?.prediction === 'MINT').reduce((s, b) => s + b.pendingBet.amount, 0),
+            burn: bets.filter(b => b.pendingBet?.prediction === 'BURN').reduce((s, b) => s + b.pendingBet.amount, 0),
+            neutral: bets.filter(b => b.pendingBet?.prediction === 'NEUTRAL').reduce((s, b) => s + b.pendingBet.amount, 0)
+        };
+
+        res.json({
+            roundId: currentCycle.id,
+            startTime: currentCycle.startTime,
+            timeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime)),
+            projectedAction: rateInfo.action,
+            projectedRate: rateInfo.percentage,
+            score: avgScore,
+            articlesCount: currentCycle.articles.length,
+            totalPool: totalBets,
+            pools,
+            playerCount: bets.length,
+            sync: {
+                isSyncing: syncState.isSyncing,
+                retryCount: syncState.retryCount
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', async () => {
@@ -1305,19 +2179,47 @@ app.listen(PORT, '0.0.0.0', async () => {
         seenLinks = new Set(mongoData.seenLinks || []);
         seenTitles = new Set(mongoData.seenTitles || []);
 
+        // Load cycles from MongoDB into memory
+        if (mongoData.cycles && mongoData.cycles.length > 0) {
+            cycles = mongoData.cycles;
+        }
+
         // Update currentCycle ID from MongoDB
         if (mongoData.lastCycleId > currentCycle.id - 1) {
             currentCycle.id = mongoData.lastCycleId + 1;
         }
 
-        console.log(`🗄️ MongoDB initialized: lastCycle=${mongoData.lastCycleId}`);
+        console.log(`🗄️ MongoDB initialized: ${cycles.length} cycles, lastCycle=${mongoData.lastCycleId}`);
     } catch (e) {
-        console.log(`⚠️ MongoDB init failed, using file data`);
+        console.log(`⚠️ MongoDB init failed: ${e.message}`);
+    }
+
+    // Sync with blockchain currentRoundId
+    if (gameContract) {
+        try {
+            const blockchainRoundId = await gameContract.currentRoundId();
+            const bcRound = Number(blockchainRoundId);
+            console.log(`⛓️ Blockchain currentRoundId: ${bcRound}`);
+
+            // Use blockchain round ID if it's higher than our local ID
+            if (bcRound >= currentCycle.id) {
+                console.log(`⛓️ Syncing server cycle to blockchain: ${currentCycle.id} → ${bcRound}`);
+                currentCycle.id = bcRound;
+            } else {
+                // Blockchain is behind - store for reference
+                console.log(`⚠️ Blockchain (${bcRound}) is behind server (${currentCycle.id})`);
+                console.log(`⚠️ Bets will use blockchain roundId: ${bcRound}`);
+            }
+            // Always store blockchain round ID for betting
+            syncState.lastBlockchainRoundId = bcRound;
+        } catch (e) {
+            console.log(`⚠️ Blockchain sync failed: ${e.message}`);
+        }
     }
 
     console.log(`📊 Rate steps: 0.10% | 0.15% | 0.20% | 0.25% | 0.30%`);
-    console.log(`📂 Loaded ${cycles.length} cycles | ${seenLinks.size} seen links`);
-    console.log(`🆕 Starting Cycle ${currentCycle.id}...\n`);
+    console.log(`🗄️ Ready: ${cycles.length} cycles | ${seenLinks.size} seen links`);
+    console.log(`🆕 Starting Cycle ${currentCycle.id}...`);
 
     await scanAndAddNews();
 

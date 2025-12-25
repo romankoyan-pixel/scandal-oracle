@@ -1,0 +1,36 @@
+[
+  {
+    "_id": "694cc52526cd9a181e41cdea",
+    "wallet": "0xc6ccea24dc11712e2abdb15e3883ff1eb2b9f2b3",
+    "balance": 19000,
+    "pendingBet": {
+      "roundId": null,
+      "amount": 0,
+      "prediction": null
+    },
+    "totalDeposited": 0,
+    "totalWithdrawn": 0,
+    "totalBet": 1000,
+    "totalWon": 0,
+    "totalLost": 1000,
+    "wins": 0,
+    "losses": 1,
+    "lastDepositAt": null,
+    "lastWithdrawAt": null,
+    "lastBetAt": "2025-12-25T05:12:44.845Z",
+    "betHistory": [
+      {
+        "roundId": 1930,
+        "prediction": "NEUTRAL",
+        "amount": 1000,
+        "won": false,
+        "payout": 0,
+        "timestamp": "2025-12-25T05:14:02.173Z",
+        "_id": "694cc81a26cd9a181e41cf77"
+      }
+    ],
+    "createdAt": "2025-12-25T05:01:25.919Z",
+    "updatedAt": "2025-12-25T05:14:02.176Z",
+    "__v": 1
+  }
+]

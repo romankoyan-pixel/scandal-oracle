@@ -732,13 +732,20 @@ body::before {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    transition: color 0.3s;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-close:hover {
-    color: var(--accent-red);
+    background: var(--accent-red);
+    color: white;
 }
 
 .modal-chart {
@@ -3064,29 +3071,7 @@ body::before {
     }
 }
 
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    background: var(--bg-card);
-    color: var(--text-secondary);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-close:hover {
-    border-color: var(--accent-red);
-    color: var(--accent-red);
-    background: rgba(255, 70, 85, 0.1);
-}
+/* Modal close button - unified style defined above at line ~731 */
 
 .modal-header {
     display: flex;
@@ -3337,5 +3322,115 @@ body::before {
         right: 20px;
         width: 45px;
         height: 45px;
+    }
+}
+
+/* ============================================
+   TOKENOMICS CARDS - Image Left, Text Right
+   ============================================ */
+
+.tokenomics-section {
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+}
+
+.tokenomics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.tokenomics-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    min-height: 160px;
+}
+
+.tokenomics-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0, 240, 255, 0.2);
+    border-color: var(--accent-cyan);
+}
+
+/* Image container - left side */
+.tokenomics-card .tokenomics-img {
+    width: 45%;
+    min-width: 100px;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Text container - right side */
+.tokenomics-card h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 0.5rem 0;
+}
+
+.tokenomics-card .tokenomics-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem 0;
+}
+
+.tokenomics-card .tokenomics-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Card type colors for values */
+.tokenomics-card.supply .tokenomics-value {
+    color: var(--accent-cyan);
+}
+
+.tokenomics-card.mint .tokenomics-value {
+    color: var(--accent-green);
+}
+
+.tokenomics-card.burn .tokenomics-value {
+    color: var(--accent-red);
+}
+
+.tokenomics-card.neutral .tokenomics-value {
+    color: var(--accent-cyan);
+}
+
+/* Content wrapper for text */
+.tokenomics-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .tokenomics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .tokenomics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tokenomics-card {
+        min-height: 140px;
     }
 }

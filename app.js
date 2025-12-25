@@ -6,31 +6,32 @@ const INITIAL_SUPPLY = 1000000000; // 1 Billion tokens
 // ============================================
 // DYNAMIC RATE - DISCRETE STEPS
 // 0.10%, 0.15%, 0.20%, 0.25%, 0.30%
+// MINT: 0-39, NEUTRAL: 40-60, BURN: 61-100
 // ============================================
 function calculateDynamicRate(avgScore) {
-    // MINT zone: 0-32
-    if (avgScore < 33) {
+    // MINT zone: 0-39 (40 points)
+    if (avgScore < 40) {
         let rate;
-        if (avgScore <= 6) rate = 0.0030;       // 0.30%
-        else if (avgScore <= 13) rate = 0.0025; // 0.25%
-        else if (avgScore <= 19) rate = 0.0020; // 0.20%
-        else if (avgScore <= 26) rate = 0.0015; // 0.15%
-        else rate = 0.0010;                      // 0.10%
+        if (avgScore <= 8) rate = 0.0030;        // 0.30%
+        else if (avgScore <= 16) rate = 0.0025;  // 0.25%
+        else if (avgScore <= 24) rate = 0.0020;  // 0.20%
+        else if (avgScore <= 32) rate = 0.0015;  // 0.15%
+        else rate = 0.0010;                       // 0.10%
         return { action: 'MINT', rate: rate };
     }
 
-    // BURN zone: 67-100
-    if (avgScore > 66) {
+    // BURN zone: 61-100 (40 points)
+    if (avgScore > 60) {
         let rate;
-        if (avgScore >= 94) rate = 0.0030;      // 0.30%
-        else if (avgScore >= 87) rate = 0.0025; // 0.25%
-        else if (avgScore >= 81) rate = 0.0020; // 0.20%
-        else if (avgScore >= 74) rate = 0.0015; // 0.15%
-        else rate = 0.0010;                      // 0.10%
+        if (avgScore >= 92) rate = 0.0030;       // 0.30%
+        else if (avgScore >= 84) rate = 0.0025;  // 0.25%
+        else if (avgScore >= 76) rate = 0.0020;  // 0.20%
+        else if (avgScore >= 68) rate = 0.0015;  // 0.15%
+        else rate = 0.0010;                       // 0.10%
         return { action: 'BURN', rate: rate };
     }
 
-    // NEUTRAL: 33-66
+    // NEUTRAL: 40-60 (21 points - narrower!)
     return { action: 'NEUTRAL', rate: 0 };
 }
 
@@ -41,17 +42,13 @@ class ScandalOracle {
         this.expandedArticles = new Set();
         this.cycleStartTime = Date.now();
 
-        // Supply tracking
-        this.totalSupply = INITIAL_SUPPLY;
-        this.supplyHistory = [{
-            cycle: 0,
-            supply: INITIAL_SUPPLY,
-            action: 'GENESIS',
-            timestamp: Date.now()
-        }];
+        // Supply tracking - start empty, will be loaded from server
+        this.totalSupply = null; // Will be loaded from blockchain
+        this.supplyHistory = []; // Will be loaded from server
 
-        // Load history from localStorage
-        this.loadHistory();
+        // Filtered display data for charts (synced with chart points)
+        this.displayData = this.supplyHistory;
+        this.modalDisplayData = this.supplyHistory;
 
         this.supplyChart = null;
         this.fullSupplyChart = null;
@@ -63,7 +60,7 @@ class ScandalOracle {
     }
 
     init() {
-        this.syncCycleId(); // Sync cycle ID with server
+        this.loadHistoryFromServer(); // Load history from server (not localStorage)
         this.loadSupplyFromBlockchain(); // Load real supply from contract
         this.fetchNews();
         setInterval(() => this.fetchNews(), 5000);
@@ -125,24 +122,37 @@ class ScandalOracle {
         }
     }
 
-    loadHistory() {
-        const saved = localStorage.getItem('scandalSupplyHistory');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                this.supplyHistory = data.history || this.supplyHistory;
-                this.totalSupply = data.supply || INITIAL_SUPPLY;
-            } catch (e) {
-                console.error('Error loading history:', e);
-            }
-        }
-    }
+    // Load history from server API (replaces localStorage)
+    async loadHistoryFromServer() {
+        try {
+            const response = await fetch(`${API_URL}/api/supply-history`);
+            const data = await response.json();
 
-    saveHistory() {
-        localStorage.setItem('scandalSupplyHistory', JSON.stringify({
-            history: this.supplyHistory,
-            supply: this.totalSupply
-        }));
+            if (data.history && data.history.length > 0) {
+                // Filter out GENESIS and exact 1B entries (restart bugs)
+                this.supplyHistory = data.history.filter(h =>
+                    h.action !== 'GENESIS' && h.supply !== 1000000000
+                );
+
+                // Update totalSupply from latest history entry
+                if (this.supplyHistory.length > 0) {
+                    const latest = this.supplyHistory[this.supplyHistory.length - 1];
+                    if (latest && latest.supply) {
+                        this.totalSupply = latest.supply;
+                    }
+                    console.log(`📊 Loaded ${this.supplyHistory.length} cycles (filtered)`);
+                    this.updateChart();
+                } else {
+                    console.log('📊 No valid history after filtering');
+                }
+            } else {
+                // No history - empty array
+                this.supplyHistory = [];
+                console.log('📊 No history available');
+            }
+        } catch (e) {
+            console.error('Error loading history from server:', e);
+        }
     }
 
     async fetchNews() {
@@ -183,30 +193,9 @@ class ScandalOracle {
     }
 
     recordCycleResult(cycle) {
-        // Use dynamic rate from server or calculate locally
-        const rate = cycle.rate || calculateDynamicRate(cycle.averageScore).rate;
-        let change = 0;
-
-        if (cycle.action === 'MINT') {
-            change = Math.floor(this.totalSupply * rate);
-            this.totalSupply += change;
-        } else if (cycle.action === 'BURN') {
-            change = Math.floor(this.totalSupply * rate);
-            this.totalSupply -= change;
-        }
-
-        this.supplyHistory.push({
-            cycle: cycle.id,
-            supply: this.totalSupply,
-            action: cycle.action,
-            change: change,
-            rate: rate,
-            score: cycle.averageScore,
-            timestamp: cycle.endTime
-        });
-
-        this.saveHistory();
-        this.updateChart();
+        // Cycle completed - reload history from server to get accurate supply data
+        // Server has the authoritative data from blockchain
+        this.loadHistoryFromServer();
     }
 
     calculateProjectedImpact() {
@@ -292,6 +281,9 @@ class ScandalOracle {
     initChart() {
         const ctx = document.getElementById('supplyChart').getContext('2d');
 
+        // Initialize displayData for point colors on first render
+        this.displayData = this.supplyHistory;
+
         this.supplyChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -305,12 +297,28 @@ class ScandalOracle {
                     fill: true,
                     tension: 0.3,
                     pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBorderWidth: 0,
                     pointBackgroundColor: (ctx) => {
                         const idx = ctx.dataIndex;
-                        const action = this.supplyHistory[idx]?.action;
-                        if (action === 'MINT') return '#10b981';
-                        if (action === 'BURN') return '#ef4444';
-                        return '#00f0ff';
+                        const h = this.displayData[idx];
+                        if (!h) return '#00f0ff';
+                        // Determine color from actual supply change
+                        const change = h.change || 0;
+                        if (change > 0) return '#22c55e';  // Green = supply increased (MINT)
+                        if (change < 0) return '#ef4444';  // Red = supply decreased (BURN)
+                        if (h.action === 'GENESIS') return '#00f0ff'; // Cyan = Genesis
+                        return '#3b82f6'; // Blue = no change (NEUTRAL)
+                    },
+                    pointBorderColor: (ctx) => {
+                        const idx = ctx.dataIndex;
+                        const h = this.displayData[idx];
+                        if (!h) return '#00f0ff';
+                        const change = h.change || 0;
+                        if (change > 0) return '#22c55e';
+                        if (change < 0) return '#ef4444';
+                        if (h.action === 'GENESIS') return '#00f0ff';
+                        return '#3b82f6';
                     }
                 }]
             },
@@ -320,29 +328,40 @@ class ScandalOracle {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8,
                         callbacks: {
                             title: (ctx) => {
-                                const h = this.supplyHistory[ctx[0].dataIndex];
+                                const h = this.displayData[ctx[0].dataIndex];
                                 return `Cycle #${h.cycle}`;
                             },
                             label: (ctx) => {
-                                const h = this.supplyHistory[ctx.dataIndex];
+                                const h = this.displayData[ctx.dataIndex];
+                                if (!h) return `Supply: ${ctx.raw?.toLocaleString() || 'N/A'}`;
+
                                 const lines = [
-                                    `Total Supply: ${this.formatNumber(h.supply)}`
+                                    `Supply: ${this.formatNumber(h.supply)}`
                                 ];
 
-                                if (h.action === 'MINT' && h.change) {
-                                    lines.push(`🟢 Minted: +${this.formatNumber(h.change)}`);
-                                } else if (h.action === 'BURN' && h.change) {
-                                    lines.push(`🔴 Burned: -${this.formatNumber(h.change)}`);
-                                } else if (h.action === 'NEUTRAL') {
-                                    lines.push(`⚪ Neutral: 0`);
+                                // Determine action from actual change
+                                const change = h.change || 0;
+                                if (change > 0) {
+                                    lines.push(`🟢 MINTED: +${this.formatNumber(Math.abs(change))}`);
+                                    if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
+                                } else if (change < 0) {
+                                    lines.push(`🔴 BURNED: -${this.formatNumber(Math.abs(change))}`);
+                                    if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
                                 } else if (h.action === 'GENESIS') {
-                                    lines.push(`⚡ Genesis`);
+                                    lines.push(`⚡ GENESIS: Initial supply`);
+                                } else {
+                                    lines.push(`🔵 NEUTRAL: No change`);
                                 }
 
-                                if (h.rate) {
-                                    lines.push(`Rate: ${(h.rate * 100).toFixed(2)}%`);
+                                if (h.score !== undefined && h.action !== 'GENESIS') {
+                                    lines.push(`Score: ${Math.round(h.score)}`);
                                 }
 
                                 return lines;
@@ -388,6 +407,9 @@ class ScandalOracle {
         if (this.chartDisplayLimit !== 'all' && displayData.length > this.chartDisplayLimit) {
             displayData = displayData.slice(-this.chartDisplayLimit);
         }
+
+        // Store filtered data for point color mapping
+        this.displayData = displayData;
 
         this.supplyChart.data.labels = displayData.map(h => `#${h.cycle}`);
         this.supplyChart.data.datasets[0].data = displayData.map(h => h.supply);
@@ -450,25 +472,56 @@ class ScandalOracle {
 
         if (this.fullSupplyChart) this.fullSupplyChart.destroy();
 
+        // Initialize modalDisplayData for point colors on first render
+        this.modalDisplayData = this.supplyHistory;
+
+        // Add empty future cycles to center the last point
+        const lastCycle = this.supplyHistory[this.supplyHistory.length - 1];
+        const futureCycles = 150;
+        const extendedLabels = this.supplyHistory.map(h => `Cycle #${h.cycle}`);
+        const extendedData = this.supplyHistory.map(h => h.supply);
+
+        if (lastCycle) {
+            for (let i = 1; i <= futureCycles; i++) {
+                extendedLabels.push(`#${lastCycle.cycle + i}`);
+                extendedData.push(null);
+            }
+        }
+
         this.fullSupplyChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: this.supplyHistory.map(h => `Cycle #${h.cycle}`),
+                labels: extendedLabels,
                 datasets: [{
                     label: 'Total Supply',
-                    data: this.supplyHistory.map(h => h.supply),
+                    data: extendedData,
                     borderColor: '#00f0ff',
                     backgroundColor: 'rgba(0, 240, 255, 0.1)',
                     borderWidth: 3,
                     fill: true,
                     tension: 0.3,
-                    pointRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBorderWidth: 0,
                     pointBackgroundColor: (ctx) => {
                         const idx = ctx.dataIndex;
-                        const action = this.supplyHistory[idx]?.action;
-                        if (action === 'MINT') return '#10b981';
-                        if (action === 'BURN') return '#ef4444';
-                        return '#00f0ff';
+                        const h = this.modalDisplayData[idx];
+                        if (!h) return '#00f0ff';
+                        const change = h.change || 0;
+                        if (change > 0) return '#22c55e';  // Green = supply increased
+                        if (change < 0) return '#ef4444';  // Red = supply decreased
+                        if (h.action === 'GENESIS') return '#00f0ff';
+                        return '#3b82f6'; // Blue = no change
+                    },
+                    pointBorderColor: (ctx) => {
+                        const idx = ctx.dataIndex;
+                        const h = this.modalDisplayData[idx];
+                        if (!h) return '#00f0ff';
+                        const change = h.change || 0;
+                        if (change > 0) return '#22c55e';
+                        if (change < 0) return '#ef4444';
+                        if (h.action === 'GENESIS') return '#00f0ff';
+                        return '#3b82f6';
                     }
                 }]
             },
@@ -478,29 +531,40 @@ class ScandalOracle {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        titleFont: { size: 16, weight: 'bold' },
+                        bodyFont: { size: 14 },
+                        padding: 14,
+                        cornerRadius: 8,
                         callbacks: {
                             title: (ctx) => {
-                                const h = this.supplyHistory[ctx[0].dataIndex];
+                                const h = this.modalDisplayData[ctx[0].dataIndex];
                                 return `Cycle #${h.cycle}`;
                             },
                             label: (ctx) => {
-                                const h = this.supplyHistory[ctx.dataIndex];
+                                const h = this.modalDisplayData[ctx.dataIndex];
+                                if (!h) return `Supply: ${ctx.raw?.toLocaleString() || 'N/A'}`;
+
                                 const lines = [
-                                    `Total Supply: ${this.formatNumber(h.supply)}`
+                                    `Supply: ${this.formatNumber(h.supply)}`
                                 ];
 
-                                if (h.action === 'MINT' && h.change) {
-                                    lines.push(`🟢 Minted: +${this.formatNumber(h.change)}`);
-                                } else if (h.action === 'BURN' && h.change) {
-                                    lines.push(`🔴 Burned: -${this.formatNumber(h.change)}`);
-                                } else if (h.action === 'NEUTRAL') {
-                                    lines.push(`⚪ Neutral: 0`);
+                                // Determine action from actual change
+                                const change = h.change || 0;
+                                if (change > 0) {
+                                    lines.push(`🟢 MINTED: +${this.formatNumber(Math.abs(change))}`);
+                                    if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
+                                } else if (change < 0) {
+                                    lines.push(`🔴 BURNED: -${this.formatNumber(Math.abs(change))}`);
+                                    if (h.rate) lines.push(`Rate: ${((h.rate || 0) * 100).toFixed(2)}%`);
                                 } else if (h.action === 'GENESIS') {
-                                    lines.push(`⚡ Genesis`);
+                                    lines.push(`⚡ GENESIS: Initial supply`);
+                                } else {
+                                    lines.push(`🔵 NEUTRAL: No change`);
                                 }
 
-                                if (h.rate) {
-                                    lines.push(`Rate: ${(h.rate * 100).toFixed(2)}%`);
+                                if (h.score !== undefined && h.action !== 'GENESIS') {
+                                    lines.push(`Score: ${Math.round(h.score)}`);
                                 }
 
                                 return lines;
@@ -546,8 +610,24 @@ class ScandalOracle {
             displayData = displayData.slice(-this.modalChartDisplayLimit);
         }
 
-        this.fullSupplyChart.data.labels = displayData.map(h => `Cycle #${h.cycle}`);
-        this.fullSupplyChart.data.datasets[0].data = displayData.map(h => h.supply);
+        // Add empty future cycles to center the last point
+        const lastCycle = displayData[displayData.length - 1];
+        const futureCycles = 150; // Add 150 empty future cycle slots
+        const extendedLabels = displayData.map(h => `Cycle #${h.cycle}`);
+        const extendedData = displayData.map(h => h.supply);
+
+        if (lastCycle) {
+            for (let i = 1; i <= futureCycles; i++) {
+                extendedLabels.push(`#${lastCycle.cycle + i}`);
+                extendedData.push(null); // null = no point drawn
+            }
+        }
+
+        // Store filtered data for modal chart point color mapping
+        this.modalDisplayData = displayData;
+
+        this.fullSupplyChart.data.labels = extendedLabels;
+        this.fullSupplyChart.data.datasets[0].data = extendedData;
         this.fullSupplyChart.update();
     }
 

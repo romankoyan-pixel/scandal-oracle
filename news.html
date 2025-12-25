@@ -5,10 +5,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCANDAL | News Archive</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Flatpickr Dark Theme -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <style>
+        /* Custom Flatpickr styling to match SCANDAL theme */
+        .flatpickr-calendar {
+            background: #0a0f1a !important;
+            border: 1px solid #00f0ff !important;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3) !important;
+        }
+
+        .flatpickr-calendar .flatpickr-month,
+        .flatpickr-calendar .flatpickr-weekdays {
+            background: #0a0f1a !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day {
+            color: #e0e0e0 !important;
+            border-radius: 4px !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day:hover {
+            background: rgba(0, 240, 255, 0.2) !important;
+            border-color: #00f0ff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.selected {
+            background: #00f0ff !important;
+            color: #0a0f1a !important;
+            border-color: #00f0ff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.today {
+            border-color: #00f0ff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-current-month,
+        .flatpickr-calendar .flatpickr-monthDropdown-months,
+        .flatpickr-calendar .numInputWrapper input {
+            color: #00f0ff !important;
+            font-family: 'Orbitron', sans-serif !important;
+        }
+
+        .flatpickr-calendar .flatpickr-weekday {
+            color: #9ca3af !important;
+        }
+
+        .flatpickr-calendar .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-calendar .flatpickr-months .flatpickr-next-month {
+            fill: #00f0ff !important;
+        }
+
+        .flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover svg,
+        .flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover svg {
+            fill: #00f0ff !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -68,9 +126,9 @@
                 <div class="filter-group date-group">
                     <label>Date Range</label>
                     <div class="date-inputs">
-                        <input type="date" id="startDate" class="date-input">
+                        <input type="text" id="startDate" class="date-input" placeholder="Start date">
                         <span>to</span>
-                        <input type="date" id="endDate" class="date-input">
+                        <input type="text" id="endDate" class="date-input" placeholder="End date">
                     </div>
                 </div>
 
@@ -119,19 +177,48 @@
         </div>
     </div>
 
+    <!-- Flatpickr Script -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <script>
         const API_URL = 'http://localhost:3000';
         let currentOffset = 0;
         const LIMIT = 24;
         let currentCategory = 'all';
         let isLoading = false;
+        let startDatePicker, endDatePicker;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             setupCategoryButtons();
             setupSearchInput();
+            setupDatePickers();
             loadNews();
         });
+
+        // Setup Flatpickr date pickers
+        function setupDatePickers() {
+            const dateConfig = {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "M j, Y",
+                allowInput: true,
+                theme: "dark",
+                onChange: function () {
+                    applyFilters();
+                }
+            };
+
+            startDatePicker = flatpickr("#startDate", {
+                ...dateConfig,
+                placeholder: "Start date"
+            });
+
+            endDatePicker = flatpickr("#endDate", {
+                ...dateConfig,
+                placeholder: "End date"
+            });
+        }
 
         // Setup category buttons
         function setupCategoryButtons() {
@@ -359,8 +446,9 @@
         // Clear filters
         function clearFilters() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
+            // Clear Flatpickr date pickers
+            if (startDatePicker) startDatePicker.clear();
+            if (endDatePicker) endDatePicker.clear();
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             document.querySelector('.category-btn[data-category="all"]').classList.add('active');
             currentCategory = 'all';

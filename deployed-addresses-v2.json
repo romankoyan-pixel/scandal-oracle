@@ -1,0 +1,27 @@
+{
+  "version": "V2",
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "contracts": {
+    "token": "0xB04eb4FA94Eabf456ebD56064589824C55BfE1D1",
+    "game": "0xB244Ed50A031B7237463d573b72eD447DB15dEcF"
+  },
+  "wallets": {
+    "deployer": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "oracle": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "marketing": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
+    "liquidity": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F"
+  },
+  "fees": {
+    "tokenTax": "3% (1% burn + 1% marketing + 1% liquidity)",
+    "gameFee": "5% (3% owner + 2% burn)"
+  },
+  "security": [
+    "Users can always withdraw",
+    "Emergency withdraw bypasses pause",
+    "Owner cannot access user funds",
+    "Reentrancy protection",
+    "Events for all actions"
+  ],
+  "deployedAt": "2025-12-25T14:51:16.303Z"
+}

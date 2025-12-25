@@ -1,5 +1,5 @@
-// Web3 Configuration for SCANDAL Protocol
-// Base Sepolia Testnet
+// Web3 Configuration for SCANDAL Protocol V2
+// Base Sepolia Testnet - Hybrid Deposit/Withdraw Model
 
 const WEB3_CONFIG = {
     // Network settings
@@ -16,15 +16,23 @@ const WEB3_CONFIG = {
         }
     },
 
-    // Contract addresses
+    // Contract addresses (V2 Security Update - deployed 2025-12-25)
     contracts: {
-        token: '0x0F71E2d170dCdBE32E54D961C31e2101f8826a48',
-        game: '0x15B1787F5a9BD937954EB8111F1Cc513AB41f0DB'
+        token: '0x6E1a42496F19173FA8081598e6a312A7ED56FEc2',
+        game: '0x9CA0B4e427Fd4A79B510a4A5542c804046210F36'
     },
 
-    // Token ABI (minimal for frontend)
+    // API endpoints
+    api: {
+        base: '', // Same origin
+        balance: '/api/v2/balance',
+        bet: '/api/v2/bet',
+        syncBalance: '/api/v2/sync-balance',
+        round: '/api/v2/round'
+    },
+
+    // Token ABI (for approve/transfer)
     tokenABI: [
-        // Read functions
         "function name() view returns (string)",
         "function symbol() view returns (string)",
         "function decimals() view returns (uint8)",
@@ -32,31 +40,44 @@ const WEB3_CONFIG = {
         "function balanceOf(address) view returns (uint256)",
         "function allowance(address owner, address spender) view returns (uint256)",
         "function getTokenomics() view returns (uint256 currentSupply, uint256 currentReserve, uint256 burned, uint256 reserveMin, uint256 reserveMax, bool isTaxEnabled)",
-        // Write functions
         "function approve(address spender, uint256 amount) returns (bool)",
         "function transfer(address to, uint256 amount) returns (bool)",
-        // Events
         "event Transfer(address indexed from, address indexed to, uint256 value)",
         "event Approval(address indexed owner, address indexed spender, uint256 value)"
     ],
 
-    // Game ABI (minimal for frontend)
+    // V2 Game ABI - Hybrid model with deposit/withdraw
     gameABI: [
         // Read functions
+        "function minDeposit() view returns (uint256)",
         "function minBet() view returns (uint256)",
+        "function maxBetAmount() view returns (uint256)",
         "function currentRoundId() view returns (uint256)",
-        "function getCurrentRound() view returns (uint256 id, uint256 startTime, uint256 mintPool, uint256 burnPool, uint256 neutralPool, bool closed)",
-        "function getGameStats() view returns (uint256 totalRounds, uint256 pendingOwnerFees, uint256 tokensBurned, uint256 minimumBet)",
-        "function checkResult(uint256 roundId, address player) view returns (bool participated, uint8 prediction, uint8 result, bool won, bool claimed, uint256 potentialWinnings)",
-        "function bets(uint256 roundId, address player) view returns (uint256 amount, uint8 prediction, bool claimed)",
-        // Write functions
-        "function placeBet(uint8 prediction, uint256 amount)",
-        "function claimWinnings(uint256 roundId)",
+        "function balances(address) view returns (uint256)",
+        "function getCurrentRound() view returns (uint256 id, uint256 startTime, uint256 totalPool, uint256 mintPool, uint256 burnPool, uint256 neutralPool, bool closed)",
+        "function getRoundInfo(uint256 roundId) view returns (uint256 id, uint256 startTime, uint256 endTime, uint256 totalPool, uint8 result, bool closed, bool refunded)",
+        "function isSolvent() view returns (bool)",
+
+        // User functions (on-chain)
+        "function deposit(uint256 amount)",
+        "function withdraw(uint256 amount)",
+        "function emergencyWithdraw()",
+
         // Events
-        "event BetPlaced(uint256 indexed roundId, address indexed player, uint8 prediction, uint256 amount)",
-        "event RoundClosed(uint256 indexed roundId, uint8 result, uint256 rate, uint256 burned)",
-        "event WinningsClaimed(uint256 indexed roundId, address indexed player, uint256 amount)"
-    ]
+        "event Deposited(address indexed user, uint256 amount, uint256 newBalance)",
+        "event Withdrawn(address indexed user, uint256 amount, uint256 newBalance)",
+        "event EmergencyWithdrawn(address indexed user, uint256 amount)",
+        "event BetRecorded(address indexed user, uint256 roundId, uint8 prediction, uint256 amount)",
+        "event BetResult(address indexed user, uint256 roundId, bool won, int256 profitLoss)",
+        "event RoundClosed(uint256 indexed roundId, uint8 result, uint256 totalPool)"
+    ],
+
+    // Bet limits (should match contract)
+    limits: {
+        minDeposit: 1000,
+        minBet: 1000,
+        maxBet: 100000
+    }
 };
 
 // Helper to format token amounts
@@ -70,3 +91,38 @@ function formatTokenAmount(amount, decimals = 18) {
 function parseTokenAmount(amount, decimals = 18) {
     return BigInt(Math.floor(Number(amount) * Math.pow(10, decimals)));
 }
+
+// V2 API Helper
+const GameAPI = {
+    // Get game balance for wallet
+    async getBalance(wallet) {
+        const res = await fetch(`${WEB3_CONFIG.api.balance}/${wallet}`);
+        return res.json();
+    },
+
+    // Place instant bet (off-chain)
+    async placeBet(wallet, prediction, amount) {
+        const res = await fetch(WEB3_CONFIG.api.bet, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wallet, prediction, amount })
+        });
+        return res.json();
+    },
+
+    // Sync balance after on-chain deposit/withdraw
+    async syncBalance(wallet) {
+        const res = await fetch(WEB3_CONFIG.api.syncBalance, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wallet })
+        });
+        return res.json();
+    },
+
+    // Get current round info
+    async getRound() {
+        const res = await fetch(WEB3_CONFIG.api.round);
+        return res.json();
+    }
+};

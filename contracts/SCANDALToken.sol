@@ -39,6 +39,15 @@ contract SCANDALToken is ERC20, Ownable {
     uint256 public totalBurned;
     bool public taxEnabled = false; // Disabled until launch
     
+    // Oracle cooldown (60 seconds between mint/burn)
+    uint256 public constant ORACLE_COOLDOWN = 60;
+    uint256 public lastOracleAction;
+    
+    // Oracle timelock (24 hours)
+    uint256 public constant ORACLE_TIMELOCK = 24 hours;
+    address public pendingOracle;
+    uint256 public oracleChangeTime;
+    
     // Exclude from tax
     mapping(address => bool) public isExcludedFromTax;
     
@@ -46,6 +55,8 @@ contract SCANDALToken is ERC20, Ownable {
     event OracleMint(uint256 amount, uint256 rate, uint256 newReserve);
     event OracleBurn(uint256 amount, uint256 rate, uint256 newReserve);
     event OracleChanged(address indexed oldOracle, address indexed newOracle);
+    event OracleChangePending(address indexed newOracle, uint256 effectiveTime);
+    event OracleChangeCancelled(address indexed cancelledOracle);
     event TaxCollected(uint256 burned, uint256 marketing, uint256 liquidity);
     
     // === MODIFIERS ===
@@ -89,6 +100,7 @@ contract SCANDALToken is ERC20, Ownable {
      */
     function oracleMint(uint256 rate) external onlyOracle {
         require(rate >= 10 && rate <= 30, "Rate must be 10-30 (0.10%-0.30%)");
+        require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
         // Calculate amount based on current reserve
         uint256 amount = (oracleReserve * rate) / TAX_DENOMINATOR;
@@ -96,6 +108,7 @@ contract SCANDALToken is ERC20, Ownable {
         require(oracleReserve >= amount, "Insufficient reserve");
         require(oracleReserve - amount >= ORACLE_RESERVE_MIN, "Would go below min reserve");
         
+        lastOracleAction = block.timestamp;
         oracleReserve -= amount;
         _mint(liquidityWallet, amount); // Released to liquidity
         
@@ -108,6 +121,7 @@ contract SCANDALToken is ERC20, Ownable {
      */
     function oracleBurn(uint256 rate) external onlyOracle {
         require(rate >= 10 && rate <= 30, "Rate must be 10-30 (0.10%-0.30%)");
+        require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
         // Calculate amount based on current reserve
         uint256 amount = (oracleReserve * rate) / TAX_DENOMINATOR;
@@ -118,8 +132,10 @@ contract SCANDALToken is ERC20, Ownable {
         uint256 liquidityBalance = balanceOf(liquidityWallet);
         require(liquidityBalance >= amount, "Insufficient liquidity balance");
         
+        lastOracleAction = block.timestamp;
         _burn(liquidityWallet, amount);
         totalBurned += amount;
+        oracleReserve += amount; // Restore to reserve for future MINTs
         
         emit OracleBurn(amount, rate, oracleReserve);
     }
@@ -160,11 +176,40 @@ contract SCANDALToken is ERC20, Ownable {
         taxEnabled = _enabled;
     }
     
+    /**
+     * @dev Initiate oracle change with 24h timelock
+     */
     function setOracle(address _newOracle) external onlyOwner {
         require(_newOracle != address(0), "Invalid oracle");
+        pendingOracle = _newOracle;
+        oracleChangeTime = block.timestamp + ORACLE_TIMELOCK;
+        emit OracleChangePending(_newOracle, oracleChangeTime);
+    }
+    
+    /**
+     * @dev Confirm oracle change after timelock expires
+     */
+    function confirmOracle() external onlyOwner {
+        require(pendingOracle != address(0), "No pending oracle");
+        require(block.timestamp >= oracleChangeTime, "Timelock not expired");
+        
         address old = oracle;
-        oracle = _newOracle;
-        emit OracleChanged(old, _newOracle);
+        oracle = pendingOracle;
+        pendingOracle = address(0);
+        oracleChangeTime = 0;
+        
+        emit OracleChanged(old, oracle);
+    }
+    
+    /**
+     * @dev Cancel pending oracle change
+     */
+    function cancelOracleChange() external onlyOwner {
+        require(pendingOracle != address(0), "No pending oracle");
+        address cancelled = pendingOracle;
+        pendingOracle = address(0);
+        oracleChangeTime = 0;
+        emit OracleChangeCancelled(cancelled);
     }
     
     function setExcludeFromTax(address account, bool excluded) external onlyOwner {
