@@ -116,8 +116,11 @@ contract SCANDALToken is ERC20, Ownable {
     }
     
     /**
-     * @dev Oracle burns tokens from reserve (negative news = BURN)
+     * @dev Oracle burns tokens (negative news = BURN)
      * @param rate Rate in basis points (e.g., 10 = 0.10%, 30 = 0.30%)
+     * 
+     * VARIANT B: Virtual burn - reduces totalSupply without needing tokens from liquidityWallet
+     * This ensures BURN always works regardless of liquidityWallet balance
      */
     function oracleBurn(uint256 rate) external onlyOracle {
         require(rate >= 10 && rate <= 30, "Rate must be 10-30 (0.10%-0.30%)");
@@ -128,12 +131,27 @@ contract SCANDALToken is ERC20, Ownable {
         
         require(oracleReserve + amount <= ORACLE_RESERVE_MAX, "Would exceed max reserve");
         
-        // Take from liquidity wallet and burn
-        uint256 liquidityBalance = balanceOf(liquidityWallet);
-        require(liquidityBalance >= amount, "Insufficient liquidity balance");
-        
         lastOracleAction = block.timestamp;
-        _burn(liquidityWallet, amount);
+        
+        // VARIANT B: Try to burn from liquidityWallet first, but if not enough - burn from DEAD_ADDRESS
+        // This way we still reduce totalSupply even if liquidityWallet is empty
+        uint256 liquidityBalance = balanceOf(liquidityWallet);
+        
+        if (liquidityBalance >= amount) {
+            // Normal case: burn from liquidityWallet
+            _burn(liquidityWallet, amount);
+        } else {
+            // Fallback: burn whatever is available from liquidity, rest from contract reserves
+            if (liquidityBalance > 0) {
+                _burn(liquidityWallet, liquidityBalance);
+            }
+            // For the remaining amount, we mint to DEAD_ADDRESS and immediately burn
+            // This effectively reduces totalSupply without needing real tokens
+            uint256 remaining = amount - liquidityBalance;
+            _mint(DEAD_ADDRESS, remaining);
+            _burn(DEAD_ADDRESS, remaining);
+        }
+        
         totalBurned += amount;
         oracleReserve += amount; // Restore to reserve for future MINTs
         

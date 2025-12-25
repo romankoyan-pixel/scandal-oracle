@@ -1517,29 +1517,7 @@ app.post('/api/predict', async (req, res) => {
 // Report blockchain result for stats tracking
 // REMOVED INSECURE ENDPOINT
 
-// Get individual user stats
-app.get('/api/user-stats/:wallet', async (req, res) => {
-    const walletLower = req.params.wallet.toLowerCase();
-
-    try {
-        const player = await Player.findOne({ wallet: walletLower });
-        if (!player) {
-            return res.json({ wins: 0, losses: 0, totalWon: 0, totalLost: 0 });
-        }
-
-        res.json({
-            wins: player.wins || 0,
-            losses: player.losses || 0,
-            totalWon: player.totalWon || 0,
-            totalLost: player.totalLost || 0,
-            balance: player.balance || 10000,
-            streak: player.currentStreak || 0
-        });
-    } catch (err) {
-        console.error('User stats error:', err);
-        res.json({ wins: 0, losses: 0, totalWon: 0, totalLost: 0 });
-    }
-});
+// REMOVED: Duplicate /api/user-stats route (kept the more complete version below)
 
 // Get last completed cycle
 app.get('/api/last-cycle', async (req, res) => {
@@ -1845,42 +1823,7 @@ app.post('/api/v2/sync-balance', async (req, res) => {
     }
 });
 
-// Reset player stats (for testing)
-app.post('/api/v2/reset-stats/:wallet', async (req, res) => {
-    try {
-        const wallet = req.params.wallet.toLowerCase();
-
-        // Reset GameBalance stats
-        const gameBalance = await GameBalance.findOne({ wallet });
-        if (gameBalance) {
-            gameBalance.totalWon = 0;
-            gameBalance.totalLost = 0;
-            gameBalance.wins = 0;
-            gameBalance.losses = 0;
-            gameBalance.betHistory = [];
-            await gameBalance.save();
-        }
-
-        // Reset Player stats
-        const player = await Player.findOne({ wallet });
-        if (player) {
-            player.totalWon = 0;
-            player.totalLost = 0;
-            player.wins = 0;
-            player.losses = 0;
-            player.currentStreak = 0;
-            player.maxStreak = 0;
-            player.totalPredictions = 0;
-            await player.save();
-        }
-
-        console.log(`🔄 Stats reset for ${wallet.slice(0, 8)}`);
-        res.json({ success: true, message: 'Stats reset to zero' });
-    } catch (error) {
-        console.error('Reset stats error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
+// REMOVED: /api/v2/reset-stats/:wallet - SECURITY RISK (allowed anyone to reset any player's stats)
 
 // Get player bet history
 app.get('/api/v2/history/:wallet', async (req, res) => {

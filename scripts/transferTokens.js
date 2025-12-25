@@ -1,7 +1,16 @@
 const hre = require("hardhat");
+const fs = require("fs");
 
 async function main() {
-    const tokenAddress = "0x0F71E2d170dCdBE32E54D961C31e2101f8826a48";
+    // Load token address from deployment config (not hardcoded)
+    let tokenAddress;
+    try {
+        const addresses = JSON.parse(fs.readFileSync("./deployed-addresses-v2.json", "utf8"));
+        tokenAddress = addresses.contracts.token;
+    } catch (e) {
+        console.error("❌ Could not load deployed-addresses-v2.json. Run deployV2.js first.");
+        process.exit(1);
+    }
 
     // Get signer
     const [deployer] = await hre.ethers.getSigners();
