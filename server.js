@@ -8,6 +8,13 @@ const mongoose = require('mongoose');
 const { ethers } = require('ethers');
 require('dotenv').config();
 
+// IMMEDIATE LOG - proves server started
+console.log('🔥 Server.js loaded at:', new Date().toISOString());
+console.log('🔥 Node version:', process.version);
+console.log('🔥 MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('🔥 OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('🔥 PRIVATE_KEY exists:', !!process.env.PRIVATE_KEY);
+
 // Import MongoDB models
 const { Player, Prediction, Cycle, SystemState, GameBalance } = require('./models');
 
@@ -81,15 +88,30 @@ const app = express();
 const parser = new Parser();
 
 // ============================================
-// MONGODB CONNECTION
+// MONGODB CONNECTION (with retry)
 // ============================================
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB connected'))
-    .catch(err => console.error('❌ MongoDB error:', err.message));
+const connectMongoDB = async () => {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+        console.error('❌ MONGODB_URI is not set!');
+        return false;
+    }
+    try {
+        await mongoose.connect(uri);
+        console.log('✅ MongoDB connected');
+        return true;
+    } catch (err) {
+        console.error('❌ MongoDB error:', err.message);
+        return false;
+    }
+};
+
+// Connect MongoDB (non-blocking)
+connectMongoDB();
 
 // Initialize OpenAI
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY || 'missing-key'
 });
 
 // Middleware
