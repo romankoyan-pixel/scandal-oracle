@@ -273,7 +273,7 @@ class ScandalOracle {
         document.getElementById('newSupply').textContent = this.formatNumber(impact.newSupply);
 
         // Update total supply in header
-        document.getElementById('totalSupply').textContent = this.formatNumber(this.totalSupply);
+        document.getElementById('totalSupply').textContent = this.totalSupply.toLocaleString('en-US', { maximumFractionDigits: 0 });
 
         this.renderCycles();
     }
