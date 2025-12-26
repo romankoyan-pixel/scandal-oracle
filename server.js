@@ -15,6 +15,11 @@ console.log('🔥 MONGODB_URI exists:', !!process.env.MONGODB_URI);
 console.log('🔥 OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
 console.log('🔥 PRIVATE_KEY exists:', !!process.env.PRIVATE_KEY);
 
+console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('🚀 SCANDAL ORACLE V2.0 - ACTIVE');
+console.log('🧠 AI SCORING: ENABLED (Impact/Controversy/Viral)');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
 // Import MongoDB models
 const { Player, Prediction, Cycle, SystemState, GameBalance } = require('./models');
 
