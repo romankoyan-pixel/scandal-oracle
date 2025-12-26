@@ -346,33 +346,54 @@
 
     <script>
         // ===== WALLET UI INTEGRATION =====
-        document.addEventListener('DOMContentLoaded', () => {
+        function initWalletUI() {
             const connectBtn = document.getElementById('connectWallet');
-            if (!connectBtn) return;
+            if (!connectBtn) {
+                console.warn('Connect button not found');
+                return;
+            }
+
+            // Check if walletManager exists
+            if (typeof walletManager === 'undefined') {
+                console.warn('WalletManager not loaded yet, retrying...');
+                setTimeout(initWalletUI, 100);
+                return;
+            }
+
+            console.log('🔐 Initializing wallet UI...');
 
             // Update button text
             function updateWalletButton(address) {
                 if (address) {
                     connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
                     connectBtn.classList.add('connected');
+                    console.log('✅ Button updated with address:', address);
                 } else {
                     connectBtn.textContent = 'Connect Wallet';
                     connectBtn.classList.remove('connected');
+                    console.log('🔓 Button reset to Connect Wallet');
                 }
             }
 
             // If wallet already connected - update UI
-            if (walletManager && walletManager.isConnected()) {
-                updateWalletButton(walletManager.getAddress());
+            if (walletManager.isConnected()) {
+                const address = walletManager.getAddress();
+                console.log('🔄 Wallet already connected:', address);
+                updateWalletButton(address);
+            } else {
+                console.log('❌ No wallet connected');
             }
 
             // Connect button click
             connectBtn.addEventListener('click', async () => {
                 if (walletManager.isConnected()) {
+                    console.log('Disconnecting wallet...');
                     walletManager.disconnect();
                 } else {
                     try {
-                        await walletManager.connect();
+                        console.log('Connecting wallet...');
+                        const address = await walletManager.connect();
+                        console.log('✅ Connected:', address);
                     } catch (error) {
                         console.error('Failed to connect:', error);
                         alert('Failed to connect wallet. Please try again.');
@@ -382,17 +403,27 @@
 
             // Listen to wallet events
             window.addEventListener('walletConnected', (e) => {
+                console.log('📡 Event: walletConnected', e.detail.address);
                 updateWalletButton(e.detail.address);
             });
 
             window.addEventListener('walletDisconnected', () => {
+                console.log('📡 Event: walletDisconnected');
                 updateWalletButton(null);
             });
 
             window.addEventListener('walletChanged', (e) => {
+                console.log('📡 Event: walletChanged', e.detail.address);
                 updateWalletButton(e.detail.address);
             });
-        });
+        }
+
+        // Wait for DOM and walletManager
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWalletUI);
+        } else {
+            initWalletUI();
+        }
     </script>
     <script src="app.js"></script>
     <script>
