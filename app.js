@@ -96,7 +96,7 @@ class ScandalOracle {
                 localStorage.setItem('scandal_hero_collapsed', 'true');
 
                 // Ensure we are at the top (since content slides up)
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo(0, 0); // Instant scroll to avoid "jump down" effect
             });
         });
     }
