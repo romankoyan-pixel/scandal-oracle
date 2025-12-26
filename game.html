@@ -3357,9 +3357,11 @@
                 // Reset wallet balance to 0 before loading (will be updated from blockchain)
                 document.getElementById('userBalance').textContent = '0';
 
-                // Save session to localStorage
-                localStorage.setItem('scandals_wallet', walletAddress);
-                localStorage.setItem('scandals_lastActive', Date.now().toString());
+                // Save to localStorage (same format as index.html/news.html)
+                localStorage.setItem('scandal_wallet', JSON.stringify({
+                    address: walletAddress,
+                    timestamp: Date.now()
+                }));
 
                 // Load data independently (don't let one failure block others)
                 try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
@@ -4794,23 +4796,56 @@
             }
         }
 
-        // Clear session on page load (user requested NO persistence)
-        function clearSessionOnLoad() {
-            console.log('[SESSION] Clearing session on page load');
-            localStorage.removeItem('scandals_wallet');
-            localStorage.removeItem('scandals_lastActive');
-            // Reset all wallet state
-            walletAddress = null;
-            web3Provider = null;
-            web3Signer = null;
-            tokenContract = null;
-            gameContract = null;
-            myVote = null;
-            myBetAmount = 0;
+        // Auto-restore wallet from localStorage (like index.html/news.html)
+        async function autoRestoreWallet() {
+            const saved = localStorage.getItem('scandal_wallet');
+            if (!saved) {
+                console.log('[SESSION] No saved wallet');
+                return;
+            }
+
+            try {
+                const { address, timestamp } = JSON.parse(saved);
+                const age = Date.now() - timestamp;
+
+                // If less than 24 hours old, auto-restore
+                if (age < 24 * 60 * 60 * 1000 && typeof window.ethereum !== 'undefined') {
+                    console.log('[SESSION] Auto-restoring wallet:', address);
+                    walletAddress = address;
+
+                    // Initialize ethers
+                    web3Provider = new ethers.BrowserProvider(window.ethereum);
+                    web3Signer = await web3Provider.getSigner();
+                    tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
+                    gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
+
+                    // Update UI
+                    document.getElementById('connectWallet').textContent = address.slice(0, 6) + '...' + address.slice(-4);
+                    document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
+                    document.getElementById('gameBalancePanel').style.display = 'block';
+
+                    // Load data
+                    try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
+                    try { await loadV2GameBalance(); } catch (e) { console.log('V2 game balance error:', e); }
+                    try { await loadV2RoundInfo(); } catch (e) { console.log('V2 round info error:', e); }
+                    try { await loadUserStats(); } catch (e) { console.log('User stats error:', e); }
+                    try { await updateGameStatus(); } catch (e) { console.log('Status update error:', e); }
+                    try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
+                    try { await loadBetHistory(); } catch (e) { console.log('Bet history load error:', e); }
+
+                    console.log('✅ Wallet auto-restored');
+                } else {
+                    console.log('[SESSION] Saved wallet expired or MetaMask not available');
+                    localStorage.removeItem('scandal_wallet');
+                }
+            } catch (e) {
+                console.error('[SESSION] Auto-restore error:', e);
+                localStorage.removeItem('scandal_wallet');
+            }
         }
 
-        // Call immediately on load - forces fresh connection each time
-        clearSessionOnLoad();
+        // Auto-restore on page load
+        autoRestoreWallet();
 
         // Load last cycle data for panel display
         loadLastCycleData();
