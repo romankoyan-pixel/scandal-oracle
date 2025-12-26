@@ -3287,10 +3287,9 @@
         let isConnecting = false; // Guard against double-clicks
 
         async function connectWallet() {
-            // Prevent double-clicks
-            if (isConnecting) {
-                return; // Already connecting, ignore
-            }
+            console.log('🖱️ Connect button clicked');
+            // Allow retry even if flag thinks we're connecting (Metamask handles concurrency)
+            // if (isConnecting) return;
 
             // Check for MetaMask
             if (typeof window.ethereum === 'undefined') {
@@ -3300,23 +3299,14 @@
 
             isConnecting = true;
             try {
-                // Try wallet_requestPermissions first (shows account picker)
-                // Fall back to eth_requestAccounts if pending
-                let accounts;
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_requestPermissions',
-                        params: [{ eth_accounts: {} }]
-                    });
-                    accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                } catch (permError) {
-                    // If pending or rejected, fall back to simple request
-                    if (permError.code === -32002 || permError.code === 4001) {
-                        accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    } else {
-                        throw permError;
-                    }
+                // STANDARD CONNECTION: eth_requestAccounts handles both "connect" and "get accounts"
+                // This fixes the "double click" issue caused by wallet_requestPermissions
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No accounts returned');
                 }
+
                 walletAddress = accounts[0];
 
                 // Check/switch network to Base Sepolia
@@ -3552,6 +3542,19 @@
                     currentAverageScore = data.averageScore;
                 }
 
+                // CHECK FOR NEW CYCLE & RESET LOCAL STATE
+                if (currentCycleId && data.cycleId > currentCycleId) {
+                    console.log('🔄 New cycle detected: resetting local bet state');
+                    myVote = null;
+                    myBetAmount = 0;
+                    document.getElementById('yourBet').style.display = 'none';
+                    document.querySelectorAll('.arena-btn').forEach(b => b.classList.remove('selected'));
+
+                    // Force re-check of balance and state
+                    setTimeout(loadV2GameBalance, 500);
+                }
+                currentCycleId = data.cycleId;
+
                 if (typeof data.cycleProgress === 'number' && typeof data.averageScore === 'number') {
                     // Use Oracle score and cycle progress for race
                     updateCoinRace(data.cycleProgress, data.averageScore, data.articlesCount || 0);
@@ -3588,11 +3591,15 @@
 
                 // ===== VOTE BUTTON STATE (use server pendingBet as truth) =====
                 let canVote = false;
+                // Parse balance safely (remove SCNDL text and spaces)
                 const gameBalText = document.getElementById('gameBalance').textContent || '0';
-                const currentGameBalance = Number(gameBalText.replace(/[^0-9.-]/g, '')) || 0;
+                const currentGameBalance = parseInt(gameBalText.replace(/[^\d]/g, '')) || 0;
 
                 // Can vote if: wallet connected, voting open, has balance, NO pending bet
+                // data.userPendingBet comes from server, myVote is local optimistic state
+                // We clear myVote on new cycle above ^
                 const hasPendingBet = !!data.userPendingBet || !!myVote;
+
                 if (walletAddress && data.votingOpen && currentGameBalance >= BET_AMOUNT && !hasPendingBet) {
                     canVote = true;
                 }
@@ -3652,18 +3659,22 @@
                 // Highlight choice
                 document.getElementById(btnId)?.classList.add('selected');
 
-                // OPTIMISTIC UPDATE: Update balance display immediately
-                // This fixes "balance stays the same" visual bug
-                const currentBal = parseInt(document.getElementById('gameBalance').textContent.replace(/[^\d]/g, '')) || 0;
-                const newBal = Math.max(0, currentBal - BET_AMOUNT);
-
-                document.getElementById('gameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
-                if (document.getElementById('modalGameBalance')) {
-                    document.getElementById('modalGameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
+                // AUTHORITATIVE UPDATE: Use real balance from server response
+                if (typeof result.newBalance === 'number') {
+                    const newBal = result.newBalance;
+                    document.getElementById('gameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
+                    if (document.getElementById('modalGameBalance')) {
+                        document.getElementById('modalGameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
+                    }
+                } else {
+                    // Fallback to optimistic if server didn't send balance
+                    const currentBal = parseInt(document.getElementById('gameBalance').textContent.replace(/[^\d]/g, '')) || 0;
+                    const newBal = Math.max(0, currentBal - BET_AMOUNT);
+                    document.getElementById('gameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
                 }
 
-                // Force refresh real data shortly after
-                setTimeout(loadV2GameBalance, 500);
+                // Force refresh real data shortly after just in case
+                setTimeout(loadV2GameBalance, 1000);
                 document.getElementById(btnId)?.classList.add('selected');
 
                 // Show bet info
@@ -3671,8 +3682,7 @@
                 document.getElementById('yourBetAmount').textContent = BET_AMOUNT;
                 document.getElementById('yourBetChoice').textContent = choice;
 
-                // Update game balance display
-                document.getElementById('gameBalance').textContent = result.newBalance.toLocaleString() + ' SCNDL';
+                // REMOVED redundant balance update here (already handled above)
 
                 // Show pending bet info
                 document.getElementById('pendingBetInfo').classList.add('active');
@@ -3681,8 +3691,6 @@
 
                 // Refresh V2 round info for pool display
                 loadV2RoundInfo();
-
-                // Buttons stay disabled until next round!
 
             } catch (error) {
                 console.error('V2 Bet error:', error);
@@ -4242,7 +4250,11 @@
                 // Update any game balance displays
                 const gameBalanceEl = document.getElementById('gameBalance');
                 if (gameBalanceEl) {
-                    gameBalanceEl.textContent = gameBalance.toLocaleString();
+                    const oldVal = gameBalanceEl.textContent;
+                    gameBalanceEl.textContent = gameBalance.toLocaleString() + ' SCNDL';
+                    if (oldVal !== gameBalanceEl.textContent) {
+                        console.log(`💰 Balance updated: ${oldVal} -> ${gameBalanceEl.textContent}`);
+                    }
                 }
 
                 // Check and reset pending bet UI if needed
@@ -4573,6 +4585,9 @@
                 // Mark this round as reported to prevent duplicates
                 reportedRounds.add(roundId);
 
+                // Refresh game balance immediately to show new total
+                await loadV2GameBalance();
+
                 loadLastCycle();
             } catch (error) {
                 console.error('Failed to check result:', error);
@@ -4642,24 +4657,28 @@
                 // Position ranges from 0% (full MINT) to 100% (full BURN)
                 const holoIndicator = document.getElementById('holoIndicator');
                 if (holoIndicator && typeof anime !== 'undefined') {
-                    // Calculate position: 50% is neutral, <50% is mint-side, >50% is burn-side
+                    // Calculate position based on SCORES (0-100), not bet pools
                     let position = 50; // Default neutral
-                    if (data.scaleTilt > 0) {
-                        // Mint-heavy: move left (towards 0%)
-                        position = Math.max(10, 50 - (data.scaleTilt / 2));
-                    } else if (data.scaleTilt < 0) {
-                        // Burn-heavy: move right (towards 100%)
-                        position = Math.min(90, 50 - (data.scaleTilt / 2));
+
+                    if (typeof currentAverageScore !== 'undefined') {
+                        // Direct mapping: 0 (Mint) -> 0%, 50 -> 50%, 100 (Burn) -> 100%
+                        position = Math.max(5, Math.min(95, currentAverageScore));
+                    } else if (data.scaleTilt) {
+                        // Fallback to pool tilt logic if score is missing (rare)
+                        if (data.scaleTilt > 0) position = Math.max(10, 50 - (data.scaleTilt / 2));
+                        else if (data.scaleTilt < 0) position = Math.min(90, 50 - (data.scaleTilt / 2));
                     }
 
-                    // Only animate if significant change (>1%) to prevent jitter
-                    const currentLeft = parseFloat(holoIndicator.style.left) || 50;
-                    if (Math.abs(currentLeft - position) > 1) {
+                    // Prevent jitter using tracked position state
+                    if (typeof window.lastSliderPosition === 'undefined') window.lastSliderPosition = 50;
+
+                    if (Math.abs(window.lastSliderPosition - position) > 2) { // 2% threshold
+                        window.lastSliderPosition = position;
                         anime({
                             targets: holoIndicator,
                             left: position + '%',
-                            duration: 800,
-                            easing: 'easeOutElastic(1, 0.5)'
+                            duration: 1200, // Slower, smoother
+                            easing: 'easeOutQuart' // Smoother easing than Elastic
                         });
                     }
                 }
@@ -4670,11 +4689,12 @@
                     poolTotalEl.textContent = data.totalPool.toLocaleString() + ' $SCNDL';
                 }
 
-                // Update pool bar widths
-                const total = data.totalPool || 1;
-                const mintPct = (data.pools.mint / total * 100) || 33;
-                const neutralPct = (data.pools.neutral / total * 100) || 34;
-                const burnPct = (data.pools.burn / total * 100) || 33;
+                // Update pool bar widths ensuring no "disappearing" bars
+                const total = data.totalPool || 0;
+                // If total is 0, show balanced bars (33/33/33) for aesthetics instead of empty
+                const mintPct = total > 0 ? (data.pools.mint / total * 100) : 33.3;
+                const neutralPct = total > 0 ? (data.pools.neutral / total * 100) : 33.4;
+                const burnPct = total > 0 ? (data.pools.burn / total * 100) : 33.3;
 
                 const mintBar = document.getElementById('poolBarMint');
                 const neutralBar = document.getElementById('poolBarNeutral');
@@ -4776,6 +4796,13 @@
                     loadTokenBalance();
                 }
             }, 30000);
+
+            // Refresh GAME balance periodically (critical for sync after wins/losses)
+            setInterval(() => {
+                if (walletAddress) {
+                    loadV2GameBalance();
+                }
+            }, 4000);
 
             // Local timer ticks every second (smooth countdown)
             setInterval(tickLocalTimer, 1000);
