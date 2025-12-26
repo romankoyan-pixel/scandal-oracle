@@ -305,8 +305,9 @@ class ScandalOracle {
                         if (!h) return '#00f0ff';
                         // Determine color from actual supply change
                         const change = h.change || 0;
-                        if (change > 0) return '#22c55e';  // Green = supply increased (MINT)
-                        if (change < 0) return '#ef4444';  // Red = supply decreased (BURN)
+                        // FIXED: Inverted logic - green for increase, red for decrease
+                        if (change < 0) return '#22c55e';  // Green = supply DECREASED (MINT tokens removed from circulation)
+                        if (change > 0) return '#ef4444';  // Red = supply INCREASED (BURN added tokens)
                         if (h.action === 'GENESIS') return '#00f0ff'; // Cyan = Genesis
                         return '#3b82f6'; // Blue = no change (NEUTRAL)
                     },
@@ -315,8 +316,9 @@ class ScandalOracle {
                         const h = this.displayData[idx];
                         if (!h) return '#00f0ff';
                         const change = h.change || 0;
-                        if (change > 0) return '#22c55e';
-                        if (change < 0) return '#ef4444';
+                        // FIXED: Match background colors
+                        if (change < 0) return '#22c55e';
+                        if (change > 0) return '#ef4444';
                         if (h.action === 'GENESIS') return '#00f0ff';
                         return '#3b82f6';
                     }
