@@ -187,15 +187,28 @@
         const API_URL = 'http://localhost:3000';
 
         // ===== WALLET UI INTEGRATION =====
-        document.addEventListener('DOMContentLoaded', () => {
+        function initWalletUI() {
             const connectBtn = document.getElementById('connectWallet');
-            if (!connectBtn) return;
+            if (!connectBtn) {
+                console.warn('Connect button not found');
+                return;
+            }
+
+            // Check if walletManager exists
+            if (typeof walletManager === 'undefined') {
+                console.warn('WalletManager not loaded, retrying...');
+                setTimeout(initWalletUI, 100);
+                return;
+            }
+
+            console.log('🔐 News: Initializing wallet UI...');
 
             // Update button text
             function updateWalletButton(address) {
                 if (address) {
                     connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
                     connectBtn.classList.add('connected');
+                    console.log('✅ Button updated:', address);
                 } else {
                     connectBtn.textContent = 'Connect Wallet';
                     connectBtn.classList.remove('connected');
@@ -204,7 +217,9 @@
 
             // If wallet already connected - update UI
             if (walletManager.isConnected()) {
-                updateWalletButton(walletManager.getAddress());
+                const address = walletManager.getAddress();
+                console.log('🔄 Wallet already connected:', address);
+                updateWalletButton(address);
             }
 
             // Connect button click
@@ -238,9 +253,16 @@
             setupSearchInput();
             setupDatePickers();
             loadNews();
-        });
+        }
 
-        // Initialize
+        // Init when ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWalletUI);
+        } else {
+            initWalletUI();
+        }
+
+        // Variables
         let currentOffset = 0;
         const LIMIT = 24;
         let currentCategory = 'all';
