@@ -3648,6 +3648,22 @@
                 showMessage(`✓ Bet placed: ${BET_AMOUNT} SCNDL on ${choice}`, 'success');
                 document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
                 const btnId = `arena${choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase()}`;
+
+                // Highlight choice
+                document.getElementById(btnId)?.classList.add('selected');
+
+                // OPTIMISTIC UPDATE: Update balance display immediately
+                // This fixes "balance stays the same" visual bug
+                const currentBal = parseInt(document.getElementById('gameBalance').textContent.replace(/[^\d]/g, '')) || 0;
+                const newBal = Math.max(0, currentBal - BET_AMOUNT);
+
+                document.getElementById('gameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
+                if (document.getElementById('modalGameBalance')) {
+                    document.getElementById('modalGameBalance').textContent = newBal.toLocaleString() + ' SCNDL';
+                }
+
+                // Force refresh real data shortly after
+                setTimeout(loadV2GameBalance, 500);
                 document.getElementById(btnId)?.classList.add('selected');
 
                 // Show bet info
@@ -4182,6 +4198,18 @@
             }
         }
 
+        // AUTO-RESET PENDING UI: If server says no pending bet, clear UI
+        // This handles the case where server auto-cleared it but UI is stuck
+        function checkAndResetPendingUI(data) {
+            const yourBetEl = document.getElementById('yourBet');
+            if (yourBetEl && yourBetEl.style.display !== 'none' && !data.pendingBet) {
+                console.log('🧹 UI Cleanup: Server has no pending bet, hiding UI');
+                yourBetEl.style.display = 'none';
+                // Deselect buttons
+                document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
+            }
+        }
+
         async function confirmDeposit() {
             const amount = Number(document.getElementById('depositAmountInput').value);
 
@@ -4215,6 +4243,11 @@
                 const gameBalanceEl = document.getElementById('gameBalance');
                 if (gameBalanceEl) {
                     gameBalanceEl.textContent = gameBalance.toLocaleString();
+                }
+
+                // Check and reset pending bet UI if needed
+                if (typeof checkAndResetPendingUI === 'function') {
+                    checkAndResetPendingUI(data);
                 }
 
                 // Also update user balance stat card
@@ -4619,12 +4652,16 @@
                         position = Math.min(90, 50 - (data.scaleTilt / 2));
                     }
 
-                    anime({
-                        targets: holoIndicator,
-                        left: position + '%',
-                        duration: 800,
-                        easing: 'easeOutElastic(1, 0.5)'
-                    });
+                    // Only animate if significant change (>1%) to prevent jitter
+                    const currentLeft = parseFloat(holoIndicator.style.left) || 50;
+                    if (Math.abs(currentLeft - position) > 1) {
+                        anime({
+                            targets: holoIndicator,
+                            left: position + '%',
+                            duration: 800,
+                            easing: 'easeOutElastic(1, 0.5)'
+                        });
+                    }
                 }
 
                 // Update pool total display
@@ -4795,6 +4832,35 @@
                 console.error('Restore bet error:', e);
             }
         }
+
+        // Auto-restore wallet from localStorage (connects WalletManager events to Game UI)
+        window.addEventListener('walletConnected', async (event) => {
+            console.log('⚡ Wallet connected event received:', event.detail.address);
+            await connectWallet(event.detail.address); // Trigger existing game logic
+        });
+
+        window.addEventListener('walletChanged', async (event) => {
+            console.log('⚡ Wallet changed event received:', event.detail.address);
+            window.location.reload(); // Simplest way to handle account change
+        });
+
+        window.addEventListener('walletDisconnected', () => {
+            console.log('⚡ Wallet disconnected event received');
+            walletAddress = null;
+            walletConnected = false;
+            // Reset UI
+            if (document.getElementById('walletAddressDisplay')) {
+                document.getElementById('walletAddressDisplay').textContent = '';
+                document.getElementById('walletAddressDisplay').style.display = 'none';
+            }
+            if (document.getElementById('connectWalletBtn')) {
+                document.getElementById('connectWalletBtn').style.display = 'block';
+                document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+            }
+            // Hide panels
+            document.getElementById('dashboardPanel').style.display = 'none';
+            document.getElementById('betHistoryPanel').style.display = 'none';
+        });
 
         // Auto-restore wallet from localStorage (like index.html/news.html)
         async function autoRestoreWallet() {

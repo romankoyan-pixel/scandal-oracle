@@ -1806,7 +1806,21 @@ app.get('/api/v2/balance/:wallet', async (req, res) => {
         if (!balance) {
             balance = { wallet, balance: 0, pendingBet: null };
         }
-        // NOTE: Don't auto-clear stale bets here - processV2GameResults handles them
+
+        // AUTO-CLEAR STALE BETS: If pending bet is from an old cycle, clear it
+        // This fixes the "Stuck Bet" issue on frontend
+        if (balance.pendingBet && balance.pendingBet.roundId && balance.pendingBet.roundId < currentCycle.id) {
+            console.log(`🧹 Auto-clearing stale bet for ${wallet}: Round ${balance.pendingBet.roundId} < Current ${currentCycle.id}`);
+
+            // We need to fetch the real document to save it
+            const realBalance = await GameBalance.findOne({ wallet });
+            if (realBalance) {
+                realBalance.pendingBet = { roundId: null, amount: 0, prediction: null };
+                await realBalance.save();
+                // Update local variable for response
+                balance.pendingBet = null;
+            }
+        }
 
         // Also get on-chain balance for verification
         let onChainBalance = 0;
