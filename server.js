@@ -320,7 +320,11 @@ function calculateWeightedCycleScore(articles) {
     console.log('📊 Calculating weighted score for', articles.length, 'articles:');
 
     articles.forEach((article, i) => {
-        const score = article.score ?? 50; // Use nullish coalescing to preserve 0
+        const score = article.score; // No fallback! AI must give real scores
+        if (score === undefined || score === null) {
+            console.log(`⚠️ Article ${i + 1} has no score, skipping`);
+            return;
+        }
         const category = (article.category || 'world').toLowerCase();
 
         // Base weight from category
@@ -887,28 +891,30 @@ Rate these 3 factors (0-10 each):
    - 5 = Noteworthy but expected developments
    - 0 = Boring, routine, low interest
 
-**Your output score = (Impact + Controversy + Viral) / 3 * 10**
+**Your output score = (Impact × 0.3 + Controversy × 0.5 + Viral × 0.2) × 10**
+
+**IMPORTANT**: For routine news, use LOW values (2-4), NOT zeros! Zeros should only be for completely irrelevant news.
 
 # CALIBRATION EXAMPLES
 Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
-→ Score: 100
+→ Score: (10×0.3 + 10×0.5 + 10×0.2)×10 = 100
 
 Example 2: "Spurs beat OKC in regular season game"
-→ { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine sports game result" }
-→ Score: 0 (converted to 50 in code)
+→ { "impact": 1, "controversy": 2, "viral": 3, "reason": "Routine sports game result" }
+→ Score: (1×0.3 + 2×0.5 + 3×0.2)×10 = 23 (LOW but not zero)
 
-Example 3: "Bitcoin ETF approved by regulators"  
-→ { "impact": 8, "controversy": 1, "viral": 7, "reason": "Major regulatory milestone event" }
-→ Score: 53
+Example 3: "Central bank maintains interest rates"
+→ { "impact": 4, "controversy": 3, "viral": 4, "reason": "Expected monetary policy decision" }
+→ Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (NEUTRAL zone)
 
 Example 4: "Tesla announces layoffs amid restructuring"
-→ { "impact": 5, "controversy": 4, "viral": 6, "reason": "Significant corporate restructuring news" }
-→ Score: 50
+→ { "impact": 5, "controversy": 6, "viral": 6, "reason": "Significant corporate restructuring news" }
+→ Score: (5×0.3 + 6×0.5 + 6×0.2)×10 = 63 (BURN zone)
 
 Example 5: "War escalates, oil prices surge"
 → { "impact": 9, "controversy": 9, "viral": 10, "reason": "Major geopolitical crisis event" }
-→ Score: 93
+→ Score: (9×0.3 + 9×0.5 + 10×0.2)×10 = 92
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
@@ -935,9 +941,12 @@ Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": n
         }
 
         // Calculate weighted score (0-100)
-        // Formula: (Impact + Controversy + Viral) / 3 * 10
-        // We can give slight extra weight to Controversy if we want
-        const rawScore = ((result.impact || 0) + (result.controversy || 0) + (result.viral || 0)) / 3 * 10;
+        // Weighted formula: Controversy is most important for SCANDAL theme
+        const rawScore = (
+            (result.impact || 0) * 0.3 +       // 30% weight
+            (result.controversy || 0) * 0.5 +  // 50% weight (SCANDAL focus)
+            (result.viral || 0) * 0.2          // 20% weight
+        ) * 10;
         const score = Math.min(100, Math.max(0, Math.round(rawScore)));
 
         console.log(`🧠 AI Analysis: Score ${score} | Imp:${result.impact} Cont:${result.controversy} Vir:${result.viral} | "${result.reason}"`);
