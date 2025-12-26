@@ -195,6 +195,25 @@
             color: var(--accent-red);
         }
 
+        .timer-value.syncing {
+            color: var(--accent-cyan);
+            animation: syncPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes syncPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 10px var(--accent-cyan);
+            }
+
+            50% {
+                opacity: 0.5;
+                text-shadow: 0 0 20px var(--accent-cyan);
+            }
+        }
+
         .articles-bar {
             text-align: center;
             padding: 0.8rem;
@@ -2070,29 +2089,32 @@
 
         .pool-section .pool-bar {
             display: flex;
-            height: 8px;
-            border-radius: 4px;
+            height: 10px;
+            border-radius: 5px;
             overflow: hidden;
             background: rgba(0, 20, 40, 0.8);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4), inset 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         .pool-section .pool-bar-mint {
-            background: linear-gradient(90deg, #00ff88, #00cc66);
+            background: linear-gradient(180deg, #4dff9e 0%, #00ff88 50%, #00cc66 100%);
             height: 100%;
             transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         .pool-section .pool-bar-neutral {
-            background: linear-gradient(90deg, #00d4ff, #00f0ff);
+            background: linear-gradient(180deg, #4df0ff 0%, #00f0ff 50%, #00b8d4 100%);
             height: 100%;
             transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         .pool-section .pool-bar-burn {
-            background: linear-gradient(90deg, #ff4444, #cc2222);
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff4444 50%, #cc2222 100%);
             height: 100%;
             transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         .pool-section .pool-amounts {
@@ -3490,6 +3512,11 @@
                 }
 
                 // ===== UPDATE COIN RACE based on Oracle score and cycle time =====
+                // Also update currentAverageScore for Oracle Arena display
+                if (typeof data.averageScore === 'number') {
+                    currentAverageScore = data.averageScore;
+                }
+
                 if (typeof data.cycleProgress === 'number' && typeof data.averageScore === 'number') {
                     // Use Oracle score and cycle progress for race
                     updateCoinRace(data.cycleProgress, data.averageScore, data.articlesCount || 0);
@@ -3504,14 +3531,23 @@
                 document.getElementById('articlesCount').textContent = data.articlesCount;
 
                 const timerEl = document.getElementById('votingTimer');
-                if (data.votingOpen) {
+
+                // Check if blockchain is syncing
+                if (data.sync && data.sync.isSyncing) {
+                    localTimerMode = 'SYNC';
+                    localTimerValue = 0;
+                    timerEl.classList.add('syncing');
+                    timerEl.classList.remove('closed');
+                } else if (data.votingOpen) {
                     localTimerValue = Math.floor(data.votingTimeRemaining / 1000);
                     localTimerMode = 'OPEN';
                     timerEl.classList.remove('closed');
+                    timerEl.classList.remove('syncing');
                 } else {
                     localTimerValue = Math.floor((data.cycleTimeRemaining || 0) / 1000);
                     localTimerMode = 'NEXT';
                     timerEl.classList.add('closed');
+                    timerEl.classList.remove('syncing');
                 }
                 lastServerSync = Date.now();
 
@@ -4665,6 +4701,13 @@
         // Local timer tick - smooth countdown without network jitter
         function tickLocalTimer() {
             const timerEl = document.getElementById('votingTimer');
+
+            // SYNC mode - show pulsing SYNC text instead of timer
+            if (localTimerMode === 'SYNC') {
+                timerEl.textContent = '⚡ SYNCING...';
+                return;
+            }
+
             // Calculate elapsed time since last server sync
             const elapsed = Math.floor((Date.now() - lastServerSync) / 1000);
             const displayValue = Math.max(0, localTimerValue - elapsed);
