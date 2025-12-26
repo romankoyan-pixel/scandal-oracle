@@ -55,6 +55,15 @@ body::before {
     background: radial-gradient(ellipse at center, rgba(10, 14, 23, 0.9) 0%, var(--bg-primary) 100%);
     overflow: hidden;
     z-index: 1;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-section.collapsed {
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
 }
 
 .hero-content {

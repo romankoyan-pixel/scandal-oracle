@@ -69,6 +69,34 @@ class ScandalOracle {
         this.initChart();
         this.setupModal();
         this.setupChartRangeButtons();
+        this.initHeroBehavior();
+    }
+
+    initHeroBehavior() {
+        const hero = document.getElementById('hero');
+        const btns = document.querySelectorAll('.hero-btn, a[href="#oracle"]');
+
+        if (!hero) return;
+
+        // check state
+        if (localStorage.getItem('scandal_hero_collapsed') === 'true') {
+            hero.classList.add('collapsed');
+            // Remove smooth scroll for initial load to prevent "jump"
+            hero.style.transition = 'none';
+        }
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Restore transition (if it was removed on load)
+                hero.style.transition = '';
+
+                hero.classList.add('collapsed');
+                localStorage.setItem('scandal_hero_collapsed', 'true');
+
+                // Allow default anchor behavior (scrolling) or just let it collapse
+                // smooth scroll is handled by CSS usually, but here collapsing itself brings content up using document flow
+            });
+        });
     }
 
     // Load real totalSupply from blockchain
