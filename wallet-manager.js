@@ -28,7 +28,7 @@ class WalletManager {
 
     /**
      * Connect wallet (user clicks "Connect Wallet" button)
-     * NOTE: This does NOT require signature - seamless like game.html
+     * ALWAYS shows MetaMask popup for signature
      */
     async connect() {
         if (!window.ethereum) {
@@ -36,13 +36,8 @@ class WalletManager {
         }
 
         try {
-            // First try to get existing accounts (no popup!)
-            let accounts = await window.ethereum.request({ method: 'eth_accounts' });
-
-            // If no accounts, request access (this shows popup)
-            if (accounts.length === 0) {
-                accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            }
+            // Request account access - ALWAYS shows popup for signature
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
 
             this.provider = new ethers.BrowserProvider(window.ethereum);
             this.signer = await this.provider.getSigner();
