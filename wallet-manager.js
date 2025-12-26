@@ -65,7 +65,7 @@ class WalletManager {
 
     /**
      * Connect wallet (user clicks "Connect Wallet" button)
-     * ALWAYS shows MetaMask popup for signature
+     * ALWAYS shows MetaMask popup using wallet_requestPermissions
      */
     async connect() {
         if (!window.ethereum) {
@@ -73,12 +73,35 @@ class WalletManager {
         }
 
         try {
-            // Request account access - ALWAYS shows popup for signature
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            console.log('🔐 Requesting wallet connection...');
+
+            // Request permissions first (shows account picker popup)
+            // This is the same logic as game.html
+            let accounts;
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_requestPermissions',
+                    params: [{ eth_accounts: {} }]
+                });
+                accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                console.log('✅ Permissions granted');
+            } catch (permError) {
+                // If pending or rejected, fall back to simple request
+                console.log('⚠️ Permission error, falling back:', permError.code);
+                if (permError.code === -32002 || permError.code === 4001) {
+                    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                } else {
+                    throw permError;
+                }
+            }
+
+            if (!accounts || accounts.length === 0) {
+                throw new Error('No accounts found');
+            }
 
             this.provider = new ethers.BrowserProvider(window.ethereum);
             this.signer = await this.provider.getSigner();
-            this.address = await this.signer.getAddress();
+            this.address = accounts[0];
 
             // Save to localStorage with expiry
             this.saveWallet(this.address);
