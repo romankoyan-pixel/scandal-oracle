@@ -1996,41 +1996,48 @@ app.post('/api/v2/bet', async (req, res) => {
             balance = new GameBalance({ wallet: walletLower });
         }
 
-        // Check if already bet this round
-        if (balance.pendingBet && balance.pendingBet.roundId === currentCycle.id) {
-            return res.status(400).json({ error: 'Already bet this round' });
-        }
+        // ATOMIC UPDATE: Check balance AND deduct in one operation to prevent race conditions
+        const updatedBalance = await GameBalance.findOneAndUpdate(
+            {
+                wallet: walletLower,
+                balance: { $gte: betAmount } // Condition: Must have equal or more than betAmount
+            },
+            {
+                $inc: { balance: -betAmount }, // Atomically deduct
+                $set: {
+                    pendingBet: {
+                        roundId: currentCycle.id,
+                        amount: betAmount,
+                        prediction: prediction.toUpperCase()
+                    },
+                    lastBetAt: new Date()
+                },
+                $inc: { totalBet: betAmount } // Atomically increment total bet
+            },
+            { new: true } // Return the updated document
+        );
 
-        // Check sufficient balance
-        if (balance.balance < betAmount) {
+        if (!updatedBalance) {
+            // Check why it failed - either wallet doesn't exist OR insufficient funds
+            // We can use the 'balance' variable we fetched at the start of the function
+            // to provide a better error message if it exists
+
+            // Re-fetch to be sure (in case of very rapid concurrent updates)
+            const checkBalance = await GameBalance.findOne({ wallet: walletLower });
+
+            if (!checkBalance) {
+                return res.status(400).json({ error: 'Wallet not found' });
+            }
+            if (checkBalance.pendingBet && checkBalance.pendingBet.roundId === currentCycle.id) {
+                return res.status(400).json({ error: 'Already bet this round' });
+            }
+
             return res.status(400).json({
                 error: 'Insufficient balance',
-                available: balance.balance,
+                available: checkBalance.balance,
                 requested: betAmount
             });
         }
-
-        // Validate bet limits
-        const MIN_BET = 1000;
-        const MAX_BET = 100000;
-        if (betAmount < MIN_BET) {
-            return res.status(400).json({ error: `Minimum bet is ${MIN_BET} SCNDL` });
-        }
-        if (betAmount > MAX_BET) {
-            return res.status(400).json({ error: `Maximum bet is ${MAX_BET} SCNDL` });
-        }
-
-        // Lock bet amount
-        balance.balance -= betAmount;
-        balance.pendingBet = {
-            roundId: currentCycle.id,
-            amount: betAmount,
-            prediction: prediction.toUpperCase()
-        };
-        balance.totalBet = (balance.totalBet || 0) + betAmount;
-        balance.lastBetAt = new Date();
-
-        await balance.save();
 
         // Record bet on blockchain (async - don't block game)
         // Use blockchain roundId (may differ from server cycleId)
