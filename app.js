@@ -85,20 +85,30 @@ class ScandalOracle {
             hero.style.transition = 'none';
         }
 
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
+        const handleCollapse = (e) => {
+            e.preventDefault();
+            console.log('⚡ Hero collapse triggered');
 
-                // Restore transition (if it was removed on load)
-                hero.style.transition = '';
+            // Restore transition property if it was stripped
+            hero.style.transition = '';
 
-                hero.classList.add('collapsed');
-                localStorage.setItem('scandal_hero_collapsed', 'true');
+            hero.classList.add('collapsed');
+            localStorage.setItem('scandal_hero_collapsed', 'true');
 
-                // Ensure we are at the top (since content slides up)
-                window.scrollTo(0, 0); // Instant scroll to avoid "jump down" effect
+            // FORCE scroll to top immediately to prevent browser jump
+            window.scrollTo(0, 0);
+        };
+
+        if (enterBtn) {
+            enterBtn.addEventListener('click', handleCollapse);
+        } else {
+            // Fallback for older HTML if ID is missing
+            fallbackBtns.forEach(btn => {
+                if (btn.textContent.includes('DASHBOARD')) {
+                    btn.addEventListener('click', handleCollapse);
+                }
             });
-        });
+        }
     }
 
     // Load real totalSupply from blockchain
