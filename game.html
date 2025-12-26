@@ -4641,9 +4641,20 @@
                 const neutralBar = document.getElementById('poolBarNeutral');
                 const burnBar = document.getElementById('poolBarBurn');
 
-                if (mintBar) mintBar.style.width = mintPct + '%';
-                if (neutralBar) neutralBar.style.width = neutralPct + '%';
-                if (burnBar) burnBar.style.width = burnPct + '%';
+                // Only update if value changed (prevents flickering!)
+                const mintWidth = mintPct.toFixed(2) + '%';
+                const neutralWidth = neutralPct.toFixed(2) + '%';
+                const burnWidth = burnPct.toFixed(2) + '%';
+
+                if (mintBar && mintBar.style.width !== mintWidth) {
+                    mintBar.style.width = mintWidth;
+                }
+                if (neutralBar && neutralBar.style.width !== neutralWidth) {
+                    neutralBar.style.width = neutralWidth;
+                }
+                if (burnBar && burnBar.style.width !== burnWidth) {
+                    burnBar.style.width = burnWidth;
+                }
 
                 // Update pool amounts
                 const poolMint = document.getElementById('poolMint');
