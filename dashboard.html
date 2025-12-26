@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCANDAL - Dashboard</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="wallet-manager.js"></script>
+    <script src="web3-config.js"></script>
+</head>
+
+<body>
+    <div class="scanner-line"></div>
+
+    <div class="container" id="oracle">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <h1>SCANDAL</h1>
+                <span class="token-name">$SCNDL</span>
+            </div>
+
+            <!-- Total Supply -->
+            <div class="total-supply">
+                <span class="supply-label">TOTAL SUPPLY</span>
+                <span class="supply-value" id="totalSupply">Loading...</span>
+            </div>
+
+            <!-- Wallet Balance (shown when connected) -->
+            <div class="wallet-balance-widget" id="walletBalanceWidget" style="display: none;">
+                <span class="balance-label">YOUR BALANCE</span>
+                <span class="balance-value" id="scndlBalance">0</span>
+                <span class="balance-token">$SCNDL</span>
+            </div>
+
+            <!-- Header Buttons -->
+            <div class="header-buttons">
+                <a href="news.html" class="btn-news">NEWS</a>
+                <a href="game.html" class="btn-news">ORACLE</a>
+                <a href="#" class="btn-buy" target="_blank">Buy $SCNDL</a>
+                <button class="btn-connect" id="connectWallet">Connect Wallet</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard" id="dashboard-main">
+            <!-- Scandal Meter -->
+            <div class="meter-section">
+                <h2 class="section-title">SCANDAL METER</h2>
+                <div class="meter-container">
+                    <div class="meter-display">
+                        <div class="meter-value" id="scandalScore">--</div>
+                        <div class="meter-label">CURRENT SCORE</div>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meterFill"></div>
+                        <div class="meter-markers">
+                            <span class="marker" style="left: 0%">0</span>
+                            <span class="marker" style="left: 33%">33</span>
+                            <span class="marker" style="left: 66%">66</span>
+                            <span class="marker" style="left: 100%">100</span>
+                        </div>
+                    </div>
+                    <div class="meter-zones">
+                        <div class="zone mint">MINT ZONE</div>
+                        <div class="zone neutral">NEUTRAL</div>
+                        <div class="zone burn">BURN ZONE</div>
+                    </div>
+                </div>
+
+                <!-- Action Status -->
+                <div class="action-status" id="actionStatus">
+                    <div class="action-header">
+                        <div class="action-label">PROJECTED ACTION</div>
+                        <div class="action-value">--</div>
+                    </div>
+                    <div class="action-details">
+                        <div class="action-stat">
+                            <span class="action-stat-label">Impact</span>
+                            <span class="action-stat-value" id="tokenImpact">--</span>
+                        </div>
+                        <div class="action-stat">
+                            <span class="action-stat-label">New Supply</span>
+                            <span class="action-stat-value" id="newSupply">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supply Chart -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3 class="chart-title">SUPPLY HISTORY</h3>
+                        <button class="chart-expand-btn" id="expandChart">⛶ Expand</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="supplyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Feed -->
+            <div class="news-section">
+                <h2 class="section-title">LIVE NEWS FEED</h2>
+                <div class="news-stats">
+                    <div class="stat">
+                        <span class="stat-label">Articles Analyzed</span>
+                        <span class="stat-value" id="articleCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Avg Score</span>
+                        <span class="stat-value" id="avgScore">--</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Next Cycle</span>
+                        <span class="stat-value" id="cycleTimer">2:00</span>
+                    </div>
+                </div>
+                <div class="news-feed" id="newsFeed">
+                    <div class="loading">Initializing Oracle...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokenomics Section -->
+        <div class="tokenomics-section" id="tokenomics">
+            <h2 class="section-title">TOKENOMICS</h2>
+            <div class="tokenomics-grid">
+                <div class="tokenomics-card supply">
+                    <img src="images/scndl_coin_1766434955833.png" alt="SCNDL Coin" class="tokenomics-img">
+                    <div class="tokenomics-card-content">
+                        <h3>Initial Supply</h3>
+                        <p class="tokenomics-value">1B</p>
+                        <p class="tokenomics-desc">1 Billion $SCNDL tokens</p>
+                    </div>
+                </div>
+                <div class="tokenomics-card mint">
+                    <img src="images/mint_zone_icon_1766434971466.png" alt="Mint Zone" class="tokenomics-img">
+                    <div class="tokenomics-card-content">
+                        <h3>Mint Zone</h3>
+                        <p class="tokenomics-value">+0.10% → +0.30%</p>
+                        <p class="tokenomics-desc">Score 0-39 (Good News)</p>
+                    </div>
+                </div>
+                <div class="tokenomics-card burn">
+                    <img src="images/burn_zone_icon_1766434986892.png" alt="Burn Zone" class="tokenomics-img">
+                    <div class="tokenomics-card-content">
+                        <h3>Burn Zone</h3>
+                        <p class="tokenomics-value">-0.10% → -0.30%</p>
+                        <p class="tokenomics-desc">Score 61-100 (Scandal)</p>
+                    </div>
+                </div>
+                <div class="tokenomics-card neutral">
+                    <img src="images/neutral_zone_icon_1766435002090.png" alt="Neutral Zone" class="tokenomics-img">
+                    <div class="tokenomics-card-content">
+                        <h3>Neutral Zone</h3>
+                        <p class="tokenomics-value">0%</p>
+                        <p class="tokenomics-desc">Score 40-60</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Steps Table -->
+            <div class="rate-steps">
+                <h3>Dynamic Rate Steps</h3>
+                <div class="steps-grid">
+                    <div class="step-item mint">
+                        <span class="step-score">0-8</span>
+                        <span class="step-rate">+0.30%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">9-16</span>
+                        <span class="step-rate">+0.25%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">17-24</span>
+                        <span class="step-rate">+0.20%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">25-32</span>
+                        <span class="step-rate">+0.15%</span>
+                    </div>
+                    <div class="step-item mint">
+                        <span class="step-score">33-39</span>
+                        <span class="step-rate">+0.10%</span>
+                    </div>
+                    <div class="step-item neutral">
+                        <span class="step-score">40-60</span>
+                        <span class="step-rate">0%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">61-67</span>
+                        <span class="step-rate">-0.10%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">68-75</span>
+                        <span class="step-rate">-0.15%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">76-83</span>
+                        <span class="step-rate">-0.20%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">84-91</span>
+                        <span class="step-rate">-0.25%</span>
+                    </div>
+                    <div class="step-item burn">
+                        <span class="step-score">92-100</span>
+                        <span class="step-rate">-0.30%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roadmap Section -->
+        <div class="roadmap-section" id="roadmap">
+            <h2 class="section-title">ROADMAP</h2>
+            <div class="roadmap-timeline">
+                <div class="roadmap-item completed">
+                    <div class="roadmap-phase">Phase 1</div>
+                    <h3>Launch</h3>
+                    <ul>
+                        <li>✓ Oracle Development</li>
+                        <li>✓ AI News Analysis</li>
+                        <li>✓ Dashboard Launch</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item active">
+                    <div class="roadmap-phase">Phase 2</div>
+                    <h3>Token Launch</h3>
+                    <ul>
+                        <li>Smart Contract Deploy</li>
+                        <li>DEX Listing</li>
+                        <li>Community Building</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-phase">Phase 3</div>
+                    <h3>Expansion</h3>
+                    <ul>
+                        <li>CEX Listings</li>
+                        <li>Partnerships</li>
+                        <li>Mobile App</li>
+                    </ul>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-phase">Phase 4</div>
+                    <h3>Ecosystem</h3>
+                    <ul>
+                        <li>Staking Platform</li>
+                        <li>DAO Governance</li>
+                        <li>Multi-chain</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Log -->
+        <div class="history-section">
+            <h2 class="section-title">ACTION HISTORY</h2>
+            <div class="history-log" id="historyLog">
+                <div class="log-entry">
+                    <span class="log-time">System initialized</span>
+                    <span class="log-action">Waiting for first cycle...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span>⚡</span>
+                    <span>SCANDAL</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Whitepaper</a>
+                    <a href="#">Docs</a>
+                    <a href="#">Twitter</a>
+                    <a href="#">Telegram</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 SCANDAL Protocol. DYOR.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Full History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>COMPLETE SUPPLY HISTORY</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-chart">
+                <canvas id="fullSupplyChart"></canvas>
+            </div>
+            <div class="modal-stats" id="modalStats"></div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToOracle()"></button>
+
+    <script>
+        // ===== WALLET UI INTEGRATION =====
+        function initWalletUI() {
+            const connectBtn = document.getElementById('connectWallet');
+            if (!connectBtn) {
+                console.warn('Connect button not found');
+                return;
+            }
+
+            // Check if walletManager exists
+            if (typeof walletManager === 'undefined') {
+                console.warn('WalletManager not loaded yet, retrying...');
+                setTimeout(initWalletUI, 100);
+                return;
+            }
+
+            console.log('🔐 Initializing wallet UI...');
+
+            const balanceWidget = document.getElementById('walletBalanceWidget');
+            const balanceValue = document.getElementById('scndlBalance');
+
+            // Update button text and balance widget
+            async function updateWalletButton(address) {
+                if (address) {
+                    connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                    connectBtn.classList.add('connected');
+                    balanceWidget.style.display = 'flex';
+                    await loadBalance(address);
+                    console.log('✅ Button updated with address:', address);
+                } else {
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.classList.remove('connected');
+                    balanceWidget.style.display = 'none';
+                    console.log('🔓 Button reset to Connect Wallet');
+                }
+            }
+
+            // Load SCNDL balance with fallback RPCs
+            async function loadBalance(address) {
+                const RPC_URLS = [
+                    'https://sepolia.base.org',
+                    'https://base-sepolia-rpc.publicnode.com',
+                    'https://base-sepolia.blockpi.network/v1/rpc/public'
+                ];
+
+                balanceValue.textContent = 'Loading...';
+
+                for (const rpcUrl of RPC_URLS) {
+                    try {
+                        console.log(`🔄 Trying RPC: ${rpcUrl}`);
+                        const provider = new ethers.JsonRpcProvider(rpcUrl);
+                        const tokenAddress = '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8';
+                        const tokenABI = ['function balanceOf(address) view returns (uint256)'];
+                        const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+                        // Add timeout
+                        const balancePromise = tokenContract.balanceOf(address);
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Timeout')), 5000)
+                        );
+
+                        const balance = await Promise.race([balancePromise, timeoutPromise]);
+                        const formattedBalance = ethers.formatUnits(balance, 18);
+                        balanceValue.textContent = parseFloat(formattedBalance).toLocaleString('en-US', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2
+                        });
+                        console.log('💰 Balance loaded:', formattedBalance, 'from', rpcUrl);
+                        return; // Success!
+                    } catch (error) {
+                        console.warn(`⚠️ Failed with ${rpcUrl}:`, error.message);
+                        // Try next RPC
+                    }
+                }
+
+                // All RPCs failed
+                console.error('❌ All RPCs failed to load balance');
+                balanceValue.textContent = '0';
+            }
+
+            // If wallet already connected - update UI
+            if (walletManager.isConnected()) {
+                const address = walletManager.getAddress();
+                console.log('🔄 Wallet already connected:', address);
+                updateWalletButton(address);
+            } else {
+                console.log('❌ No wallet connected');
+            }
+
+            // Connect button click
+            connectBtn.addEventListener('click', async () => {
+                if (walletManager.isConnected()) {
+                    console.log('Disconnecting wallet...');
+                    walletManager.disconnect();
+                } else {
+                    try {
+                        console.log('Connecting wallet...');
+                        const address = await walletManager.connect();
+                        console.log('✅ Connected:', address);
+                    } catch (error) {
+                        console.error('Failed to connect:', error);
+                        alert('Failed to connect wallet. Please try again.');
+                    }
+                }
+            });
+
+            // Listen to wallet events
+            window.addEventListener('walletConnected', (e) => {
+                console.log('📡 Event: walletConnected', e.detail.address);
+                updateWalletButton(e.detail.address);
+            });
+
+            window.addEventListener('walletDisconnected', () => {
+                console.log('📡 Event: walletDisconnected');
+                updateWalletButton(null);
+            });
+
+            window.addEventListener('walletChanged', (e) => {
+                console.log('📡 Event: walletChanged', e.detail.address);
+
+
+                updateWalletButton(e.detail.address);
+            });
+        }
+
+        // Wait for DOM and walletManager
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWalletUI);
+        } else {
+            initWalletUI();
+        }
+    </script>
+    <script src="app.js"></script>
+    <script>
+        // Scroll to top button visibility
+        const scrollBtn = document.getElementById('scrollToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                scrollBtn.classList.add('visible');
+            } else {
+                scrollBtn.classList.remove('visible');
+            }
+        });
+
+        // Scroll to oracle anchor on main page
+        function scrollToOracle() {
+            document.getElementById('oracle').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>
