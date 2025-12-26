@@ -369,25 +369,47 @@
                 }
             }
 
-            // Load SCNDL balance
+            // Load SCNDL balance with fallback RPCs
             async function loadBalance(address) {
-                try {
-                    const provider = new ethers.BrowserProvider(window.ethereum);
-                    const tokenAddress = '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8'; // SCNDL Token on Base Sepolia
-                    const tokenABI = ['function balanceOf(address) view returns (uint256)'];
-                    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+                const RPC_URLS = [
+                    'https://sepolia.base.org',
+                    'https://base-sepolia-rpc.publicnode.com',
+                    'https://base-sepolia.blockpi.network/v1/rpc/public'
+                ];
 
-                    const balance = await tokenContract.balanceOf(address);
-                    const formattedBalance = ethers.formatUnits(balance, 18);
-                    balanceValue.textContent = parseFloat(formattedBalance).toLocaleString('en-US', {
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 2
-                    });
-                    console.log('💰 Balance loaded:', formattedBalance);
-                } catch (error) {
-                    console.error('Failed to load balance:', error);
-                    balanceValue.textContent = '0';
+                balanceValue.textContent = 'Loading...';
+
+                for (const rpcUrl of RPC_URLS) {
+                    try {
+                        console.log(`🔄 Trying RPC: ${rpcUrl}`);
+                        const provider = new ethers.JsonRpcProvider(rpcUrl);
+                        const tokenAddress = '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8';
+                        const tokenABI = ['function balanceOf(address) view returns (uint256)'];
+                        const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+                        // Add timeout
+                        const balancePromise = tokenContract.balanceOf(address);
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Timeout')), 5000)
+                        );
+
+                        const balance = await Promise.race([balancePromise, timeoutPromise]);
+                        const formattedBalance = ethers.formatUnits(balance, 18);
+                        balanceValue.textContent = parseFloat(formattedBalance).toLocaleString('en-US', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2
+                        });
+                        console.log('💰 Balance loaded:', formattedBalance, 'from', rpcUrl);
+                        return; // Success!
+                    } catch (error) {
+                        console.warn(`⚠️ Failed with ${rpcUrl}:`, error.message);
+                        // Try next RPC
+                    }
                 }
+
+                // All RPCs failed
+                console.error('❌ All RPCs failed to load balance');
+                balanceValue.textContent = '0';
             }
 
             // If wallet already connected - update UI
