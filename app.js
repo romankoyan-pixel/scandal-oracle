@@ -87,14 +87,16 @@ class ScandalOracle {
 
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
+
                 // Restore transition (if it was removed on load)
                 hero.style.transition = '';
 
                 hero.classList.add('collapsed');
                 localStorage.setItem('scandal_hero_collapsed', 'true');
 
-                // Allow default anchor behavior (scrolling) or just let it collapse
-                // smooth scroll is handled by CSS usually, but here collapsing itself brings content up using document flow
+                // Ensure we are at the top (since content slides up)
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
     }
