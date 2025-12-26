@@ -27,6 +27,15 @@ const CycleSchema = new mongoose.Schema({
         enum: ['MINT', 'NEUTRAL', 'BURN'],
         default: 'NEUTRAL'
     },
+
+    // Top article data for quick access (copied from first article)
+    headline: String,
+    description: String,
+    score: Number,
+    category: String,
+    source: String,
+    url: String,
+
     rate: { type: Number, default: 0 },
     ratePercentage: { type: String, default: '0%' },
 

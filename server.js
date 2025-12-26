@@ -316,6 +316,7 @@ function calculateWeightedCycleScore(articles) {
 
     let weightedSum = 0;
     let totalWeight = 0;
+    const allScores = [];
 
     console.log('📊 Calculating weighted score for', articles.length, 'articles:');
 
@@ -325,6 +326,8 @@ function calculateWeightedCycleScore(articles) {
             console.log(`⚠️ Article ${i + 1} has no score, skipping`);
             return;
         }
+
+        allScores.push(score);
         const category = (article.category || 'world').toLowerCase();
 
         // Base weight from category
@@ -343,8 +346,18 @@ function calculateWeightedCycleScore(articles) {
         console.log(`   [${i + 1}] ${category}: score=${score} | baseWeight=${baseWeight}${isExtreme ? ' x2 EXTREME' : ''} = ${weight.toFixed(2)} | contrib=${(score * weight).toFixed(1)}`);
     });
 
-    const finalScore = totalWeight > 0 ? weightedSum / totalWeight : 50;
-    console.log(`📊 Total: weightedSum=${weightedSum.toFixed(1)} / totalWeight=${totalWeight.toFixed(2)} = ${finalScore.toFixed(1)}`);
+    const weightedAvg = totalWeight > 0 ? weightedSum / totalWeight : 50;
+
+    // NEW: Top score gets extra weight to reduce NEUTRAL bias
+    const topScore = Math.max(...allScores);
+    const bottomScore = Math.min(...allScores);
+
+    // Final score: 70% top score + 30% weighted average
+    // This ensures strong signals (scandals) aren't diluted
+    const finalScore = (topScore * 0.7) + (weightedAvg * 0.3);
+
+    console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} | TopScore=${topScore} | BottomScore=${bottomScore}`);
+    console.log(` 🎯 FINAL: (${topScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
 
     return finalScore;
 }
