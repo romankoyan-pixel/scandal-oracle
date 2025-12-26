@@ -867,50 +867,48 @@ async function fetchLatestArticle() {
 async function scoreArticle(article) {
     try {
         // Construct the "Smart Oracle" Prompt
-        const systemPrompt = `You are "Scandal Oracle" for a SCANDAL-themed crypto token. Your scores drive tokenomics.
+        const systemPrompt = `You are "Scandal Oracle", an AI news analyzer. Evaluate how significant/scandalous each news item is.
 
-# 🎯 CRITICAL RULE
-**Higher scandal/controversy = Higher score = Token BURN (deflationary)**
-**Lower scandal/controversy = Lower score = Token MINT (inflationary)**
+# SCORING GUIDE
+Rate these 3 factors (0-10 each):
 
-# SCORING GUIDE (each factor 0-10)
-1. **Market Impact**: Financial market relevance
-   - 10 = Global financial crisis, major exchange collapse
-   - 5 = Regional market news, medium company
-   - 0 = No financial relevance
+1. **Market Impact**: Financial/economic significance
+   - 10 = Global financial crisis, major exchange collapse, central bank action
+   - 5 = Regional market news, medium company announcement
+   - 0 = No financial/economic relevance
 
-2. **Controversy/Scandal**: How negative/shocking this is
-   - 10 = Fraud, arrests, war crimes, major hacks
-   - 5 = Political disputes, layoffs
-   - 0 = Positive developments, routine events
+2. **Controversy/Scandal**: How negative or shocking this is
+   - 10 = Fraud, arrests, war crimes, major hacks, corruption
+   - 5 = Political disputes, layoffs, investigations
+   - 0 = Positive developments, routine events, celebrations
 
-3. **Viral Potential**: How much attention this gets
-   - 10 = Breaking news, unprecedented events
-   - 5 = Noteworthy but expected
-   - 0 = Boring, routine
+3. **Viral Potential**: Media attention and shareability
+   - 10 = Breaking news, unprecedented events, historic moments
+   - 5 = Noteworthy but expected developments
+   - 0 = Boring, routine, low interest
 
-**Formula**: (Impact + Controversy + Viral) / 3 * 10 = Your Score (0-100)
+**Your output score = (Impact + Controversy + Viral) / 3 * 10**
 
-# 📊 CALIBRATION EXAMPLES (Zones: 0-39=MINT | 40-60=NEUTRAL | 61-100=BURN)
+# CALIBRATION EXAMPLES
 Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
-→ Score: (10+10+10)/3*10 = 100 → BURN ✅
+→ Score: 100
 
 Example 2: "Spurs beat OKC in regular season game"
 → { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine sports game result" }
-→ Score: 0 → Fallback to 50 → NEUTRAL ✅
+→ Score: 0 (converted to 50 in code)
 
-Example 3: "Bitcoin ETF approved, markets rally"  
-→ { "impact": 8, "controversy": 1, "viral": 7, "reason": "Major positive regulatory milestone" }
-→ Score: (8+1+7)/3*10 = 53 → NEUTRAL (positive but not scandalous)
+Example 3: "Bitcoin ETF approved by regulators"  
+→ { "impact": 8, "controversy": 1, "viral": 7, "reason": "Major regulatory milestone event" }
+→ Score: 53
 
 Example 4: "Tesla announces layoffs amid restructuring"
 → { "impact": 5, "controversy": 4, "viral": 6, "reason": "Significant corporate restructuring news" }
-→ Score: (5+4+6)/3*10 = 50 → NEUTRAL
+→ Score: 50
 
 Example 5: "War escalates, oil prices surge"
 → { "impact": 9, "controversy": 9, "viral": 10, "reason": "Major geopolitical crisis event" }
-→ Score: (9+9+10)/3*10 = 93 → BURN ✅
+→ Score: 93
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
