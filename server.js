@@ -891,14 +891,14 @@ async function scoreArticle(article) {
 
 **Formula**: (Impact + Controversy + Viral) / 3 * 10 = Your Score (0-100)
 
-# 📊 CALIBRATION EXAMPLES
+# 📊 CALIBRATION EXAMPLES (Zones: 0-39=MINT | 40-60=NEUTRAL | 61-100=BURN)
 Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
-→ Score: (10+10+10)/3*10 = 100 → BURN
+→ Score: (10+10+10)/3*10 = 100 → BURN ✅
 
 Example 2: "Spurs beat OKC in regular season game"
 → { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine sports game result" }
-→ Score: (0+0+0)/3*10 = 0 → Gets converted to 50 (NEUTRAL)
+→ Score: 0 → Fallback to 50 → NEUTRAL ✅
 
 Example 3: "Bitcoin ETF approved, markets rally"  
 → { "impact": 8, "controversy": 1, "viral": 7, "reason": "Major positive regulatory milestone" }
@@ -910,7 +910,7 @@ Example 4: "Tesla announces layoffs amid restructuring"
 
 Example 5: "War escalates, oil prices surge"
 → { "impact": 9, "controversy": 9, "viral": 10, "reason": "Major geopolitical crisis event" }
-→ Score: (9+9+10)/3*10 = 93 → BURN
+→ Score: (9+9+10)/3*10 = 93 → BURN ✅
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
