@@ -17,14 +17,50 @@ class WalletManager {
     }
 
     async init() {
+        console.log('🔐 WalletManager initializing...');
+
+        // Wait for ethereum provider to be available
+        if (typeof window.ethereum === 'undefined') {
+            console.log('⏳ Waiting for MetaMask...');
+            await this.waitForEthereum();
+        }
+
         // Try to auto-connect if previously connected and not expired
         const saved = this.getSavedWallet();
+        console.log('💾 Saved wallet:', saved);
+
         if (saved && window.ethereum) {
+            console.log('🔄 Attempting auto-connect...');
             await this.autoConnect();
+        } else {
+            console.log('❌ No saved wallet or MetaMask not found');
         }
 
         // Setup MetaMask event listeners
         this.setupListeners();
+    }
+
+    /**
+     * Wait for MetaMask to be injected (max 3 seconds)
+     */
+    async waitForEthereum() {
+        return new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 30; // 3 seconds
+
+            const check = setInterval(() => {
+                attempts++;
+                if (window.ethereum) {
+                    clearInterval(check);
+                    console.log('✅ MetaMask detected!');
+                    resolve();
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(check);
+                    console.log('⚠️ MetaMask not found after 3s');
+                    resolve();
+                }
+            }, 100);
+        });
     }
 
     /**
