@@ -18,6 +18,12 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
     <script src="wallet-manager.js"></script>
     <script src="web3-config.js"></script>
+    <script>
+        // Critical: Check hero state immediately to prevent flicker
+        if (localStorage.getItem('scandal_hero_collapsed') === 'true') {
+            document.documentElement.classList.add('hero-hidden');
+        }
+    </script>
 </head>
 
 <body>
@@ -71,7 +77,7 @@
         </header>
 
         <!-- Main Dashboard -->
-        <div class="dashboard" id="oracle">
+        <div class="dashboard" id="dashboard-main">
             <!-- Scandal Meter -->
             <div class="meter-section">
                 <h2 class="section-title">SCANDAL METER</h2>

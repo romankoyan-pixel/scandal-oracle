@@ -58,6 +58,11 @@ body::before {
     transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Anti-flicker: hide immediately if set in localStorage */
+html.hero-hidden .hero-section {
+    display: none !important;
+}
+
 .hero-section.collapsed {
     height: 0;
     opacity: 0;
