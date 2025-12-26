@@ -2081,7 +2081,7 @@ app.post('/api/v2/bet', async (req, res) => {
             roundId: currentCycle.id,
             prediction: prediction.toUpperCase(),
             amount: betAmount,
-            newBalance: balance.balance
+            newBalance: updatedBalance.balance
         });
 
     } catch (error) {
