@@ -1,12 +1,13 @@
 /**
  * SCANDAL Wallet Manager
- * Centralized wallet connection management using sessionStorage
- * Auto-connects on page load, syncs across pages in same session
+ * Centralized wallet connection management using localStorage with expiry
+ * Auto-connects on page load, syncs across pages
  */
 
 class WalletManager {
     constructor() {
         this.STORAGE_KEY = 'scandal_wallet_session';
+        this.EXPIRY_HOURS = 24; // Wallet session expires after 24 hours
         this.provider = null;
         this.signer = null;
         this.address = null;
@@ -16,7 +17,7 @@ class WalletManager {
     }
 
     async init() {
-        // Try to auto-connect if previously connected in this session
+        // Try to auto-connect if previously connected and not expired
         const saved = this.getSavedWallet();
         if (saved && window.ethereum) {
             await this.autoConnect();
@@ -43,7 +44,7 @@ class WalletManager {
             this.signer = await this.provider.getSigner();
             this.address = await this.signer.getAddress();
 
-            // Save to sessionStorage
+            // Save to localStorage with expiry
             this.saveWallet(this.address);
 
             // Dispatch event for UI updates
@@ -61,7 +62,7 @@ class WalletManager {
     }
 
     /**
-     * Auto-connect on page load (if wallet was connected in this session)
+     * Auto-connect on page load (if wallet was connected recently)
      */
     async autoConnect() {
         try {
@@ -72,7 +73,7 @@ class WalletManager {
 
             const saved = this.getSavedWallet();
 
-            // Verify saved address is still connected
+            // Verify saved address is still connected and not expired
             if (saved && accounts.includes(saved)) {
                 this.provider = new ethers.BrowserProvider(window.ethereum);
                 this.signer = await this.provider.getSigner();
@@ -85,7 +86,7 @@ class WalletManager {
                 console.log('🔄 Auto-connected:', this.address);
                 return true;
             } else {
-                // Wallet disconnected - clear session
+                // Wallet disconnected or expired - clear storage
                 this.clearWallet();
                 return false;
             }
@@ -110,25 +111,35 @@ class WalletManager {
     }
 
     /**
-     * Save wallet address to sessionStorage
+     * Save wallet address to localStorage with expiry timestamp
      */
     saveWallet(address) {
         const data = {
             address,
-            connectedAt: Date.now()
+            connectedAt: Date.now(),
+            expiresAt: Date.now() + (this.EXPIRY_HOURS * 60 * 60 * 1000)
         };
-        sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        console.log('💾 Wallet saved to localStorage (expires in 24h)');
     }
 
     /**
-     * Get saved wallet from sessionStorage
+     * Get saved wallet from localStorage (only if not expired)
      */
     getSavedWallet() {
         try {
-            const data = sessionStorage.getItem(this.STORAGE_KEY);
+            const data = localStorage.getItem(this.STORAGE_KEY);
             if (!data) return null;
 
             const parsed = JSON.parse(data);
+
+            // Check if expired
+            if (Date.now() > parsed.expiresAt) {
+                console.log('⏰ Wallet session expired');
+                this.clearWallet();
+                return null;
+            }
+
             return parsed.address;
         } catch (error) {
             console.error('Failed to parse saved wallet:', error);
@@ -137,10 +148,10 @@ class WalletManager {
     }
 
     /**
-     * Clear wallet from sessionStorage
+     * Clear wallet from localStorage
      */
     clearWallet() {
-        sessionStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.STORAGE_KEY);
     }
 
     /**
