@@ -243,7 +243,7 @@ class ScandalOracle {
 
         // Check if we're syncing with blockchain
         if (this.isSyncing) {
-            timerEl.textContent = '⏳ Syncing...';
+            timerEl.textContent = 'Syncing...';
             timerEl.style.color = '#fbbf24'; // Yellow
         } else {
             timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
