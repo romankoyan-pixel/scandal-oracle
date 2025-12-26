@@ -901,12 +901,12 @@ Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → Score: (10×0.3 + 10×0.5 + 10×0.2)×10 = 100
 
 Example 2: "Spurs beat OKC in regular season game"
-→ { "impact": 1, "controversy": 2, "viral": 3, "reason": "Routine sports game result" }
-→ Score: (1×0.3 + 2×0.5 + 3×0.2)×10 = 23 (LOW but not zero)
+→ { "impact": 4, "controversy": 5, "viral": 5, "reason": "Routine sports game result" }
+→ Score: (4×0.3 + 5×0.5 + 5×0.2)×10 = 47 (NEUTRAL zone ✅)
 
 Example 3: "Central bank maintains interest rates"
 → { "impact": 4, "controversy": 3, "viral": 4, "reason": "Expected monetary policy decision" }
-→ Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (NEUTRAL zone)
+→ Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (NEUTRAL zone ✅)
 
 Example 4: "Tesla announces layoffs amid restructuring"
 → { "impact": 5, "controversy": 6, "viral": 6, "reason": "Significant corporate restructuring news" }
