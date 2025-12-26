@@ -3329,7 +3329,7 @@
                 try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
                 try { await loadV2GameBalance(); } catch (e) { console.log('V2 game balance error:', e); }
                 try { await loadV2RoundInfo(); } catch (e) { console.log('V2 round info error:', e); }
-                // loadUserStats removed - stats now loaded via loadV2GameBalance
+                try { await loadUserStats(); } catch (e) { console.log('User stats error:', e); }
                 try { await updateGameStatus(); } catch (e) { console.log('Status update error:', e); }
                 try { await restoreCurrentBet(); } catch (e) { console.log('Bet restore error:', e); }
                 try { await loadBetHistory(); } catch (e) { console.log('Bet history load error:', e); }
