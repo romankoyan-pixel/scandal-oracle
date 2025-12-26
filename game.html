@@ -3216,6 +3216,7 @@
             myBetAmount = 0;
             poolData = { mint: 0, neutral: 0, burn: 0 };
 
+            // Reset UI elements
             document.getElementById('connectWallet').textContent = 'Connect Wallet';
             document.getElementById('connectWallet').style.background = '';
             document.getElementById('userBalance').textContent = '0';
@@ -3224,6 +3225,20 @@
             document.getElementById('winRate').textContent = '0%';
             document.getElementById('yourBet').style.display = 'none';
             document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
+
+            // Hide game balance panel and reset its value
+            document.getElementById('gameBalancePanel').style.display = 'none';
+            document.getElementById('gameBalance').textContent = '0';
+
+            // Clear bet history
+            const historyContainer = document.getElementById('betHistoryContainer');
+            if (historyContainer) historyContainer.innerHTML = '';
+
+            // Clear localStorage session
+            localStorage.removeItem('scandals_wallet');
+            localStorage.removeItem('scandals_lastActive');
+
             updatePoolDisplay();
         }
 
@@ -3382,19 +3397,16 @@
         async function loadUserStats() {
             if (!walletAddress) return;
 
-            // Balance comes from blockchain (loadTokenBalance)
-            // Other stats come from server (wins/losses from game history)
+            // Load stats from V2 game balance API (same endpoint as loadV2GameBalance)
             try {
-                const res = await fetch(`/api/user-stats/${walletAddress}`);
+                const res = await fetch(`/api/v2/balance/${walletAddress}`);
                 const data = await res.json();
-                // Balance is loaded from blockchain, not from server
-                document.getElementById('userWon').textContent = (data.totalWon || 0).toLocaleString();
-                document.getElementById('userLost').textContent = (data.totalLost || 0).toLocaleString();
 
-                const wins = data.wins || 0;
-                const total = (data.wins || 0) + (data.losses || 0);
-                const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
-                document.getElementById('winRate').textContent = rate + '%';
+                if (data.stats) {
+                    document.getElementById('userWon').textContent = (data.stats.totalWon || 0).toLocaleString();
+                    document.getElementById('userLost').textContent = (data.stats.totalLost || 0).toLocaleString();
+                    document.getElementById('winRate').textContent = (data.stats.winRate || 0) + '%';
+                }
             } catch (error) {
                 console.error('Load user stats error:', error);
             }
