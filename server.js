@@ -320,7 +320,7 @@ function calculateWeightedCycleScore(articles) {
     console.log('📊 Calculating weighted score for', articles.length, 'articles:');
 
     articles.forEach((article, i) => {
-        const score = article.score || 50;
+        const score = article.score ?? 50; // Use nullish coalescing to preserve 0
         const category = (article.category || 'world').toLowerCase();
 
         // Base weight from category
@@ -867,28 +867,50 @@ async function fetchLatestArticle() {
 async function scoreArticle(article) {
     try {
         // Construct the "Smart Oracle" Prompt
-        const systemPrompt = `You are "Scandal Oracle", an AI specialized in detecting financial corruption, crypto rugs, and global crises. Analyze the news.
+        const systemPrompt = `You are "Scandal Oracle" for a SCANDAL-themed crypto token. Your scores drive tokenomics.
 
-# SCORING RUBRIC (0-10)
-- Market Impact: 10 = Global crash, SEC ban. 0 = Low impact.
-- Controversy: 10 = Fraud, Jail, Hack, War crimes. 0 = Routine.
-- Viral Potential: 10 = "Breaking News", shocking. 0 = Boring.
+# 🎯 CRITICAL RULE
+**Higher scandal/controversy = Higher score = Token BURN (deflationary)**
+**Lower scandal/controversy = Lower score = Token MINT (inflationary)**
 
-# CALIBRATION EXAMPLES
+# SCORING GUIDE (each factor 0-10)
+1. **Market Impact**: Financial market relevance
+   - 10 = Global financial crisis, major exchange collapse
+   - 5 = Regional market news, medium company
+   - 0 = No financial relevance
+
+2. **Controversy/Scandal**: How negative/shocking this is
+   - 10 = Fraud, arrests, war crimes, major hacks
+   - 5 = Political disputes, layoffs
+   - 0 = Positive developments, routine events
+
+3. **Viral Potential**: How much attention this gets
+   - 10 = Breaking news, unprecedented events
+   - 5 = Noteworthy but expected
+   - 0 = Boring, routine
+
+**Formula**: (Impact + Controversy + Viral) / 3 * 10 = Your Score (0-100)
+
+# 📊 CALIBRATION EXAMPLES
 Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
+→ Score: (10+10+10)/3*10 = 100 → BURN
 
-Example 2: "Local park opens new playground"
-→ { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine community event" }
+Example 2: "Spurs beat OKC in regular season game"
+→ { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine sports game result" }
+→ Score: (0+0+0)/3*10 = 0 → Gets converted to 50 (NEUTRAL)
 
-Example 3: "Tesla announces 10% layoffs amid restructuring"
-→ { "impact": 6, "controversy": 4, "viral": 7, "reason": "Major company workforce reduction" }
+Example 3: "Bitcoin ETF approved, markets rally"  
+→ { "impact": 8, "controversy": 1, "viral": 7, "reason": "Major positive regulatory milestone" }
+→ Score: (8+1+7)/3*10 = 53 → NEUTRAL (positive but not scandalous)
 
-Example 4: "Central bank raises interest rates 0.25%"
-→ { "impact": 5, "controversy": 2, "viral": 3, "reason": "Standard monetary policy adjustment" }
+Example 4: "Tesla announces layoffs amid restructuring"
+→ { "impact": 5, "controversy": 4, "viral": 6, "reason": "Significant corporate restructuring news" }
+→ Score: (5+4+6)/3*10 = 50 → NEUTRAL
 
-Example 5: "President survives assassination attempt"
-→ { "impact": 9, "controversy": 8, "viral": 10, "reason": "Historic political violence event" }
+Example 5: "War escalates, oil prices surge"
+→ { "impact": 9, "controversy": 9, "viral": 10, "reason": "Major geopolitical crisis event" }
+→ Score: (9+9+10)/3*10 = 93 → BURN
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
@@ -1331,6 +1353,7 @@ app.get('/api/game-status', async (req, res) => {
     const elapsed = Date.now() - currentCycle.startTime;
     const halfCycle = AGGREGATION_INTERVAL / 2;
     const votingOpen = elapsed < halfCycle;
+    const wallet = req.query.wallet; // Extract wallet from query params
 
     const cycleId = currentCycle.id.toString();
     // Legacy vote check removed
