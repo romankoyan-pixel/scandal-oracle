@@ -13,6 +13,8 @@
     <!-- Flatpickr Dark Theme -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <script src="wallet-manager.js"></script>
     <style>
         /* Custom Flatpickr styling to match SCANDAL theme */
         .flatpickr-calendar {
@@ -80,9 +82,11 @@
                 <span class="token-name">$SCNDL</span>
             </div>
             <div class="header-buttons">
-                <a href="index.html" class="btn-news">DASHBOARD</a>
+                <a href="index.html#oracle" class="btn-news">DASHBOARD</a>
                 <a href="news.html" class="btn-news">NEWS</a>
-                <a href="game.html" class="btn-news">PREDICT</a>
+                <a href="game.html" class="btn-news">ORACLE</a>
+                <a href="#" class="btn-buy" target="_blank">Buy $SCNDL</a>
+                <button class="btn-connect" id="connectWallet">Connect Wallet</button>
             </div>
         </header>
 
@@ -177,24 +181,71 @@
         </div>
     </div>
 
-    <!-- Flatpickr Script -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
         const API_URL = 'http://localhost:3000';
-        let currentOffset = 0;
-        const LIMIT = 24;
-        let currentCategory = 'all';
-        let isLoading = false;
-        let startDatePicker, endDatePicker;
 
-        // Initialize
+        // ===== WALLET UI INTEGRATION =====
         document.addEventListener('DOMContentLoaded', () => {
+            const connectBtn = document.getElementById('connectWallet');
+            if (!connectBtn) return;
+
+            // Update button text
+            function updateWalletButton(address) {
+                if (address) {
+                    connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                    connectBtn.classList.add('connected');
+                } else {
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.classList.remove('connected');
+                }
+            }
+
+            // If wallet already connected - update UI
+            if (walletManager.isConnected()) {
+                updateWalletButton(walletManager.getAddress());
+            }
+
+            // Connect button click
+            connectBtn.addEventListener('click', async () => {
+                if (walletManager.isConnected()) {
+                    walletManager.disconnect();
+                } else {
+                    try {
+                        await walletManager.connect();
+                    } catch (error) {
+                        alert('Failed to connect wallet. Please install MetaMask.');
+                    }
+                }
+            });
+
+            // Listen to wallet events
+            window.addEventListener('walletConnected', (e) => {
+                updateWalletButton(e.detail.address);
+            });
+
+            window.addEventListener('walletDisconnected', () => {
+                updateWalletButton(null);
+            });
+
+            window.addEventListener('walletChanged', (e) => {
+                updateWalletButton(e.detail.address);
+            });
+
+            // Setup rest of the page
             setupCategoryButtons();
             setupSearchInput();
             setupDatePickers();
             loadNews();
         });
+
+        // Initialize
+        let currentOffset = 0;
+        const LIMIT = 24;
+        let currentCategory = 'all';
+        let isLoading = false;
+        let startDatePicker, endDatePicker;
 
         // Setup Flatpickr date pickers
         function setupDatePickers() {
