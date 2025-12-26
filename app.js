@@ -744,7 +744,8 @@ class ScandalOracle {
     }
 
     createArticleCard(article, cycleId, index) {
-        const category = article.score < 33 ? 'good' : article.score > 66 ? 'scandal' : 'neutral';
+        // Correct thresholds: 0-39=MINT(green), 40-60=NEUTRAL(cyan), 61-100=BURN(red)
+        const category = article.score <= 39 ? 'good' : article.score <= 60 ? 'neutral' : 'scandal';
         const key = `${cycleId}-${index}`;
         const isExpanded = this.expandedArticles.has(key);
         const shortDesc = article.description ? article.description.substring(0, 100) : '';
