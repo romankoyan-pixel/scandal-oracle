@@ -344,6 +344,56 @@
     <!-- Scroll to Top Button -->
     <button class="scroll-to-top" id="scrollToTop" onclick="scrollToOracle()"></button>
 
+    <script>
+        // ===== WALLET UI INTEGRATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            const connectBtn = document.getElementById('connectWallet');
+            if (!connectBtn) return;
+
+            // Update button text
+            function updateWalletButton(address) {
+                if (address) {
+                    connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                    connectBtn.classList.add('connected');
+                } else {
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.classList.remove('connected');
+                }
+            }
+
+            // If wallet already connected - update UI
+            if (walletManager && walletManager.isConnected()) {
+                updateWalletButton(walletManager.getAddress());
+            }
+
+            // Connect button click
+            connectBtn.addEventListener('click', async () => {
+                if (walletManager.isConnected()) {
+                    walletManager.disconnect();
+                } else {
+                    try {
+                        await walletManager.connect();
+                    } catch (error) {
+                        console.error('Failed to connect:', error);
+                        alert('Failed to connect wallet. Please try again.');
+                    }
+                }
+            });
+
+            // Listen to wallet events
+            window.addEventListener('walletConnected', (e) => {
+                updateWalletButton(e.detail.address);
+            });
+
+            window.addEventListener('walletDisconnected', () => {
+                updateWalletButton(null);
+            });
+
+            window.addEventListener('walletChanged', (e) => {
+                updateWalletButton(e.detail.address);
+            });
+        });
+    </script>
     <script src="app.js"></script>
     <script>
         // Scroll to top button visibility
