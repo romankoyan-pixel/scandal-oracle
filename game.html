@@ -3519,8 +3519,9 @@
                 myBetAmount = BET_AMOUNT;
 
                 showMessage(`✓ Bet placed: ${BET_AMOUNT} SCNDL on ${choice}`, 'success');
-                document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-                document.getElementById(`vote${choice.charAt(0) + choice.slice(1).toLowerCase()}`).classList.add('selected');
+                document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
+                const btnId = `arena${choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase()}`;
+                document.getElementById(btnId)?.classList.add('selected');
 
                 // Show bet info
                 document.getElementById('yourBet').style.display = 'block';
@@ -4634,8 +4635,8 @@
                     myBetAmount = data.pendingBet.amount || BET_AMOUNT;
 
                     // Highlight the button
-                    document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
-                    const btnId = `vote${myVote.charAt(0).toUpperCase() + myVote.slice(1).toLowerCase()}`;
+                    document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
+                    const btnId = `arena${myVote.charAt(0).toUpperCase() + myVote.slice(1).toLowerCase()}`;
                     document.getElementById(btnId)?.classList.add('selected');
 
                     // Show bet info
