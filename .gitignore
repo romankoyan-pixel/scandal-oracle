@@ -1,22 +1,7 @@
-# Dependencies
-node_modules/
-
-# Environment
+node_modules
 .env
-.env.local
-
-# Data files (use MongoDB instead)
-oracle_data.json
 predictions.json
-
-# Logs
-*.log
-npm-debug.log*
-
-# OS
+oracle_data.json
 .DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
+dist
+coverage

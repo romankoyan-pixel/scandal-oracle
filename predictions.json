@@ -1,0 +1,1063 @@
+{
+  "users": {
+    "0xTEST1BC5BFF0": {
+      "points": 0,
+      "streak": 0,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 259,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766438620723
+        },
+        {
+          "cycleId": 261,
+          "vote": "NEUTRAL",
+          "result": "loss",
+          "correctAnswer": "BURN",
+          "timestamp": 1766438860737
+        },
+        {
+          "cycleId": 262,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766438980747
+        }
+      ]
+    },
+    "0xTEST5956F968": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 263,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766439100754
+        }
+      ]
+    },
+    "0xTEST74C35394": {
+      "points": 15,
+      "streak": 2,
+      "maxStreak": 2,
+      "predictions": [
+        {
+          "cycleId": 264,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766439220756
+        },
+        {
+          "cycleId": 265,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766439340758
+        },
+        {
+          "cycleId": 266,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766439460764
+        }
+      ]
+    },
+    "0xTEST6CB4F4D7": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 267,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766439580766
+        }
+      ]
+    },
+    "0xTEST23952BDE": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 271,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "MINT",
+          "timestamp": 1766440060812
+        }
+      ]
+    },
+    "0xTEST263BC57C": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 271,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "MINT",
+          "timestamp": 1766440060812
+        }
+      ]
+    },
+    "0xTEST8666B6AB": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 273,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766440300832
+        }
+      ]
+    },
+    "0xTEST3AD7271F": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 274,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766440420846
+        }
+      ]
+    },
+    "0xTESTACD15DA7": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 275,
+          "vote": "NEUTRAL",
+          "result": "loss",
+          "correctAnswer": "MINT",
+          "timestamp": 1766440540855
+        }
+      ]
+    },
+    "0xTESTBB2CFDF0": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 277,
+          "vote": "MINT",
+          "result": "win",
+          "correctAnswer": "MINT",
+          "timestamp": 1766440780867
+        }
+      ]
+    },
+    "0xTEST1B7EDCA4": {
+      "points": 25,
+      "streak": 2,
+      "maxStreak": 2,
+      "predictions": [
+        {
+          "cycleId": 278,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766440900875
+        },
+        {
+          "cycleId": 279,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766441020883
+        },
+        {
+          "cycleId": 280,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766441140886
+        },
+        {
+          "cycleId": 281,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766441260896
+        }
+      ]
+    },
+    "0xTEST7FBE3900": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 283,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "MINT",
+          "timestamp": 1766441458903
+        }
+      ]
+    },
+    "0xTESTDC1DFD4B": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 286,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766441837510
+        }
+      ]
+    },
+    "0xTEST47BCA79F": {
+      "points": 0,
+      "streak": 0,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 287,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766441957515
+        },
+        {
+          "cycleId": 288,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766442077515
+        },
+        {
+          "cycleId": 289,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "BURN",
+          "timestamp": 1766442197517
+        }
+      ]
+    },
+    "0xTESTE4A60031": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 289,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766442197517
+        }
+      ]
+    },
+    "0xTEST0A28FA21": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 289,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766442197517
+        }
+      ]
+    },
+    "0xTESTC8763586": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 289,
+          "vote": "NEUTRAL",
+          "result": "loss",
+          "correctAnswer": "BURN",
+          "timestamp": 1766442197517
+        }
+      ]
+    },
+    "0xTESTF6C49C64": {
+      "points": 10,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 290,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766442317526
+        }
+      ]
+    },
+    "0xTEST7637696A": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 292,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766442530353
+        }
+      ]
+    },
+    "0xTEST40C43429": {
+      "points": 20,
+      "streak": 2,
+      "maxStreak": 2,
+      "predictions": [
+        {
+          "cycleId": 293,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766442650354
+        },
+        {
+          "cycleId": 294,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766442770356
+        }
+      ]
+    },
+    "0xTEST43B31589": {
+      "points": 5,
+      "streak": 0,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 295,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766442890357
+        },
+        {
+          "cycleId": 296,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766443010360
+        }
+      ]
+    },
+    "0xTESTED28E6AB": {
+      "points": 0,
+      "streak": 1,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 486,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766465811809
+        },
+        {
+          "cycleId": 487,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766465931818
+        },
+        {
+          "cycleId": 488,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766466051826
+        }
+      ]
+    },
+    "0xTESTA8BCF91A": {
+      "points": -15,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 496,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766467837668
+        },
+        {
+          "cycleId": 497,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766467957678
+        },
+        {
+          "cycleId": 499,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766468197694
+        }
+      ]
+    },
+    "0xTESTDAB34AD4": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 502,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766468523546
+        }
+      ]
+    },
+    "0xTEST12CFD179": {
+      "points": 5,
+      "streak": 0,
+      "maxStreak": 1,
+      "predictions": [
+        {
+          "cycleId": 505,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766468883591
+        },
+        {
+          "cycleId": 506,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766469003581
+        }
+      ]
+    },
+    "0xTEST9D3F5244": {
+      "points": 30,
+      "streak": 0,
+      "maxStreak": 3,
+      "predictions": [
+        {
+          "cycleId": 509,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766469273641
+        },
+        {
+          "cycleId": 513,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "BURN",
+          "timestamp": 1766469753680
+        },
+        {
+          "cycleId": 514,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766469873677
+        },
+        {
+          "cycleId": 515,
+          "vote": "NEUTRAL",
+          "result": "win",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766469993679
+        },
+        {
+          "cycleId": 523,
+          "vote": "BURN",
+          "result": "win",
+          "correctAnswer": "BURN",
+          "timestamp": 1766470953739
+        },
+        {
+          "cycleId": 536,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766472427370
+        },
+        {
+          "cycleId": 542,
+          "vote": "MINT",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766473133132
+        }
+      ]
+    },
+    "0xTEST4B658DF1": {
+      "points": -5,
+      "streak": 0,
+      "maxStreak": 0,
+      "predictions": [
+        {
+          "cycleId": 511,
+          "vote": "BURN",
+          "result": "loss",
+          "correctAnswer": "NEUTRAL",
+          "timestamp": 1766469513674
+        }
+      ]
+    }
+  },
+  "cycleVotes": {
+    "259": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST1BC5BFF0": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766438503779
+        }
+      }
+    },
+    "261": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST1BC5BFF0": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766438747893
+        }
+      }
+    },
+    "262": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST1BC5BFF0": {
+          "vote": "BURN",
+          "timestamp": 1766438870364
+        }
+      }
+    },
+    "263": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST5956F968": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766438984191
+        }
+      }
+    },
+    "264": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST74C35394": {
+          "vote": "BURN",
+          "timestamp": 1766439107145
+        }
+      }
+    },
+    "265": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST74C35394": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766439227202
+        }
+      }
+    },
+    "266": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST74C35394": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766439346608
+        }
+      }
+    },
+    "267": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST6CB4F4D7": {
+          "vote": "BURN",
+          "timestamp": 1766439510146
+        }
+      }
+    },
+    "271": {
+      "MINT": 0,
+      "BURN": 2,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST23952BDE": {
+          "vote": "BURN",
+          "timestamp": 1766439989294
+        },
+        "0xTEST263BC57C": {
+          "vote": "BURN",
+          "timestamp": 1766439997191
+        }
+      }
+    },
+    "273": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST8666B6AB": {
+          "vote": "BURN",
+          "timestamp": 1766440226163
+        }
+      }
+    },
+    "274": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST3AD7271F": {
+          "vote": "BURN",
+          "timestamp": 1766440334078
+        }
+      }
+    },
+    "275": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTESTACD15DA7": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766440443124
+        }
+      }
+    },
+    "277": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTBB2CFDF0": {
+          "vote": "MINT",
+          "timestamp": 1766440683604
+        }
+      }
+    },
+    "278": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST1B7EDCA4": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766440813386
+        }
+      }
+    },
+    "279": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST1B7EDCA4": {
+          "vote": "BURN",
+          "timestamp": 1766440920213
+        }
+      }
+    },
+    "280": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST1B7EDCA4": {
+          "vote": "BURN",
+          "timestamp": 1766441027979
+        }
+      }
+    },
+    "281": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST1B7EDCA4": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766441149735
+        }
+      }
+    },
+    "283": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST7FBE3900": {
+          "vote": "BURN",
+          "timestamp": 1766441359955
+        }
+      }
+    },
+    "286": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTDC1DFD4B": {
+          "vote": "BURN",
+          "timestamp": 1766441735287
+        }
+      }
+    },
+    "287": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST47BCA79F": {
+          "vote": "BURN",
+          "timestamp": 1766441859387
+        }
+      }
+    },
+    "288": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST47BCA79F": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766442011114
+        }
+      }
+    },
+    "289": {
+      "MINT": 1,
+      "BURN": 2,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST47BCA79F": {
+          "vote": "MINT",
+          "timestamp": 1766442095747
+        },
+        "0xTESTE4A60031": {
+          "vote": "BURN",
+          "timestamp": 1766442124962
+        },
+        "0xTEST0A28FA21": {
+          "vote": "BURN",
+          "timestamp": 1766442127378
+        },
+        "0xTESTC8763586": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766442131369
+        }
+      }
+    },
+    "290": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTESTF6C49C64": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766442229582
+        }
+      }
+    },
+    "292": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST7637696A": {
+          "vote": "MINT",
+          "timestamp": 1766442449848
+        }
+      }
+    },
+    "293": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST40C43429": {
+          "vote": "BURN",
+          "timestamp": 1766442532703
+        }
+      }
+    },
+    "294": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST40C43429": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766442657904
+        }
+      }
+    },
+    "295": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST43B31589": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766442782695
+        }
+      }
+    },
+    "296": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST43B31589": {
+          "vote": "MINT",
+          "timestamp": 1766442896636
+        }
+      }
+    },
+    "486": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTED28E6AB": {
+          "vote": "BURN",
+          "timestamp": 1766465737444
+        }
+      }
+    },
+    "487": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTED28E6AB": {
+          "vote": "MINT",
+          "timestamp": 1766465834129
+        }
+      }
+    },
+    "488": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTESTED28E6AB": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766465941955
+        }
+      }
+    },
+    "496": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTA8BCF91A": {
+          "vote": "BURN",
+          "timestamp": 1766467728828,
+          "amount": 100
+        }
+      }
+    },
+    "497": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTA8BCF91A": {
+          "vote": "MINT",
+          "timestamp": 1766467848835,
+          "amount": 100
+        }
+      }
+    },
+    "499": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTA8BCF91A": {
+          "vote": "MINT",
+          "timestamp": 1766468095982,
+          "amount": 100
+        }
+      }
+    },
+    "502": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTESTDAB34AD4": {
+          "vote": "BURN",
+          "timestamp": 1766468429952,
+          "amount": 100
+        }
+      }
+    },
+    "505": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST12CFD179": {
+          "vote": "BURN",
+          "timestamp": 1766468797891,
+          "amount": 100
+        }
+      }
+    },
+    "506": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST12CFD179": {
+          "vote": "BURN",
+          "timestamp": 1766468897948,
+          "amount": 100
+        }
+      }
+    },
+    "509": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "BURN",
+          "timestamp": 1766469202181,
+          "amount": 100
+        }
+      }
+    },
+    "511": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST4B658DF1": {
+          "vote": "BURN",
+          "timestamp": 1766469427419,
+          "amount": 100
+        }
+      }
+    },
+    "513": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "MINT",
+          "timestamp": 1766469652166,
+          "amount": 100
+        }
+      }
+    },
+    "514": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "BURN",
+          "timestamp": 1766469783566,
+          "amount": 100
+        }
+      }
+    },
+    "515": {
+      "MINT": 0,
+      "BURN": 0,
+      "NEUTRAL": 1,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "NEUTRAL",
+          "timestamp": 1766469916708,
+          "amount": 100
+        }
+      }
+    },
+    "523": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "BURN",
+          "timestamp": 1766470888465,
+          "amount": 100
+        }
+      }
+    },
+    "536": {
+      "MINT": 0,
+      "BURN": 1,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "BURN",
+          "timestamp": 1766472314039,
+          "amount": 100
+        }
+      }
+    },
+    "542": {
+      "MINT": 1,
+      "BURN": 0,
+      "NEUTRAL": 0,
+      "voters": {
+        "0xTEST9D3F5244": {
+          "vote": "MINT",
+          "timestamp": 1766473040793,
+          "amount": 100
+        }
+      }
+    }
+  }
+}
