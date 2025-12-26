@@ -3218,7 +3218,9 @@
 
         // Toggle wallet connect/disconnect
         function toggleWallet() {
-            if (walletAddress) {
+            const btnText = document.getElementById('connectWallet').textContent;
+            // Only disconnect if we are internally connected AND the button doesn't say "Connect Wallet"
+            if (walletAddress && !btnText.includes('Connect Wallet')) {
                 disconnectWallet();
             } else {
                 connectWallet();
@@ -4891,9 +4893,10 @@
 
         // Auto-restore wallet from localStorage (like index.html/news.html)
         async function autoRestoreWallet() {
-            const saved = localStorage.getItem('scandal_wallet');
+            // Unified key matching WalletManager
+            const saved = localStorage.getItem('scandal_wallet_session');
             if (!saved) {
-                console.log('[SESSION] No saved wallet');
+                console.log('[SESSION] No saved wallet (Unified Key)');
                 return;
             }
 
@@ -4912,10 +4915,13 @@
                     tokenContract = new ethers.Contract(WEB3_CONFIG.contracts.token, WEB3_CONFIG.tokenABI, web3Signer);
                     gameContract = new ethers.Contract(WEB3_CONFIG.contracts.game, WEB3_CONFIG.gameABI, web3Signer);
 
-                    // Update UI
+                    // Update UI - Critical for sync!
                     document.getElementById('connectWallet').textContent = address.slice(0, 6) + '...' + address.slice(-4);
                     document.getElementById('connectWallet').style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
-                    document.getElementById('gameBalancePanel').style.display = 'block';
+
+                    // Show game balance panel IMMEDIATELY
+                    const balancePanel = document.getElementById('gameBalancePanel');
+                    if (balancePanel) balancePanel.style.display = 'block';
 
                     // Load data
                     try { await loadTokenBalance(); } catch (e) { console.log('Balance load error:', e); }
@@ -4929,11 +4935,11 @@
                     console.log('✅ Wallet auto-restored');
                 } else {
                     console.log('[SESSION] Saved wallet expired or MetaMask not available');
-                    localStorage.removeItem('scandal_wallet');
+                    localStorage.removeItem('scandal_wallet_session');
                 }
             } catch (e) {
                 console.error('[SESSION] Auto-restore error:', e);
-                localStorage.removeItem('scandal_wallet');
+                localStorage.removeItem('scandal_wallet_session');
             }
         }
 
