@@ -198,11 +198,35 @@
         .articles-bar {
             text-align: center;
             padding: 0.8rem;
-            background: var(--bg-secondary);
-            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(0, 20, 40, 0.9) 0%, rgba(0, 40, 60, 0.8) 50%, rgba(0, 20, 40, 0.9) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
             margin-bottom: 1rem;
             font-size: 0.9rem;
-            color: var(--text-secondary);
+            color: var(--accent-cyan);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .articles-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 240, 255, 0.03) 2px,
+                    rgba(0, 240, 255, 0.03) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .articles-bar span {
+            position: relative;
+            z-index: 1;
         }
 
         .vote-section {
@@ -1803,6 +1827,29 @@
             transform: translateY(-2px);
         }
 
+        /* Selected state for buttons after placing bet */
+        .arena-btn.selected {
+            transform: scale(1.05);
+        }
+
+        .arena-btn.mint-btn.selected {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.6), rgba(0, 200, 100, 0.7));
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.7), inset 0 0 20px rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .arena-btn.neutral-btn.selected {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.6), rgba(0, 180, 220, 0.7));
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.7), inset 0 0 20px rgba(0, 240, 255, 0.3);
+            border-color: #00f0ff;
+        }
+
+        .arena-btn.burn-btn.selected {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(200, 50, 50, 0.7));
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.3);
+            border-color: #ff4444;
+        }
+
         /* ======== FUTURISTIC HOLOGRAM SLIDER ======== */
         .hologram-container {
             width: 100%;
@@ -2132,17 +2179,14 @@
                                 <div class="holo-label mint">
                                     <span class="label-icon">🟢</span>
                                     <span class="label-name">MINT</span>
-                                    <span class="label-pct" id="holoMintPct">33%</span>
                                 </div>
                                 <div class="holo-label neutral">
                                     <span class="label-icon">🔵</span>
                                     <span class="label-name">NEUTRAL</span>
-                                    <span class="label-pct" id="holoNeutralPct">34%</span>
                                 </div>
                                 <div class="holo-label burn">
                                     <span class="label-icon">🔴</span>
                                     <span class="label-name">BURN</span>
-                                    <span class="label-pct" id="holoBurnPct">33%</span>
                                 </div>
                             </div>
                         </div>
