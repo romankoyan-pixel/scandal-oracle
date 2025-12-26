@@ -1869,6 +1869,23 @@
             border-color: #ff4444;
         }
 
+        /* Disabled state for buttons when voting is closed */
+        .arena-btn:disabled,
+        .arena-btn[disabled] {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(60%);
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .arena-btn:disabled:hover,
+        .arena-btn[disabled]:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            background: inherit;
+        }
+
         /* ======== FUTURISTIC HOLOGRAM SLIDER ======== */
         .hologram-container {
             width: 100%;
