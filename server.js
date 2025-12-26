@@ -248,7 +248,7 @@ async function initializeFromMongo() {
                     action: c.action || 'NEUTRAL',
                     rate: c.rate || 0,
                     ratePercentage: c.ratePercentage || '0%'
-                })).reverse()
+                }))  // Removed .reverse() - cycles already sorted newest first
             };
         }
 
