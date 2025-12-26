@@ -2069,18 +2069,30 @@
         }
 
         .pool-section .pool-bar {
+            display: flex;
             height: 8px;
             border-radius: 4px;
             overflow: hidden;
-            background: linear-gradient(90deg, #00ff88, #00f0ff 50%, #ff4444);
+            background: rgba(0, 20, 40, 0.8);
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
         }
 
-        .pool-section .pool-bar-mint,
-        .pool-section .pool-bar-neutral,
+        .pool-section .pool-bar-mint {
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .pool-section .pool-bar-neutral {
+            background: linear-gradient(90deg, #00d4ff, #00f0ff);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
         .pool-section .pool-bar-burn {
-            display: none;
-            /* Hide individual bars, use gradient instead */
+            background: linear-gradient(90deg, #ff4444, #cc2222);
+            height: 100%;
+            transition: width 0.5s ease;
         }
 
         .pool-section .pool-amounts {
