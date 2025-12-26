@@ -874,6 +874,22 @@ async function scoreArticle(article) {
 - Controversy: 10 = Fraud, Jail, Hack, War crimes. 0 = Routine.
 - Viral Potential: 10 = "Breaking News", shocking. 0 = Boring.
 
+# CALIBRATION EXAMPLES
+Example 1: "FTX collapses, CEO arrested for $8B fraud"
+→ { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
+
+Example 2: "Local park opens new playground"
+→ { "impact": 0, "controversy": 0, "viral": 0, "reason": "Routine community event" }
+
+Example 3: "Tesla announces 10% layoffs amid restructuring"
+→ { "impact": 6, "controversy": 4, "viral": 7, "reason": "Major company workforce reduction" }
+
+Example 4: "Central bank raises interest rates 0.25%"
+→ { "impact": 5, "controversy": 2, "viral": 3, "reason": "Standard monetary policy adjustment" }
+
+Example 5: "President survives assassination attempt"
+→ { "impact": 9, "controversy": 8, "viral": 10, "reason": "Historic political violence event" }
+
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
 
