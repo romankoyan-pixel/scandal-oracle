@@ -1363,6 +1363,9 @@ app.get('/api/game-status', async (req, res) => {
     const wallet = req.query.wallet; // Extract wallet from query params
 
     const cycleId = currentCycle.id.toString();
+    let userVote = null;
+    let userPendingBet = null;
+
     // Legacy vote check removed
     // if (wallet && predictions.cycleVotes[cycleId]?.voters?.[wallet]) {
     //     userVote = predictions.cycleVotes[cycleId].voters[wallet].vote;
