@@ -284,80 +284,8 @@ async function syncCycleWithBlockchain() {
 // Initial empty data (will be populated after MongoDB connects)
 let savedData = { cycles: [], lastCycleId: 0, seenLinks: [], seenTitles: [] };
 
-// EXPANDED RSS Feed Sources - Trusted Worldwide
-const RSS_FEEDS = {
-    politics: [
-        'https://feeds.bbci.co.uk/news/politics/rss.xml',
-        'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml',
-        'https://feeds.npr.org/1014/rss.xml',
-        'https://thehill.com/feed/',
-        'https://www.politico.com/rss/politicopicks.xml',
-        'https://feeds.washingtonpost.com/rss/politics'
-    ],
-    world: [
-        'https://feeds.bbci.co.uk/news/world/rss.xml',
-        'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-        'https://www.aljazeera.com/xml/rss/all.xml',
-        'https://www.theguardian.com/world/rss',
-        'https://rss.dw.com/rdf/rss-en-world',
-        'https://www.france24.com/en/rss',
-        'https://feeds.skynews.com/feeds/rss/world.xml',
-        'https://www.euronews.com/rss?level=theme&name=news',
-        'https://abcnews.go.com/abcnews/internationalheadlines'
-    ],
-    crypto: [
-        'https://www.coindesk.com/arc/outboundfeeds/rss/',
-        'https://cointelegraph.com/rss',
-        'https://decrypt.co/feed',
-        'https://www.theblock.co/rss.xml',
-        'https://bitcoinmagazine.com/.rss/full/'
-    ],
-    business: [
-        'https://feeds.bbci.co.uk/news/business/rss.xml',
-        'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
-        'https://feeds.bloomberg.com/markets/news.rss',
-        'https://www.cnbc.com/id/100003114/device/rss/rss.html',
-        'https://feeds.marketwatch.com/marketwatch/topstories/',
-        'https://www.investing.com/rss/news.rss',
-        'https://seekingalpha.com/feed.xml'
-    ],
-    tech: [
-        'https://feeds.arstechnica.com/arstechnica/index',
-        'https://www.theverge.com/rss/index.xml',
-        'https://techcrunch.com/feed/',
-        'https://www.wired.com/feed/rss',
-        'https://feeds.feedburner.com/TechCrunch/',
-        'https://www.engadget.com/rss.xml'
-    ],
-    sports: [
-        'https://www.espn.com/espn/rss/news',
-        'https://feeds.bbci.co.uk/sport/rss.xml',
-        'https://www.skysports.com/rss/12040',
-        'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml'
-    ],
-    esports: [
-        'https://www.hltv.org/rss/news',
-        'https://www.dexerto.com/feed/',
-        'https://www.gamesindustry.biz/feed',
-        'https://kotaku.com/rss'
-    ],
-    science: [
-        'https://www.sciencedaily.com/rss/all.xml',
-        'https://rss.nytimes.com/services/xml/rss/nyt/Science.xml',
-        'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
-        'https://www.newscientist.com/feed/home/?cmpid=RSS|NSNS-Home',
-        'https://phys.org/rss-feed/',
-        'https://www.livescience.com/feeds/all'
-    ],
-    breaking: [
-        'https://feeds.bbci.co.uk/news/rss.xml',
-        'https://rss.cnn.com/rss/edition.rss',
-        'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
-        'https://abcnews.go.com/abcnews/topstories',
-        'https://feeds.nbcnews.com/nbcnews/public/news',
-        'https://www.cbsnews.com/latest/rss/main'
-    ]
-};
+// Load RSS Feeds
+const RSS_FEEDS = require('./config/feeds');
 
 // ============================================
 // CATEGORY WEIGHTS FOR SCORING
@@ -478,28 +406,9 @@ const MIN_ARTICLES_FOR_GAME = 0; // TESTING: set to 5 for production
 // ============================================
 // PREDICTIONS SYSTEM
 // ============================================
-const PREDICTIONS_FILE = path.join(__dirname, 'predictions.json');
-
-function loadPredictions() {
-    try {
-        if (fs.existsSync(PREDICTIONS_FILE)) {
-            return JSON.parse(fs.readFileSync(PREDICTIONS_FILE, 'utf8'));
-        }
-    } catch (e) {
-        console.error('Error loading predictions:', e.message);
-    }
-    return { users: {}, cycleVotes: {} };
-}
-
-function savePredictions() {
-    try {
-        fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(predictions, null, 2));
-    } catch (e) {
-        console.error('Error saving predictions:', e.message);
-    }
-}
-
-let predictions = loadPredictions();
+// ============================================
+// PREDICTIONS SYSTEM (MongoDB Based)
+// ============================================
 
 // Process predictions when cycle closes - MongoDB with pari-mutuel betting
 async function processPredictions(cycle) {
@@ -599,35 +508,7 @@ async function processPredictions(cycle) {
             }
         }
 
-        // Also update JSON predictions for backwards compatibility
-        const cycleIdStr = cycleId.toString();
-        const cycleVotes = predictions.cycleVotes[cycleIdStr];
-        if (cycleVotes && cycleVotes.voters) {
-            for (const [wallet, voteData] of Object.entries(cycleVotes.voters)) {
-                const user = predictions.users[wallet];
-                if (!user) continue;
-
-                const won = voteData.vote === correctAnswer;
-                user.predictions.push({
-                    cycleId: cycle.id,
-                    vote: voteData.vote,
-                    result: won ? 'win' : 'loss',
-                    correctAnswer,
-                    timestamp: Date.now()
-                });
-
-                if (won) {
-                    user.points += 10;
-                    user.streak++;
-                    if (user.streak > user.maxStreak) user.maxStreak = user.streak;
-                    if (user.streak >= 3) user.points += 5;
-                } else {
-                    user.points -= 5;
-                    user.streak = 0;
-                }
-            }
-            savePredictions();
-        }
+        // End of cycle processing
 
         console.log(`🎮 Cycle ${cycleId}: ${cyclePredictions.length} real bets, ${winners.length} real winners`);
         console.log(`💰 Pool: ${totalPool} (incl bots) | Prize: ${prizePool.toFixed(0)} | Per winner: ${prizePerWinner.toFixed(0)}`);
@@ -662,19 +543,7 @@ async function refundPredictions(cycleId) {
             }
         }
 
-        // Also update JSON predictions
-        const cycleIdStr = cycleId.toString();
-        const cycleVotes = predictions.cycleVotes[cycleIdStr];
-        if (cycleVotes && cycleVotes.voters) {
-            for (const wallet of Object.keys(cycleVotes.voters)) {
-                const user = predictions.users[wallet];
-                if (user && user.predictions) {
-                    const pred = user.predictions.find(p => p.cycleId === cycleId && !p.result);
-                    if (pred) pred.result = 'refund';
-                }
-            }
-            savePredictions();
-        }
+        // End of refund processing
 
         console.log(`💸 Cycle ${cycleId}: Refunded ${cyclePredictions.length} bets (no articles)`);
 
@@ -989,32 +858,67 @@ async function fetchLatestArticle() {
     }
 }
 
-// Score article
+// Smart Score Checker V2 - Multi-factor Analysis
 async function scoreArticle(article) {
     try {
-        const prompt = `Rate this news 0-100 (0=very positive, 50=neutral, 100=scandalous):
-"${article.title}" - ${article.description?.substring(0, 200) || ''}
-Reply ONLY the number.`;
+        // Construct the "Smart Oracle" Prompt
+        const systemPrompt = `You are "Scandal Oracle", an AI specialized in detecting financial corruption, crypto rugs, and global crises. Analyze the news.
+
+# SCORING RUBRIC (0-10)
+- Market Impact: 10 = Global crash, SEC ban. 0 = Low impact.
+- Controversy: 10 = Fraud, Jail, Hack, War crimes. 0 = Routine.
+- Viral Potential: 10 = "Breaking News", shocking. 0 = Boring.
+
+# TASK
+Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
+
+        const userPrompt = `News: "${article.title}" - ${article.description?.substring(0, 300) || ''}`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini",
             messages: [
-                { role: "system", content: "Reply with only a number 0-100. Nothing else." },
-                { role: "user", content: prompt }
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
             ],
-            max_completion_tokens: 10
+            response_format: { type: "json_object" }, // Enforce JSON
+            max_completion_tokens: 100
         });
 
-        const response = completion.choices[0].message.content.trim();
-        const score = parseInt(response.match(/\d+/)?.[0] || '50');
-        return { ...article, score: Math.min(100, Math.max(0, score)) };
+        const responseContent = completion.choices[0].message.content.trim();
+        let result;
+        try {
+            result = JSON.parse(responseContent);
+        } catch (e) {
+            console.error('JSON parse failed, manual fallback');
+            result = { impact: 5, controversy: 5, viral: 5, reason: "Parse error" };
+        }
+
+        // Calculate weighted score (0-100)
+        // Formula: (Impact + Controversy + Viral) / 3 * 10
+        // We can give slight extra weight to Controversy if we want
+        const rawScore = ((result.impact || 0) + (result.controversy || 0) + (result.viral || 0)) / 3 * 10;
+        const score = Math.min(100, Math.max(0, Math.round(rawScore)));
+
+        console.log(`🧠 AI Analysis: Score ${score} | Imp:${result.impact} Cont:${result.controversy} Vir:${result.viral} | "${result.reason}"`);
+
+        return {
+            ...article,
+            score,
+            analysis: {
+                impact: result.impact,
+                controversy: result.controversy,
+                viral: result.viral,
+                reason: result.reason
+            }
+        };
+
     } catch (error) {
         console.error('⚠️ Scoring error:', error.message);
         const title = article.title.toLowerCase();
         let score = 50;
         if (title.match(/scandal|corruption|crisis|war|attack|killed|fraud/)) score = 80;
         else if (title.match(/peace|success|growth|agreement|win|launch/)) score = 20;
-        return { ...article, score };
+        return { ...article, score, analysis: { reason: "Fallback logic" } };
     }
 }
 
@@ -1389,19 +1293,8 @@ app.post('/api/vote', async (req, res) => {
             result: 'pending'
         });
 
-        // Also update JSON for backwards compatibility
-        const cycleIdStr = cycleId.toString();
-        if (!predictions.cycleVotes[cycleIdStr]) {
-            predictions.cycleVotes[cycleIdStr] = { MINT: 0, BURN: 0, NEUTRAL: 0, voters: {} };
-        }
-        predictions.cycleVotes[cycleIdStr][vote]++;
-        predictions.cycleVotes[cycleIdStr].voters[wallet] = { vote, timestamp: Date.now(), amount };
-
-        if (!predictions.users[wallet]) {
-            predictions.users[wallet] = { points: 0, streak: 0, maxStreak: 0, predictions: [] };
-        }
-
-        savePredictions();
+        // Legacy JSON logic removed
+        // savePredictions();
 
         console.log(`🎮 Vote: ${wallet.slice(0, 6)}... → ${vote} (${amount} $SCNDL)`);
         res.json({ success: true, vote, cycleId, amount, newBalance: player.balance });
@@ -1419,17 +1312,10 @@ app.get('/api/game-status', async (req, res) => {
     const votingOpen = elapsed < halfCycle;
 
     const cycleId = currentCycle.id.toString();
-    const votes = predictions.cycleVotes[cycleId] || { MINT: 0, BURN: 0, NEUTRAL: 0 };
-
-    // Check if user voted (from query param) - also check V2 pendingBet
-    const wallet = req.query.wallet?.toLowerCase();
-    let userVote = null;
-    let userPendingBet = null;
-
-    // Legacy vote check
-    if (wallet && predictions.cycleVotes[cycleId]?.voters?.[wallet]) {
-        userVote = predictions.cycleVotes[cycleId].voters[wallet].vote;
-    }
+    // Legacy vote check removed
+    // if (wallet && predictions.cycleVotes[cycleId]?.voters?.[wallet]) {
+    //     userVote = predictions.cycleVotes[cycleId].voters[wallet].vote;
+    // }
 
     // V2 pending bet check from GameBalance
     if (wallet) {
@@ -1473,7 +1359,7 @@ app.get('/api/game-status', async (req, res) => {
         cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL), // 0 to 1
         averageScore: avgScore, // Oracle score for race
         projectedAction: rateInfo.action, // MINT, BURN, or NEUTRAL
-        totalVotes: votes.MINT + votes.BURN + votes.NEUTRAL,
+        totalVotes: pools.mint + pools.burn + pools.neutral,
         articlesCount: currentCycle.articles.length,
         minArticlesRequired: MIN_ARTICLES_FOR_GAME,
         userVote,
@@ -1510,21 +1396,7 @@ app.get('/api/leaderboard', async (req, res) => {
     } catch (err) {
         console.error('Leaderboard error:', err);
         // Fallback to JSON data
-        const users = Object.entries(predictions.users)
-            .map(([wallet, data]) => ({
-                wallet: wallet.slice(0, 6) + '...' + wallet.slice(-4),
-                fullWallet: wallet,
-                balance: 10000 + (data.points * 10),
-                totalWon: data.points > 0 ? data.points * 10 : 0,
-                totalLost: data.points < 0 ? Math.abs(data.points) * 10 : 0,
-                profit: data.points * 10,
-                streak: data.streak,
-                maxStreak: data.maxStreak
-            }))
-            .sort((a, b) => b.balance - a.balance)
-            .slice(0, 20);
-
-        res.json({ leaderboard: users });
+        res.json({ leaderboard: [] });
     }
 });
 
@@ -1567,10 +1439,7 @@ app.post('/api/predict', async (req, res) => {
     }
 });
 
-// Report blockchain result for stats tracking
-// REMOVED INSECURE ENDPOINT
-
-// REMOVED: Duplicate /api/user-stats route (kept the more complete version below)
+// REMOVED INSECURE & REDUNDANT ENDPOINTS
 
 // Get last completed cycle
 app.get('/api/last-cycle', async (req, res) => {
