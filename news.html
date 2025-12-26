@@ -81,6 +81,14 @@
                 <h1>SCANDAL</h1>
                 <span class="token-name">NEWS</span>
             </div>
+
+            <!-- Wallet Balance (shown when connected) -->
+            <div class="wallet-balance-widget" id="walletBalanceWidget" style="display: none;">
+                <span class="balance-label">YOUR BALANCE</span>
+                <span class="balance-value" id="scndlBalance">0</span>
+                <span class="balance-token">$SCNDL</span>
+            </div>
+
             <div class="header-buttons">
                 <a href="index.html#oracle" class="btn-news">DASHBOARD</a>
                 <a href="news.html" class="btn-news">NEWS</a>
@@ -203,15 +211,42 @@
 
             console.log('🔐 News: Initializing wallet UI...');
 
-            // Update button text
-            function updateWalletButton(address) {
+            const balanceWidget = document.getElementById('walletBalanceWidget');
+            const balanceValue = document.getElementById('scndlBalance');
+
+            // Update button text and balance widget
+            async function updateWalletButton(address) {
                 if (address) {
                     connectBtn.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
                     connectBtn.classList.add('connected');
+                    balanceWidget.style.display = 'flex';
+                    await loadBalance(address);
                     console.log('✅ Button updated:', address);
                 } else {
                     connectBtn.textContent = 'Connect Wallet';
                     connectBtn.classList.remove('connected');
+                    balanceWidget.style.display = 'none';
+                }
+            }
+
+            // Load SCNDL balance
+            async function loadBalance(address) {
+                try {
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const tokenAddress = '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8';
+                    const tokenABI = ['function balanceOf(address) view returns (uint256)'];
+                    const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+                    const balance = await tokenContract.balanceOf(address);
+                    const formattedBalance = ethers.formatUnits(balance, 18);
+                    balanceValue.textContent = parseFloat(formattedBalance).toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2
+                    });
+                    console.log('💰 Balance loaded:', formattedBalance);
+                } catch (error) {
+                    console.error('Failed to load balance:', error);
+                    balanceValue.textContent = '0';
                 }
             }
 
