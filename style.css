@@ -18,6 +18,26 @@
     box-sizing: border-box;
 }
 
+/* Global Scrollbar - Cyberpunk Theme */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-cyan);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-green);
+}
+
 body {
     font-family: 'Rajdhani', sans-serif;
     background: var(--bg-primary);
