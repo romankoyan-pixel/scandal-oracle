@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\contracts\\PredictionGameV2.sol": {
-      "lastModificationDate": 1766673464831,
-      "contentHash": "164e2fb49fc8ddbcdec4ab7f3d39ad3f",
+      "lastModificationDate": 1766831625191,
+      "contentHash": "fb9dd4f25699de3c03cf6e52cd5c7d02",
       "sourceName": "contracts/PredictionGameV2.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -344,8 +344,8 @@
       ]
     },
     "C:\\Users\\Gaming-PC\\Desktop\\скандал проект в2\\contracts\\SCANDALToken.sol": {
-      "lastModificationDate": 1766827299818,
-      "contentHash": "8fb1494707dfa79186cf8103542f6f84",
+      "lastModificationDate": 1766835204750,
+      "contentHash": "95f3890746029637fd5aea73127b910e",
       "sourceName": "contracts/SCANDALToken.sol",
       "solcConfig": {
         "version": "0.8.20",

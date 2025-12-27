@@ -34,8 +34,8 @@ const { Player, Prediction, Cycle, SystemState, GameBalance } = require('./model
 // ============================================
 const BLOCKCHAIN_CONFIG = {
     rpcUrl: process.env.BASE_SEPOLIA_RPC || 'https://base-sepolia-rpc.publicnode.com',
-    tokenAddress: process.env.TOKEN_ADDRESS || '0x6aDbe002CA59D7C4D675428d4123D5b815b02Cb4',
-    gameAddress: process.env.GAME_CONTRACT_ADDRESS || '0xB3dC588bcc8f11484799B7b46688D3Fb92C3a1Cb',
+    tokenAddress: process.env.TOKEN_ADDRESS || '0xac2f72F0a6bB2258D1C9aDA62AcEa14eb4010784',
+    gameAddress: process.env.GAME_CONTRACT_ADDRESS || '0x2632AB60c20a1c24637cbB5F907B74Fc230A7cC0',
     // V2 Game ABI - Hybrid model with deposit/withdraw
     gameABI: [
         'function closeRound(uint8 result, uint256 rate) external',
