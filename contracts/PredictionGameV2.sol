@@ -107,7 +107,22 @@ contract PredictionGameV2 is Ownable, ReentrancyGuard, Pausable {
     event BetRecorded(address indexed user, uint256 roundId, uint8 prediction, uint256 amount);
     event BetResult(address indexed user, uint256 roundId, bool won, int256 profitLoss);
     event RoundStarted(uint256 indexed roundId, uint256 startTime);
-    event RoundClosed(uint256 indexed roundId, uint8 result, uint256 totalPool);
+    
+    // Enhanced event for full cycle data recovery
+    event RoundClosed(
+        uint256 indexed roundId, 
+        uint8 result,           // 1=MINT, 2=BURN, 3=NEUTRAL
+        uint256 rate,           // Rate in basis points (10=0.10%, 30=0.30%)
+        uint256 totalPool,
+        uint256 mintPool,
+        uint256 burnPool,
+        uint256 neutralPool,
+        uint256 timestamp
+    );
+    
+    // IPFS hash for full cycle data (news, scores, etc)
+    event CycleDataStored(uint256 indexed roundId, string ipfsHash);
+    
     event RoundRefunded(uint256 indexed roundId);
     event FeesWithdrawn(address indexed owner, uint256 amount);
     event OracleChanged(address indexed oldOracle, address indexed newOracle);
@@ -312,7 +327,16 @@ contract PredictionGameV2 is Ownable, ReentrancyGuard, Pausable {
             scndlToken.transfer(address(0xdead), burnFee);
         }
         
-        emit RoundClosed(currentRoundId, result, totalPool);
+        emit RoundClosed(
+            currentRoundId, 
+            result, 
+            rate,
+            totalPool,
+            round.mintPool,
+            round.burnPool,
+            round.neutralPool,
+            block.timestamp
+        );
         
         // Start new round
         _startNewRound();
@@ -333,6 +357,16 @@ contract PredictionGameV2 is Ownable, ReentrancyGuard, Pausable {
         emit RoundRefunded(roundId);
         
         // Note: Individual refunds handled via recordBetResult with full amount returned
+    }
+    
+    /**
+     * @dev Oracle stores IPFS hash of full cycle data (news, scores, etc)
+     * @param roundId Round ID
+     * @param ipfsHash IPFS CID of the cycle data
+     */
+    function storeCycleData(uint256 roundId, string calldata ipfsHash) external onlyOracle {
+        require(bytes(ipfsHash).length > 0, "Empty hash");
+        emit CycleDataStored(roundId, ipfsHash);
     }
     
     /**
