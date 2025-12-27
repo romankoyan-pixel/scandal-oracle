@@ -1,3 +1,9 @@
+/**
+ * SCANDAL Protocol - Dashboard Frontend
+ * Copyright (c) 2025 SCANDAL Protocol Team
+ * All Rights Reserved. Unauthorized copying or distribution prohibited.
+ */
+
 // Frontend Application Logic - CYCLE-BASED with Supply Tracking
 const API_URL = ''; // Use relative URLs for same-origin requests
 const CYCLE_DURATION = 180000; // 3 minutes
