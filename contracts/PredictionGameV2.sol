@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: MIT
+/**
+ * SCANDAL Protocol - Prediction Game Contract V2
+ * Copyright (c) 2025 SCANDAL Protocol Team
+ * All Rights Reserved.
+ */
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";

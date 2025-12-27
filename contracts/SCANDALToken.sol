@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: MIT
+/**
+ * SCANDAL Protocol - Token Contract
+ * Copyright (c) 2025 SCANDAL Protocol Team
+ * All Rights Reserved.
+ */
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";

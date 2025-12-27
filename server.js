@@ -1,3 +1,9 @@
+/**
+ * SCANDAL Protocol - v2.3
+ * Copyright (c) 2025 SCANDAL Protocol Team
+ * All Rights Reserved. Unauthorized copying or distribution prohibited.
+ */
+
 const express = require('express');
 const cors = require('cors');
 const Parser = require('rss-parser');
