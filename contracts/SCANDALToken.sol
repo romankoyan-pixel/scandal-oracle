@@ -107,8 +107,8 @@ contract SCANDALToken is ERC20, Ownable {
         require(rate >= 1 && rate <= 50, "Rate must be 1-50 (0.01%-0.50%)");
         require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
-        // Calculate amount based on current reserve
-        uint256 amount = (oracleReserve * rate) / TAX_DENOMINATOR;
+        // Calculate amount based on TOTAL SUPPLY (not reserve)
+        uint256 amount = (totalSupply() * rate) / TAX_DENOMINATOR;
         
         require(oracleReserve >= amount, "Insufficient reserve");
         require(oracleReserve - amount >= ORACLE_RESERVE_MIN, "Would go below min reserve");
@@ -131,8 +131,8 @@ contract SCANDALToken is ERC20, Ownable {
         require(rate >= 1 && rate <= 50, "Rate must be 1-50 (0.01%-0.50%)");
         require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
-        // Calculate amount based on current reserve
-        uint256 amount = (oracleReserve * rate) / TAX_DENOMINATOR;
+        // Calculate amount based on TOTAL SUPPLY (not reserve)
+        uint256 amount = (totalSupply() * rate) / TAX_DENOMINATOR;
         
         require(oracleReserve + amount <= ORACLE_RESERVE_MAX, "Would exceed max reserve");
         

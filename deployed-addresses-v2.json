@@ -3,8 +3,8 @@
   "network": "baseSepolia",
   "chainId": 84532,
   "contracts": {
-    "token": "0x6aDbe002CA59D7C4D675428d4123D5b815b02Cb4",
-    "game": "0xB3dC588bcc8f11484799B7b46688D3Fb92C3a1Cb"
+    "token": "0xac2f72F0a6bB2258D1C9aDA62AcEa14eb4010784",
+    "game": "0x2632AB60c20a1c24637cbB5F907B74Fc230A7cC0"
   },
   "wallets": {
     "deployer": "0xc47D6AB841F2B6b15F843BC860b32692F4103A2F",
@@ -23,5 +23,5 @@
     "Reentrancy protection",
     "Events for all actions"
   ],
-  "deployedAt": "2025-12-27T09:28:43.403Z"
+  "deployedAt": "2025-12-27T11:37:11.881Z"
 }
