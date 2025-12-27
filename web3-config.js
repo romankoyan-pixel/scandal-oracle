@@ -7,7 +7,7 @@ const WEB3_CONFIG = {
         chainId: 84532,
         chainIdHex: '0x14A34',
         name: 'Base Sepolia',
-        rpcUrl: 'https://sepolia.base.org',
+        rpcUrl: 'https://base-sepolia-rpc.publicnode.com',
         explorer: 'https://sepolia.basescan.org',
         currency: {
             name: 'ETH',
