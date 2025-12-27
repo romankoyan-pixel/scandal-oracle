@@ -3578,7 +3578,7 @@
                     timerEl.classList.add('syncing');
                     timerEl.classList.remove('closed');
                 } else if (data.votingOpen) {
-                    localTimerValue = Math.floor(data.votingTimeRemaining / 1000);
+                    localTimerValue = Math.floor((data.bettingWindowRemaining || 0) / 1000);
                     localTimerMode = 'OPEN';
                     timerEl.classList.remove('closed');
                     timerEl.classList.remove('syncing');

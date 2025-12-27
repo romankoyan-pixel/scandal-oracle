@@ -1456,7 +1456,10 @@ app.get('/api/game-status', async (req, res) => {
         userVote,
         userPendingBet,
         pools,
-        poolTotal: pools.mint + pools.hold + pools.burn
+        poolTotal: pools.mint + pools.hold + pools.burn,
+        sync: {
+            isSyncing: syncState.isSyncing
+        }
     });
 });
 
