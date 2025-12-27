@@ -3498,13 +3498,13 @@
 
                 // ===== USE SERVER POOL DATA =====
                 if (data.pools && typeof data.pools.mint === 'number') {
-                    const total = data.poolTotal || (data.pools.mint + data.pools.neutral + data.pools.burn);
+                    const total = data.poolTotal || (data.pools.mint + (data.pools.hold || 0) + data.pools.burn);
                     const poolTotalEl = document.getElementById('poolTotal');
                     if (poolTotalEl && total >= 0) poolTotalEl.textContent = total.toLocaleString() + ' $SCNDL';
 
                     if (total > 0) {
                         const mintPct = (data.pools.mint / total * 100).toFixed(0);
-                        const neutralPct = (data.pools.neutral / total * 100).toFixed(0);
+                        const neutralPct = ((data.pools.hold || 0) / total * 100).toFixed(0);
                         const burnPct = (data.pools.burn / total * 100).toFixed(0);
 
                         const barMint = document.getElementById('poolBarMint');
@@ -3518,7 +3518,7 @@
                         const amtNeutral = document.getElementById('poolNeutral');
                         const amtBurn = document.getElementById('poolBurn');
                         if (amtMint) amtMint.textContent = data.pools.mint.toLocaleString();
-                        if (amtNeutral) amtNeutral.textContent = data.pools.neutral.toLocaleString();
+                        if (amtNeutral) amtNeutral.textContent = (data.pools.hold || 0).toLocaleString();
                         if (amtBurn) amtBurn.textContent = data.pools.burn.toLocaleString();
                     } else {
                         const barMint = document.getElementById('poolBarMint');
@@ -4694,7 +4694,7 @@
                 const total = data.totalPool || 0;
                 // If total is 0, show balanced bars (33/33/33) for aesthetics instead of empty
                 const mintPct = total > 0 ? (data.pools.mint / total * 100) : 33.3;
-                const neutralPct = total > 0 ? (data.pools.neutral / total * 100) : 33.4;
+                const neutralPct = total > 0 ? ((data.pools.hold || 0) / total * 100) : 33.4;
                 const burnPct = total > 0 ? (data.pools.burn / total * 100) : 33.3;
 
                 const mintBar = document.getElementById('poolBarMint');
@@ -4721,7 +4721,7 @@
                 const poolNeutral = document.getElementById('poolNeutral');
                 const poolBurn = document.getElementById('poolBurn');
                 if (poolMint) poolMint.textContent = Math.floor(data.pools.mint).toLocaleString();
-                if (poolNeutral) poolNeutral.textContent = Math.floor(data.pools.neutral).toLocaleString();
+                if (poolNeutral) poolNeutral.textContent = Math.floor(data.pools.hold || 0).toLocaleString();
                 if (poolBurn) poolBurn.textContent = Math.floor(data.pools.burn).toLocaleString();
 
             } catch (e) {
