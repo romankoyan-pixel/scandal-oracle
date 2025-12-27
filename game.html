@@ -91,16 +91,19 @@
             gap: 1.5rem;
             padding: 1.5rem 2rem;
             min-height: 0;
+            align-items: stretch;
         }
 
         /* Left: Voting Panel */
         .voting-panel {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.3);
             border-radius: 12px;
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.3);
+            align-self: stretch;
         }
 
         .panel-header {
@@ -712,11 +715,12 @@
         }
 
         .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.25);
             border-radius: 10px;
             padding: 1rem;
             text-align: center;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
         }
 
         .stat-value {

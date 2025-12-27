@@ -488,6 +488,11 @@ html.hero-hidden .hero-section {
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.3);
 }
 
 .section-title {
@@ -501,11 +506,11 @@ html.hero-hidden .hero-section {
 
 /* Scandal Meter */
 .meter-section {
-    background: var(--bg-card);
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
     padding: 2rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
 
@@ -603,11 +608,12 @@ html.hero-hidden .hero-section {
 
 /* Action Status - REDESIGNED */
 .action-status {
-    background: var(--bg-secondary);
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
     padding: 1.5rem;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 240, 255, 0.25);
     margin-bottom: 1.5rem;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
 }
 
 .action-header {
@@ -1563,12 +1569,13 @@ html.hero-hidden .hero-section {
 }
 
 .tokenomics-card {
-    background: var(--bg-secondary);
+    background: linear-gradient(180deg, rgba(10, 25, 40, 0.95) 0%, rgba(5, 15, 30, 0.98) 100%);
     padding: 2rem;
     border-radius: 12px;
     text-align: center;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 240, 255, 0.25);
     transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
 }
 
 .tokenomics-card.supply {
