@@ -642,7 +642,7 @@ class ScandalOracle {
         const stats = document.getElementById('modalStats');
         const mints = this.supplyHistory.filter(h => h.action === 'MINT').length;
         const burns = this.supplyHistory.filter(h => h.action === 'BURN').length;
-        const holds = this.supplyHistory.filter(h => h.action === 'HOLD').length;
+        const holds = this.supplyHistory.filter(h => h.action === 'HOLD' || h.action === 'NEUTRAL').length;
         const totalChange = this.totalSupply - INITIAL_SUPPLY;
 
         stats.innerHTML = `
@@ -795,10 +795,12 @@ class ScandalOracle {
             const changeText = histEntry?.change ? ` | ${this.formatChange(histEntry.change)}` : '';
 
             const entry = document.createElement('div');
-            entry.className = `log-entry ${cycle.action.toLowerCase()}`;
+            // Map legacy NEUTRAL to HOLD for display
+            const displayAction = cycle.action === 'NEUTRAL' ? 'HOLD' : cycle.action;
+            entry.className = `log-entry ${displayAction.toLowerCase()}`;
             entry.innerHTML = `
                 <span class="log-time">Cycle #${cycle.id} (${this.formatTime(cycle.endTime)})</span>
-                <span class="log-action">${cycle.action} • Score: ${Math.round(cycle.averageScore)}${changeText}</span>
+                <span class="log-action">${displayAction} • Score: ${Math.round(cycle.averageScore)}${changeText}</span>
             `;
             historyLog.appendChild(entry);
         });

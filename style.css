@@ -1280,7 +1280,6 @@ html.hero-hidden .hero-section {
 }
 
 .cycle-header.hold {
-    background: linear-gradient(90deg, rgba(0, 240, 255, 0.15), var(--bg-secondary));
     border-left: 4px solid var(--accent-cyan);
 }
 

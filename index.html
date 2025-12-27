@@ -71,37 +71,21 @@
                 const response = await fetch('/api/v2/round');
                 const data = await response.json();
 
-                let status, icon, percent, colorClass;
-
-                if (data.averageScore < 40) {
-                    status = 'MINT';
-                    icon = '🟢';
-                    percent = `+${(data.averageScore * 0.0075).toFixed(2)}% supply this cycle`;
-                    colorClass = 'mint';
-                } else if (data.averageScore > 60) {
-                    status = 'BURN';
-                    icon = '🔥';
-                    percent = `−${((data.averageScore - 60) * 0.0075).toFixed(2)}% supply this cycle`;
-                    colorClass = 'burn';
-                } else {
-                    status = 'HOLD';
-                    icon = '⚪';
-                    percent = '0% supply this cycle';
-                    colorClass = 'hold';
-                }
+                // Use API's projected action and rate
+                const status = data.projectedAction || 'HOLD';
+                const rate = data.projectedRate || '0%';
+                const colorClass = status.toLowerCase();
 
                 const statusDisplay = document.getElementById('heroOracleStatus');
                 statusDisplay.className = `status-display ${colorClass}`;
                 statusDisplay.innerHTML = `
-                    <span class="status-icon">${icon}</span>
                     <span class="status-action">${status}</span>
-                    <span class="status-percent">${percent}</span>
+                    <span class="status-percent">${rate} supply this cycle</span>
                 `;
             } catch (error) {
                 console.log('Oracle status update failed:', error);
                 // Show fallback status
                 document.getElementById('heroOracleStatus').innerHTML = `
-                    <span class="status-icon">⚪</span>
                     <span class="status-action">STANDBY</span>
                     <span class="status-percent">Awaiting next cycle</span>
                 `;
