@@ -364,7 +364,7 @@
                     try {
                         console.log(`🔄 Trying RPC: ${rpcUrl}`);
                         const provider = new ethers.JsonRpcProvider(rpcUrl);
-                        const tokenAddress = '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8';
+                        const tokenAddress = '0x6aDbe002CA59D7C4D675428d4123D5b815b02Cb4';
                         const tokenABI = ['function balanceOf(address) view returns (uint256)'];
                         const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
 
