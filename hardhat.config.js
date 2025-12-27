@@ -36,15 +36,16 @@ module.exports = {
 
     etherscan: {
         apiKey: {
-            baseSepolia: process.env.BASESCAN_API_KEY || "empty"
+            "baseSepolia": "abc", // Blockscout doesn't require API key
+            "base-sepolia": "abc"
         },
         customChains: [
             {
                 network: "baseSepolia",
                 chainId: 84532,
                 urls: {
-                    apiURL: "https://api-sepolia.basescan.org/api",
-                    browserURL: "https://sepolia.basescan.org"
+                    apiURL: "https://base-sepolia.blockscout.com/api",
+                    browserURL: "https://base-sepolia.blockscout.com"
                 }
             }
         ]
