@@ -71,11 +71,24 @@ let tokenContract = null;
 
 if (process.env.PRIVATE_KEY) {
     try {
-        // Simple initialization - auto-detect network
-        blockchainProvider = new ethers.JsonRpcProvider(BLOCKCHAIN_CONFIG.rpcUrl);
+        // Create network with ENS explicitly disabled for Base Sepolia
+        const baseSepoliaNetwork = new ethers.Network('base-sepolia', 84532);
+
+        // Initialize provider with static network to prevent ENS resolution attempts
+        blockchainProvider = new ethers.JsonRpcProvider(
+            BLOCKCHAIN_CONFIG.rpcUrl,
+            baseSepoliaNetwork,
+            { staticNetwork: baseSepoliaNetwork }
+        );
+
         oracleWallet = new ethers.Wallet(process.env.PRIVATE_KEY, blockchainProvider);
-        gameContract = new ethers.Contract(BLOCKCHAIN_CONFIG.gameAddress, BLOCKCHAIN_CONFIG.gameABI, oracleWallet);
-        tokenContract = new ethers.Contract(BLOCKCHAIN_CONFIG.tokenAddress, BLOCKCHAIN_CONFIG.tokenABI, oracleWallet);
+
+        // Validate addresses to ensure they are checksummed (prevents any name resolution)
+        const gameAddr = ethers.getAddress(BLOCKCHAIN_CONFIG.gameAddress);
+        const tokenAddr = ethers.getAddress(BLOCKCHAIN_CONFIG.tokenAddress);
+
+        gameContract = new ethers.Contract(gameAddr, BLOCKCHAIN_CONFIG.gameABI, oracleWallet);
+        tokenContract = new ethers.Contract(tokenAddr, BLOCKCHAIN_CONFIG.tokenABI, oracleWallet);
         console.log('✅ Blockchain Oracle configured:', oracleWallet.address);
     } catch (e) {
         console.error('❌ Blockchain setup failed:', e.message);
