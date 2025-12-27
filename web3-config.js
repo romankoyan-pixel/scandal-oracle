@@ -18,8 +18,8 @@ const WEB3_CONFIG = {
 
     // Contract addresses (V2 Security Update - deployed 2025-12-25)
     contracts: {
-        token: '0x529bE4e4f5845EEF8e9Efc36B39d81Eb272c64B8',
-        game: '0x623CAD34C495D28305318A30ed1fB8F391D696F8'
+        token: '0x6aDbe002CA59D7C4D675428d4123D5b815b02Cb4',
+        game: '0xB3dC588bcc8f11484799B7b46688D3Fb92C3a1Cb'
     },
 
     // API endpoints
