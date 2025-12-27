@@ -4822,7 +4822,12 @@
             // Calculate elapsed time since last server sync
             const elapsed = Math.floor((Date.now() - lastServerSync) / 1000);
             const displayValue = Math.max(0, localTimerValue - elapsed);
-            timerEl.textContent = `${localTimerMode}: ${displayValue.toString().padStart(2, '0')}s`;
+
+            if (localTimerMode === 'NEXT') {
+                timerEl.textContent = `BETS CLOSED: ${displayValue.toString().padStart(2, '0')}s`;
+            } else {
+                timerEl.textContent = `${localTimerMode}: ${displayValue.toString().padStart(2, '0')}s`;
+            }
         }
 
         // Check for unclaimed winnings from previous rounds on page load
