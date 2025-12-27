@@ -99,7 +99,7 @@ contract SCANDALToken is ERC20, Ownable {
      * @param rate Rate in basis points (e.g., 10 = 0.10%, 30 = 0.30%)
      */
     function oracleMint(uint256 rate) external onlyOracle {
-        require(rate >= 10 && rate <= 30, "Rate must be 10-30 (0.10%-0.30%)");
+        require(rate >= 1 && rate <= 50, "Rate must be 1-50 (0.01%-0.50%)");
         require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
         // Calculate amount based on current reserve
@@ -123,7 +123,7 @@ contract SCANDALToken is ERC20, Ownable {
      * This ensures BURN always works regardless of liquidityWallet balance
      */
     function oracleBurn(uint256 rate) external onlyOracle {
-        require(rate >= 10 && rate <= 30, "Rate must be 10-30 (0.10%-0.30%)");
+        require(rate >= 1 && rate <= 50, "Rate must be 1-50 (0.01%-0.50%)");
         require(block.timestamp >= lastOracleAction + ORACLE_COOLDOWN, "Cooldown not expired");
         
         // Calculate amount based on current reserve
