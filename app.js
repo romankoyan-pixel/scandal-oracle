@@ -6,7 +6,7 @@ const INITIAL_SUPPLY = 1000000000; // 1 Billion tokens
 // ============================================
 // DYNAMIC RATE - DISCRETE STEPS
 // 0.10%, 0.15%, 0.20%, 0.25%, 0.30%
-// MINT: 0-39, NEUTRAL: 40-60, BURN: 61-100
+// MINT: 0-39, HOLD: 40-60, BURN: 61-100
 // ============================================
 function calculateDynamicRate(avgScore) {
     // MINT zone: 0-39 (40 points)
@@ -31,8 +31,8 @@ function calculateDynamicRate(avgScore) {
         return { action: 'BURN', rate: rate };
     }
 
-    // NEUTRAL: 40-60 (21 points - narrower!)
-    return { action: 'NEUTRAL', rate: 0 };
+    // HOLD: 40-60 (21 points - narrower!)
+    return { action: 'HOLD', rate: 0 };
 }
 
 class ScandalOracle {
@@ -310,7 +310,7 @@ class ScandalOracle {
                         if (change < 0) return '#22c55e';  // Green = supply DECREASED (MINT tokens removed from circulation)
                         if (change > 0) return '#ef4444';  // Red = supply INCREASED (BURN added tokens)
                         if (h.action === 'GENESIS') return '#00f0ff'; // Cyan = Genesis
-                        return '#3b82f6'; // Blue = no change (NEUTRAL)
+                        return '#3b82f6'; // Blue = no change (HOLD)
                     },
                     pointBorderColor: (ctx) => {
                         const idx = ctx.dataIndex;
@@ -362,7 +362,7 @@ class ScandalOracle {
                                 } else if (h.action === 'REFUNDED' || h.refunded) {
                                     lines.push(`⚠️ REFUNDED: No news this round`);
                                 } else {
-                                    lines.push(`🔵 NEUTRAL: No change`);
+                                    lines.push(`🔵 HOLD: No change`);
                                 }
 
                                 if (h.score !== undefined && h.action !== 'GENESIS') {
@@ -567,7 +567,7 @@ class ScandalOracle {
                                 } else if (h.action === 'REFUNDED' || h.refunded) {
                                     lines.push(`⚠️ REFUNDED: No news this round`);
                                 } else {
-                                    lines.push(`🔵 NEUTRAL: No change`);
+                                    lines.push(`🔵 HOLD: No change`);
                                 }
 
                                 if (h.score !== undefined && h.action !== 'GENESIS') {
@@ -642,7 +642,7 @@ class ScandalOracle {
         const stats = document.getElementById('modalStats');
         const mints = this.supplyHistory.filter(h => h.action === 'MINT').length;
         const burns = this.supplyHistory.filter(h => h.action === 'BURN').length;
-        const neutrals = this.supplyHistory.filter(h => h.action === 'NEUTRAL').length;
+        const holds = this.supplyHistory.filter(h => h.action === 'HOLD').length;
         const totalChange = this.totalSupply - INITIAL_SUPPLY;
 
         stats.innerHTML = `
@@ -650,9 +650,9 @@ class ScandalOracle {
                 <span class="modal-stat-value">${mints}</span>
                 <span class="modal-stat-label">MINTS</span>
             </div>
-            <div class="modal-stat neutral">
-                <span class="modal-stat-value">${neutrals}</span>
-                <span class="modal-stat-label">NEUTRAL</span>
+            <div class="modal-stat hold">
+                <span class="modal-stat-value">${holds}</span>
+                <span class="modal-stat-label">HOLD</span>
             </div>
             <div class="modal-stat burn">
                 <span class="modal-stat-value">${burns}</span>
@@ -747,8 +747,8 @@ class ScandalOracle {
     }
 
     createArticleCard(article, cycleId, index) {
-        // Correct thresholds: 0-39=MINT(green), 40-60=NEUTRAL(cyan), 61-100=BURN(red)
-        const category = article.score <= 39 ? 'good' : article.score <= 60 ? 'neutral' : 'scandal';
+        // Correct thresholds: 0-39=MINT(green), 40-60=HOLD(cyan), 61-100=BURN(red)
+        const category = article.score <= 39 ? 'good' : article.score <= 60 ? 'hold' : 'scandal';
         const key = `${cycleId}-${index}`;
         const isExpanded = this.expandedArticles.has(key);
         const shortDesc = article.description ? article.description.substring(0, 100) : '';

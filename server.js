@@ -148,7 +148,7 @@ async function loadDataFromMongo() {
                 status: c.status,
                 articles: c.articles || [],
                 averageScore: c.averageScore || 50,
-                action: c.action || 'NEUTRAL',
+                action: c.action || 'HOLD',
                 rate: c.rate || 0,
                 ratePercentage: c.ratePercentage || '0%'
             })).reverse(),
@@ -205,7 +205,7 @@ async function saveCycleToMongo(cycle) {
                     score: a.score
                 })),
                 averageScore: cycle.averageScore || 50,
-                action: cycle.action || 'NEUTRAL',
+                action: cycle.action || 'HOLD',
                 rate: cycle.rate || 0,
                 ratePercentage: cycle.ratePercentage || '0%',
                 supplyAfter: cycle.supplyAfter || null,
@@ -245,7 +245,7 @@ async function initializeFromMongo() {
                     status: c.status,
                     articles: c.articles || [],
                     averageScore: c.averageScore || 50,
-                    action: c.action || 'NEUTRAL',
+                    action: c.action || 'HOLD',
                     rate: c.rate || 0,
                     ratePercentage: c.ratePercentage || '0%'
                 }))  // Removed .reverse() - cycles already sorted newest first
@@ -348,7 +348,7 @@ function calculateWeightedCycleScore(articles) {
 
     const weightedAvg = totalWeight > 0 ? weightedSum / totalWeight : 50;
 
-    // NEW: Top score gets extra weight to reduce NEUTRAL bias
+    // NEW: Top score gets extra weight to reduce HOLD bias
     const topScore = Math.max(...allScores);
     const bottomScore = Math.min(...allScores);
 
@@ -364,7 +364,7 @@ function calculateWeightedCycleScore(articles) {
 
 // ============================================
 // DYNAMIC RATE CALCULATION - NEW THRESHOLDS
-// NEUTRAL zone: 40-60 (21 points) 
+// HOLD zone: 40-60 (21 points) 
 // ============================================
 function calculateDynamicRate(avgScore) {
     // MINT zone: 0-39 (40 points)
@@ -399,9 +399,9 @@ function calculateDynamicRate(avgScore) {
         };
     }
 
-    // NEUTRAL zone: 40-60 (21 points - narrower!)
+    // HOLD zone: 40-60 (21 points - narrower!)
     return {
-        action: 'NEUTRAL',
+        action: 'HOLD',
         rate: 0,
         percentage: '0%'
     };
@@ -435,7 +435,7 @@ const MIN_ARTICLES_FOR_GAME = 0; // TESTING: set to 5 for production
 // Process predictions when cycle closes - MongoDB with pari-mutuel betting
 async function processPredictions(cycle) {
     const cycleId = cycle.id;
-    const correctAnswer = cycle.action; // MINT, BURN, or NEUTRAL
+    const correctAnswer = cycle.action; // MINT, BURN, or HOLD
 
     try {
         // Get all predictions for this cycle from MongoDB
@@ -447,7 +447,7 @@ async function processPredictions(cycle) {
         }
 
         // Calculate pool totals from real predictions
-        const poolTotals = { MINT: 0, NEUTRAL: 0, BURN: 0 };
+        const poolTotals = { MINT: 0, HOLD: 0, BURN: 0 };
         cyclePredictions.forEach(p => {
             poolTotals[p.choice] += p.amount;
         });
@@ -456,16 +456,16 @@ async function processPredictions(cycle) {
         // This will be removed when smart contract is connected
         const BET_AMOUNT = 100;
         const numBots = Math.floor(Math.random() * 8) + 3;
-        const botBets = { MINT: 0, NEUTRAL: 0, BURN: 0 };
+        const botBets = { MINT: 0, HOLD: 0, BURN: 0 };
         for (let i = 0; i < numBots; i++) {
-            const choices = ['MINT', 'NEUTRAL', 'BURN'];
+            const choices = ['MINT', 'HOLD', 'BURN'];
             botBets[choices[Math.floor(Math.random() * 3)]] += BET_AMOUNT;
         }
-        console.log(`🤖 Bot bets: M=${botBets.MINT} N=${botBets.NEUTRAL} B=${botBets.BURN}`);
+        console.log(`🤖 Bot bets: M=${botBets.MINT} H=${botBets.HOLD} B=${botBets.BURN}`);
 
         // Total pool includes bot bets
-        const totalPool = (poolTotals.MINT + poolTotals.NEUTRAL + poolTotals.BURN) +
-            (botBets.MINT + botBets.NEUTRAL + botBets.BURN);
+        const totalPool = (poolTotals.MINT + poolTotals.HOLD + poolTotals.BURN) +
+            (botBets.MINT + botBets.HOLD + botBets.BURN);
 
         // Combined winning pool (real + bots)
         const winningPoolReal = poolTotals[correctAnswer];
@@ -582,7 +582,7 @@ async function refundPredictions(cycleId) {
 async function processV2GameResults(cycle, closedBlockchainRoundId = null) {
     const cycleId = cycle.id;
     const blockchainRoundId = closedBlockchainRoundId || cycleId; // Use blockchain round if provided
-    const correctAnswer = cycle.action; // MINT, BURN, or NEUTRAL
+    const correctAnswer = cycle.action; // MINT, BURN, or HOLD
 
     try {
         // Get all pending bets for this round from GameBalance
@@ -594,14 +594,14 @@ async function processV2GameResults(cycle, closedBlockchainRoundId = null) {
         }
 
         // Calculate pools
-        const pools = { MINT: 0, BURN: 0, NEUTRAL: 0 };
+        const pools = { MINT: 0, BURN: 0, HOLD: 0 };
         betsThisRound.forEach(b => {
             if (b.pendingBet?.prediction) {
                 pools[b.pendingBet.prediction] += b.pendingBet.amount;
             }
         });
 
-        const totalPool = pools.MINT + pools.BURN + pools.NEUTRAL;
+        const totalPool = pools.MINT + pools.BURN + pools.HOLD;
         const winningPool = pools[correctAnswer];
 
         // Apply 5% fee (3% owner + 2% burn)
@@ -609,7 +609,7 @@ async function processV2GameResults(cycle, closedBlockchainRoundId = null) {
         const prizePool = totalPool * (1 - TOTAL_FEE);
 
         console.log(`🎮 V2 Round ${cycleId}: ${betsThisRound.length} bets, Total: ${totalPool}, Winner: ${correctAnswer}`);
-        console.log(`   Pools: M=${pools.MINT} B=${pools.BURN} N=${pools.NEUTRAL}`);
+        console.log(`   Pools: M=${pools.MINT} B=${pools.BURN} H=${pools.HOLD}`);
 
         // Process each bet
         let winnersCount = 0;
@@ -915,11 +915,11 @@ Example 1: "FTX collapses, CEO arrested for $8B fraud"
 
 Example 2: "Spurs beat OKC in regular season game"
 → { "impact": 4, "controversy": 5, "viral": 5, "reason": "Routine sports game result" }
-→ Score: (4×0.3 + 5×0.5 + 5×0.2)×10 = 47 (NEUTRAL zone ✅)
+→ Score: (4×0.3 + 5×0.5 + 5×0.2)×10 = 47 (HOLD zone ✅)
 
 Example 3: "Central bank maintains interest rates"
 → { "impact": 4, "controversy": 3, "viral": 4, "reason": "Expected monetary policy decision" }
-→ Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (NEUTRAL zone ✅)
+→ Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (HOLD zone ✅)
 
 Example 4: "Tesla announces layoffs amid restructuring"
 → { "impact": 5, "controversy": 6, "viral": 6, "reason": "Significant corporate restructuring news" }
@@ -1009,8 +1009,8 @@ async function closeRoundOnBlockchain(result, ratePercentage) {
     }
 
     try {
-        // Convert result to contract enum (1=MINT, 2=BURN, 3=NEUTRAL)
-        const resultMap = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 };
+        // Convert result to contract enum (1=MINT, 2=BURN, 3=HOLD)
+        const resultMap = { 'MINT': 1, 'BURN': 2, 'HOLD': 3 };
         const resultCode = resultMap[result] || 3;
 
         // Convert rate percentage to basis points (0.1% = 10, 0.30% = 30)
@@ -1024,8 +1024,8 @@ async function closeRoundOnBlockchain(result, ratePercentage) {
         await tx.wait();
         console.log(`✅ Game round closed on blockchain!`);
 
-        // 2. Execute MINT or BURN on token contract (if not NEUTRAL)
-        if (tokenContract && rateValue > 0 && result !== 'NEUTRAL') {
+        // 2. Execute MINT or BURN on token contract (if not HOLD)
+        if (tokenContract && rateValue > 0 && result !== 'HOLD') {
             try {
                 if (result === 'MINT') {
                     console.log(`🟢 Calling oracleMint(${rateValue})...`);
@@ -1062,7 +1062,7 @@ async function closeRoundOnBlockchain(result, ratePercentage) {
 
 // Close cycle
 async function closeCycleAndStartNew() {
-    // Close cycle even if empty - just mark as NEUTRAL with 0 articles
+    // Close cycle even if empty - just mark as HOLD with 0 articles
     // Use weighted average with category weights and extreme score multipliers
     const avgScore = calculateWeightedCycleScore(currentCycle.articles);
 
@@ -1073,7 +1073,7 @@ async function closeCycleAndStartNew() {
         status: 'completed',
         endTime: Date.now(),
         averageScore: avgScore,
-        action: currentCycle.articles.length === 0 ? 'NEUTRAL' : rateInfo.action,
+        action: currentCycle.articles.length === 0 ? 'HOLD' : rateInfo.action,
         rate: currentCycle.articles.length === 0 ? 0 : rateInfo.rate,
         ratePercentage: currentCycle.articles.length === 0 ? '0%' : rateInfo.percentage
     };
@@ -1135,7 +1135,7 @@ async function closeCycleAndStartNew() {
     if (completedCycle.articles.length === 0) {
         // No articles = refund all bets without house fee
         completedCycle.refunded = true; // Mark cycle as refunded for UI
-        completedCycle.action = 'REFUNDED'; // Override NEUTRAL to show properly
+        completedCycle.action = 'REFUNDED'; // Override HOLD to show properly
         await refundPredictions(completedCycle.id);
         await refundV2Bets(completedCycle.id, closedBlockchainRoundId); // V2 refunds with blockchain roundId
     } else {
@@ -1306,7 +1306,7 @@ app.post('/api/vote', async (req, res) => {
         return res.status(400).json({ error: 'Wallet and vote required' });
     }
 
-    if (!['MINT', 'BURN', 'NEUTRAL'].includes(vote)) {
+    if (!['MINT', 'BURN', 'HOLD'].includes(vote)) {
         return res.status(400).json({ error: 'Invalid vote' });
     }
 
@@ -1398,7 +1398,7 @@ app.get('/api/game-status', async (req, res) => {
     }
 
     // Calculate V2 pool from all pending bets for current round
-    let pools = { mint: 0, neutral: 0, burn: 0 };
+    let pools = { mint: 0, hold: 0, burn: 0 };
     try {
         const bets = await GameBalance.find({ 'pendingBet.roundId': currentCycle.id });
         bets.forEach(b => {
@@ -1425,14 +1425,14 @@ app.get('/api/game-status', async (req, res) => {
         cycleTotal: AGGREGATION_INTERVAL,
         cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL), // 0 to 1
         averageScore: avgScore, // Oracle score for race
-        projectedAction: rateInfo.action, // MINT, BURN, or NEUTRAL
-        totalVotes: pools.mint + pools.burn + pools.neutral,
+        projectedAction: rateInfo.action, // MINT, BURN, or HOLD
+        totalVotes: pools.mint + pools.burn + pools.hold,
         articlesCount: currentCycle.articles.length,
         minArticlesRequired: MIN_ARTICLES_FOR_GAME,
         userVote,
         userPendingBet,
         pools,
-        poolTotal: pools.mint + pools.neutral + pools.burn
+        poolTotal: pools.mint + pools.hold + pools.burn
     });
 });
 
@@ -1521,7 +1521,7 @@ app.get('/api/last-cycle', async (req, res) => {
             const responseData = {
                 ...lastCycleFromDB,
                 id: lastCycleFromDB.cycleId, // Frontend expects 'id'
-                action: lastCycleFromDB.action || 'NEUTRAL' // Ensure action is set
+                action: lastCycleFromDB.action || 'HOLD' // Ensure action is set
             };
             return res.json({
                 lastCycle: responseData,
@@ -1536,7 +1536,7 @@ app.get('/api/last-cycle', async (req, res) => {
             completedCycles.sort((a, b) => b.id - a.id);
             const lastCycle = {
                 ...completedCycles[0],
-                action: completedCycles[0].action || 'NEUTRAL'
+                action: completedCycles[0].action || 'HOLD'
             };
             return res.json({
                 lastCycle,
@@ -1626,8 +1626,8 @@ app.get('/api/v2/pool-stats', async (req, res) => {
         // Get all pending bets for current round
         const bets = await GameBalance.find({ 'pendingBet.roundId': currentCycle.id });
 
-        let pools = { mint: 0, neutral: 0, burn: 0 };
-        let betters = { mint: 0, neutral: 0, burn: 0 };
+        let pools = { mint: 0, hold: 0, burn: 0 };
+        let betters = { mint: 0, hold: 0, burn: 0 };
 
         bets.forEach(b => {
             if (b.pendingBet?.prediction && b.pendingBet?.amount) {
@@ -1639,13 +1639,13 @@ app.get('/api/v2/pool-stats', async (req, res) => {
             }
         });
 
-        const totalPool = pools.mint + pools.neutral + pools.burn;
-        const totalBetters = betters.mint + betters.neutral + betters.burn;
+        const totalPool = pools.mint + pools.hold + pools.burn;
+        const totalBetters = betters.mint + betters.hold + betters.burn;
 
         // Calculate percentages
         const percentages = {
             mint: totalPool > 0 ? Math.round((pools.mint / totalPool) * 100) : 0,
-            neutral: totalPool > 0 ? Math.round((pools.neutral / totalPool) * 100) : 0,
+            hold: totalPool > 0 ? Math.round((pools.hold / totalPool) * 100) : 0,
             burn: totalPool > 0 ? Math.round((pools.burn / totalPool) * 100) : 0
         };
 
@@ -1663,7 +1663,7 @@ app.get('/api/v2/pool-stats', async (req, res) => {
         });
     } catch (err) {
         console.error('Pool stats error:', err);
-        res.json({ pools: { mint: 0, neutral: 0, burn: 0 }, totalPool: 0, percentages: { mint: 0, neutral: 0, burn: 0 }, scaleTilt: 0 });
+        res.json({ pools: { mint: 0, hold: 0, burn: 0 }, totalPool: 0, percentages: { mint: 0, hold: 0, burn: 0 }, scaleTilt: 0 });
     }
 });
 
@@ -1681,7 +1681,7 @@ app.get('/api/prediction-result/:wallet/:cycleId', async (req, res) => {
 
         // Get the cycle data to find the correct answer
         const cycleData = cycles.find(c => c.id === cycleId);
-        const correctAnswer = cycleData?.action || 'NEUTRAL';
+        const correctAnswer = cycleData?.action || 'HOLD';
 
         res.json({
             found: true,
@@ -1999,9 +1999,9 @@ app.post('/api/v2/bet', async (req, res) => {
         const betAmount = Number(amount);
 
         // Validate prediction
-        const validPredictions = ['MINT', 'BURN', 'NEUTRAL'];
+        const validPredictions = ['MINT', 'BURN', 'HOLD'];
         if (!validPredictions.includes(prediction.toUpperCase())) {
-            return res.status(400).json({ error: 'Invalid prediction. Use MINT, BURN, or NEUTRAL' });
+            return res.status(400).json({ error: 'Invalid prediction. Use MINT, BURN, or HOLD' });
         }
 
         // Get or create user balance
@@ -2057,7 +2057,7 @@ app.post('/api/v2/bet', async (req, res) => {
         // Use blockchain roundId (may differ from server cycleId)
         const blockchainRoundId = syncState.lastBlockchainRoundId || currentCycle.id;
         if (gameContract) {
-            const predictionCode = { 'MINT': 1, 'BURN': 2, 'NEUTRAL': 3 }[prediction.toUpperCase()];
+            const predictionCode = { 'MINT': 1, 'BURN': 2, 'HOLD': 3 }[prediction.toUpperCase()];
             // Fire and forget - sync happens at round close
             gameContract.recordBet(
                 walletLower,
@@ -2172,7 +2172,7 @@ app.get('/api/v2/round', async (req, res) => {
         const pools = {
             mint: bets.filter(b => b.pendingBet?.prediction === 'MINT').reduce((s, b) => s + b.pendingBet.amount, 0),
             burn: bets.filter(b => b.pendingBet?.prediction === 'BURN').reduce((s, b) => s + b.pendingBet.amount, 0),
-            neutral: bets.filter(b => b.pendingBet?.prediction === 'NEUTRAL').reduce((s, b) => s + b.pendingBet.amount, 0)
+            hold: bets.filter(b => b.pendingBet?.prediction === 'HOLD').reduce((s, b) => s + b.pendingBet.amount, 0)
         };
 
         res.json({

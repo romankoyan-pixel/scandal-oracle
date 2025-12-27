@@ -175,6 +175,148 @@ html.hero-hidden .hero-section {
     color: #fff;
 }
 
+/* Hero Headline - Main Message */
+.hero-headline {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin: 0 auto 1.5rem;
+    max-width: 800px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hero Description */
+.hero-description {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    font-weight: 400;
+}
+
+/* Live Oracle Status */
+.oracle-status-live {
+    background: rgba(26, 31, 46, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin: 2rem auto;
+    max-width: 500px;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 30px rgba(0, 240, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 20px rgba(0, 240, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    50% {
+        box-shadow:
+            0 0 40px rgba(0, 240, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+.status-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
+}
+
+.status-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.status-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.status-action {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.status-display.mint .status-action {
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.status-display.burn .status-action {
+    color: var(--accent-red);
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.status-display.hold .status-action {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.status-percent {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Hero Footer Text */
+.hero-footer-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 1.5rem;
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+}
+
+/* Hero Explainer */
+.hero-explainer {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    opacity: 0.7;
+    max-width: 600px;
+    padding: 0 1rem;
+}
+
+.explainer-highlight {
+    color: var(--accent-cyan);
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+
 /* Scroll Indicator */
 .hero-scroll-indicator {
     position: absolute;
@@ -447,7 +589,7 @@ html.hero-hidden .hero-section {
     color: var(--accent-green);
 }
 
-.zone.neutral {
+.zone.hold {
     background: rgba(0, 240, 255, 0.1);
     border-color: var(--accent-cyan);
     color: var(--accent-cyan);
@@ -491,7 +633,7 @@ html.hero-hidden .hero-section {
     color: var(--accent-green);
 }
 
-.action-status.neutral .action-value {
+.action-status.hold .action-value {
     color: var(--accent-cyan);
 }
 
@@ -797,7 +939,7 @@ html.hero-hidden .hero-section {
     border-left: 4px solid var(--accent-green);
 }
 
-.modal-stat.neutral {
+.modal-stat.hold {
     border-left: 4px solid var(--accent-cyan);
 }
 
@@ -925,7 +1067,7 @@ html.hero-hidden .hero-section {
     border-color: var(--accent-green);
 }
 
-.news-item.neutral {
+.news-item.hold {
     border-color: var(--accent-cyan);
 }
 
@@ -970,7 +1112,7 @@ html.hero-hidden .hero-section {
     color: var(--accent-green);
 }
 
-.news-item.neutral .news-score {
+.news-item.hold .news-score {
     background: rgba(0, 240, 255, 0.2);
     color: var(--accent-cyan);
 }
@@ -1118,7 +1260,7 @@ html.hero-hidden .hero-section {
     box-shadow: 0 0 8px rgba(239, 68, 68, 0.1);
 }
 
-.cycle-block.completed.neutral-result {
+.cycle-block.completed.hold-result {
     border-color: rgba(0, 240, 255, 0.3);
     box-shadow: 0 0 8px rgba(0, 240, 255, 0.05);
 }
@@ -1137,7 +1279,7 @@ html.hero-hidden .hero-section {
     border-left: 4px solid var(--accent-green);
 }
 
-.cycle-header.neutral {
+.cycle-header.hold {
     background: linear-gradient(90deg, rgba(0, 240, 255, 0.15), var(--bg-secondary));
     border-left: 4px solid var(--accent-cyan);
 }
@@ -1210,7 +1352,7 @@ html.hero-hidden .hero-section {
     border: 1px solid var(--accent-green);
 }
 
-.cycle-action.neutral {
+.cycle-action.hold {
     background: rgba(0, 240, 255, 0.2);
     color: var(--accent-cyan);
     border: 1px solid var(--accent-cyan);
@@ -1497,11 +1639,11 @@ html.hero-hidden .hero-section {
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
-.tokenomics-card.neutral {
+.tokenomics-card.hold {
     border-left: 4px solid var(--accent-cyan);
 }
 
-.tokenomics-card.neutral:hover {
+.tokenomics-card.hold:hover {
     border-color: var(--accent-cyan);
     box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
 }
@@ -1559,7 +1701,7 @@ html.hero-hidden .hero-section {
     border-top: 3px solid var(--accent-red);
 }
 
-.step-item.neutral {
+.step-item.hold {
     border-top: 3px solid var(--accent-cyan);
 }
 
@@ -1583,7 +1725,7 @@ html.hero-hidden .hero-section {
     color: var(--accent-red);
 }
 
-.step-item.neutral .step-rate {
+.step-item.hold .step-rate {
     color: var(--accent-cyan);
 }
 
@@ -1843,7 +1985,7 @@ html.hero-hidden .hero-section {
    ============================================ */
 
 .litepaper-container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
     position: relative;
@@ -2142,7 +2284,7 @@ html.hero-hidden .hero-section {
     background: rgba(16, 185, 129, 0.1);
 }
 
-.neutral-row {
+.hold-row {
     background: rgba(0, 240, 255, 0.05);
 }
 
@@ -3431,7 +3573,7 @@ html.hero-hidden .hero-section {
     color: var(--accent-red);
 }
 
-.tokenomics-card.neutral .tokenomics-value {
+.tokenomics-card.hold .tokenomics-value {
     color: var(--accent-cyan);
 }
 

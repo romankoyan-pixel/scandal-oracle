@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCANDAL - Litepaper</title>
+    <title>SCANDAL Protocol - Litepaper</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
     <div class="litepaper-container">
         <!-- Navigation -->
         <nav class="litepaper-nav">
-            <a href="index.html" class="nav-back">← Back to Dashboard</a>
+            <a href="dashboard.html" class="nav-back">← Back to Dashboard</a>
             <span class="nav-title">SCANDAL LITEPAPER</span>
         </nav>
 
@@ -29,9 +29,11 @@
 
             <!-- Header -->
             <header class="litepaper-header">
-                <h1 class="litepaper-logo">SCANDAL</h1>
-                <p class="litepaper-subtitle">The First Sentiment-Driven Tokenomics Protocol</p>
-                <p class="litepaper-version">Version 1.0 | December 2025</p>
+                <h1 class="litepaper-logo">SCANDAL PROTOCOL</h1>
+                <p class="litepaper-subtitle">News-Driven Tokenomics & On-Chain Prediction System</p>
+                <p class="litepaper-version">Litepaper v1.2</p>
+                <p class="litepaper-meta">Experimental • Autonomous • On-Chain Enforced</p>
+                <p class="litepaper-network">Network: BNB Smart Chain (BEP-20)</p>
             </header>
 
             <!-- Table of Contents -->
@@ -40,11 +42,13 @@
                 <ul>
                     <li><a href="#introduction">1. Introduction</a></li>
                     <li><a href="#problem">2. The Problem</a></li>
-                    <li><a href="#solution">3. The Solution</a></li>
-                    <li><a href="#how-it-works">4. How It Works</a></li>
-                    <li><a href="#tokenomics">5. Tokenomics</a></li>
-                    <li><a href="#roadmap">6. Roadmap</a></li>
-                    <li><a href="#conclusion">7. Conclusion</a></li>
+                    <li><a href="#solution">3. The SCANDAL Solution</a></li>
+                    <li><a href="#architecture">4. System Architecture</a></li>
+                    <li><a href="#cycles">5. How Sentiment Cycles Work</a></li>
+                    <li><a href="#token">6. Token Overview & Utility</a></li>
+                    <li><a href="#game">7. On-Chain Prediction Game</a></li>
+                    <li><a href="#roadmap">8. Roadmap</a></li>
+                    <li><a href="#disclaimer">9. Disclaimer</a></li>
                 </ul>
             </section>
 
@@ -52,448 +56,526 @@
             <section id="introduction" class="litepaper-section">
                 <h2><span class="section-number">01</span> Introduction</h2>
                 <p>
-                    <strong>SCANDAL</strong> is a revolutionary cryptocurrency protocol that bridges the gap between
-                    real-world events and tokenomics. Unlike traditional tokens with static supply mechanics,
-                    SCANDAL's supply dynamically responds to global news sentiment analyzed by artificial intelligence.
+                    <strong>SCNDL is a BEP-20 token on BNB Smart Chain, with full on-chain enforcement of economic rules
+                        and game settlement.</strong>
                 </p>
                 <p>
-                    Every headline matters. Every scandal has a price. The protocol continuously monitors global
-                    news sources, analyzes sentiment using advanced AI, and automatically adjusts the token supply
-                    based on the world's collective mood.
+                    SCANDAL is an experimental Web3 protocol that links global news sentiment to on-chain token supply
+                    mechanics.
+                </p>
+                <p>
+                    The protocol continuously analyzes public news headlines and determines one of three possible system
+                    states:
+                </p>
+                <ul>
+                    <li>🟢 <strong>MINT</strong> — positive global sentiment</li>
+                    <li>🔵 <strong>HOLD</strong> — neutral or mixed sentiment</li>
+                    <li>🔴 <strong>BURN</strong> — negative sentiment, scandals, or crises</li>
+                </ul>
+                <p>
+                    Each state triggers a predefined, transparent action affecting token supply, executed directly by
+                    smart contracts.
                 </p>
                 <div class="highlight-box">
-                    <p><strong>Core Principle:</strong> When the world burns with scandals, tokens burn.
-                        When stability returns, tokens are minted. Real-time. Autonomous. Transparent.</p>
+                    <p>SCANDAL does not rely on manual decisions, discretionary control, or subjective interpretation.
+                        All economic effects are rule-based and enforced on-chain.</p>
                 </div>
+                <p class="tagline">
+                    <strong>Every scandal has a price.<br>
+                        Every headline shapes the supply.</strong>
+                </p>
+                <p>
+                    <em>Users interact with a live dashboard showing current headlines, sentiment cycles, and token
+                        supply changes. The Prediction Game is accessible directly from the dashboard.</em>
+                </p>
             </section>
 
             <!-- Section 2: The Problem -->
             <section id="problem" class="litepaper-section">
                 <h2><span class="section-number">02</span> The Problem</h2>
                 <p>
-                    Traditional cryptocurrencies suffer from predictable, mechanical tokenomics that fail to
-                    reflect the dynamic nature of global events:
+                    Most crypto assets operate with tokenomics that are disconnected from real-world information.
                 </p>
+                <p>Common limitations include:</p>
                 <ul class="problem-list">
                     <li>
-                        <strong>Static Supply Mechanics</strong> — Most tokens have fixed or time-based emission
-                        schedules that ignore market conditions and real-world events.
+                        <strong>Static Emission Models</strong> — Supply changes follow time-based schedules, ignoring
+                        external events.
                     </li>
                     <li>
-                        <strong>Disconnect from Reality</strong> — Token values fluctuate based on speculation,
-                        not meaningful external factors.
+                        <strong>Manual Supply Control</strong> — Burns and mints are often initiated by teams,
+                        introducing trust assumptions.
                     </li>
                     <li>
-                        <strong>Lack of Utility</strong> — Many tokens lack genuine use cases or innovative
-                        mechanics that differentiate them.
+                        <strong>Passive Protocols</strong> — News impacts price emotionally, but not protocol logic.
                     </li>
                     <li>
-                        <strong>Manual Interventions</strong> — Projects rely on team decisions for burns or
-                        mints, introducing centralization and trust issues.
+                        <strong>Limited Participation</strong> — Users can trade tokens but cannot directly interact
+                        with protocol outcomes.
                     </li>
                 </ul>
+                <p>This creates a gap between real-world information and on-chain economic behavior.</p>
             </section>
 
-            <!-- Section 3: The Solution -->
+            <!-- Section 3: The SCANDAL Solution -->
             <section id="solution" class="litepaper-section">
-                <h2><span class="section-number">03</span> The Solution</h2>
+                <h2><span class="section-number">03</span> The SCANDAL Solution</h2>
                 <p>
-                    SCANDAL introduces <strong>Sentiment-Driven Tokenomics</strong> — a fully autonomous system
-                    that adjusts token supply based on real-world news sentiment.
+                    SCANDAL introduces <strong>Sentiment-Driven Tokenomics</strong> — a system where global news
+                    sentiment influences token supply automatically.
                 </p>
+
+                <h3>Key principles:</h3>
                 <div class="solution-grid">
                     <div class="solution-card">
-                        <div class="solution-icon">🔥</div>
-                        <h3>Autonomous Burns</h3>
-                        <p>When global sentiment turns negative (scandals, crises, conflicts), tokens are
-                            automatically burned from the Oracle Reserve, reducing supply.</p>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">🌱</div>
-                        <h3>Controlled Mints</h3>
-                        <p>When sentiment is positive (stability, good news), tokens are released from
-                            reserve back into circulation, maintaining ecosystem health.</p>
+                        <div class="solution-icon">📰</div>
+                        <h3>Continuous Analysis</h3>
+                        <p>News sentiment is analyzed continuously from multiple global sources.</p>
                     </div>
                     <div class="solution-card">
                         <div class="solution-icon">🤖</div>
-                        <h3>AI-Powered Analysis</h3>
-                        <p>The latest GPT models analyze news headlines and descriptions, scoring them
-                            on a 0-100 scandal scale with unprecedented accuracy.</p>
+                        <h3>Algorithmic Outcomes</h3>
+                        <p>Outcomes are determined algorithmically with no human intervention.</p>
                     </div>
                     <div class="solution-card">
-                        <div class="solution-icon">⚡</div>
-                        <h3>Real-Time Execution</h3>
-                        <p>Every 2 minutes, the Oracle processes new articles, calculates average sentiment,
-                            and executes the appropriate action — fully transparent and on-chain.</p>
+                        <div class="solution-icon">📏</div>
+                        <h3>Fixed Rules</h3>
+                        <p>Supply changes follow fixed, transparent rules encoded in smart contracts.</p>
                     </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">⚙️</div>
+                        <h3>Immutable Execution</h3>
+                        <p>Execution is enforced by immutable smart contracts on-chain.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>The protocol does not predict markets, prices, or outcomes.</strong><br>
+                        It simply applies deterministic logic to external data.</p>
                 </div>
             </section>
 
-            <!-- Section 4: How It Works -->
-            <section id="how-it-works" class="litepaper-section">
-                <h2><span class="section-number">04</span> How It Works</h2>
+            <!-- Section 4: System Architecture -->
+            <section id="architecture" class="litepaper-section">
+                <h2><span class="section-number">04</span> System Architecture</h2>
 
-                <h3>The Oracle Cycle</h3>
+                <p><strong>Oracle permissions are restricted, calls are rate-limited, and address changes are timelocked
+                        to maintain trust-minimized operation.</strong></p>
+
+                <h3>4.1 Hybrid Oracle Design</h3>
+                <p>SCANDAL uses a hybrid oracle architecture, which is standard across production Web3 systems.</p>
+
+                <h4>Off-chain layer</h4>
+                <ul>
+                    <li>Collects public news data</li>
+                    <li>Performs AI-assisted sentiment analysis</li>
+                    <li>Produces a numerical sentiment score</li>
+                </ul>
+
+                <h4>On-chain layer</h4>
+                <ul>
+                    <li>Validates oracle calls</li>
+                    <li>Enforces supply changes</li>
+                    <li>Settles prediction rounds</li>
+                    <li>Distributes fees and rewards</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <p><strong>The Oracle:</strong></p>
+                    <ul style="margin: 0; padding-left: 1.2rem;">
+                        <li>does not hold user funds</li>
+                        <li>does not control balances</li>
+                        <li>does not execute economic actions</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem;">All critical logic is enforced on-chain.</p>
+                </div>
+
+                <h3>4.2 Oracle Security Model</h3>
+                <ul>
+                    <li><strong>Oracle permissions</strong> are restricted</li>
+                    <li><strong>Oracle calls</strong> are rate-limited</li>
+                    <li><strong>Oracle address changes</strong> are timelocked</li>
+                    <li><strong>Users can exit</strong> before changes take effect</li>
+                </ul>
+                <p>This design minimizes trust while maintaining real-time responsiveness.</p>
+            </section>
+
+            <!-- Section 5: How Sentiment Cycles Work -->
+            <section id="cycles" class="litepaper-section">
+                <h2><span class="section-number">05</span> How Sentiment Cycles Work</h2>
+
+                <h3>5.1 News Analysis Cycle</h3>
                 <div class="flow-diagram">
                     <div class="flow-step">
                         <div class="flow-number">1</div>
                         <div class="flow-content">
-                            <h4>News Collection</h4>
-                            <p>RSS feeds from major sources (BBC, NYT, CoinDesk, Al Jazeera, ESPN, HLTV)
-                                are continuously monitored for fresh headlines.</p>
+                            <p>Public news headlines are collected from multiple sources</p>
                         </div>
                     </div>
                     <div class="flow-arrow">↓</div>
                     <div class="flow-step">
                         <div class="flow-number">2</div>
                         <div class="flow-content">
-                            <h4>AI Scoring</h4>
-                            <p>Each article is analyzed by GPT-4, receiving a scandal score (0-100).
-                                Low scores indicate positive/neutral news; high scores indicate scandals and crises.</p>
+                            <p>Each article receives a sentiment score (0–100)</p>
                         </div>
                     </div>
                     <div class="flow-arrow">↓</div>
                     <div class="flow-step">
                         <div class="flow-number">3</div>
                         <div class="flow-content">
-                            <h4>Cycle Calculation</h4>
-                            <p>Every 2 minutes, articles are averaged to determine the cycle's overall sentiment:</p>
-                            <ul>
-                                <li><strong>0-39:</strong> MINT Zone — Tokens released from reserve</li>
-                                <li><strong>40-60:</strong> NEUTRAL — No supply change</li>
-                                <li><strong>61-100:</strong> BURN Zone — Tokens burned from reserve</li>
-                            </ul>
+                            <p>Scores are averaged per cycle</p>
                         </div>
                     </div>
                     <div class="flow-arrow">↓</div>
                     <div class="flow-step">
                         <div class="flow-number">4</div>
                         <div class="flow-content">
-                            <h4>Smart Contract Execution</h4>
-                            <p>The Oracle calls the smart contract with the calculated rate (0.10% - 0.30%),
-                                executing the burn or mint operation on-chain.</p>
+                            <p>One outcome is selected based on score range</p>
                         </div>
                     </div>
                 </div>
 
-                <h3>Scoring Mechanism</h3>
                 <table class="scoring-table">
                     <thead>
                         <tr>
                             <th>Score Range</th>
-                            <th>Action</th>
-                            <th>Rate</th>
+                            <th>Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="mint-row">
+                            <td><strong>0–39</strong></td>
+                            <td>🟢 <strong>MINT</strong></td>
+                        </tr>
+                        <tr class="hold-row">
+                            <td><strong>40–60</strong></td>
+                            <td>🔵 <strong>HOLD</strong></td>
+                        </tr>
+                        <tr class="burn-row">
+                            <td><strong>61–100</strong></td>
+                            <td>🔴 <strong>BURN</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>5.2 Supply Adjustment Logic</h3>
+                <table class="scoring-table">
+                    <thead>
+                        <tr>
+                            <th>Outcome</th>
                             <th>Effect</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr class="mint-row">
-                            <td>0-8</td>
-                            <td>MINT</td>
-                            <td>0.30%</td>
-                            <td>Strong positive sentiment</td>
+                            <td>🟢 <strong>MINT</strong></td>
+                            <td>Tokens released from reserve</td>
                         </tr>
-                        <tr class="mint-row">
-                            <td>9-16</td>
-                            <td>MINT</td>
-                            <td>0.25%</td>
-                            <td>Positive sentiment</td>
-                        </tr>
-                        <tr class="mint-row">
-                            <td>17-24</td>
-                            <td>MINT</td>
-                            <td>0.20%</td>
-                            <td>Moderate positive</td>
-                        </tr>
-                        <tr class="mint-row">
-                            <td>25-32</td>
-                            <td>MINT</td>
-                            <td>0.15%</td>
-                            <td>Slight positive</td>
-                        </tr>
-                        <tr class="mint-row">
-                            <td>33-39</td>
-                            <td>MINT</td>
-                            <td>0.10%</td>
-                            <td>Minimal positive</td>
-                        </tr>
-                        <tr class="neutral-row">
-                            <td>40-60</td>
-                            <td>NEUTRAL</td>
-                            <td>0%</td>
-                            <td>No change</td>
+                        <tr class="hold-row">
+                            <td>🔵 <strong>HOLD</strong></td>
+                            <td>No supply change</td>
                         </tr>
                         <tr class="burn-row">
-                            <td>61-67</td>
-                            <td>BURN</td>
-                            <td>0.10%</td>
-                            <td>Minimal negative</td>
-                        </tr>
-                        <tr class="burn-row">
-                            <td>68-75</td>
-                            <td>BURN</td>
-                            <td>0.15%</td>
-                            <td>Slight negative</td>
-                        </tr>
-                        <tr class="burn-row">
-                            <td>76-83</td>
-                            <td>BURN</td>
-                            <td>0.20%</td>
-                            <td>Moderate scandal</td>
-                        </tr>
-                        <tr class="burn-row">
-                            <td>84-91</td>
-                            <td>BURN</td>
-                            <td>0.25%</td>
-                            <td>Major scandal</td>
-                        </tr>
-                        <tr class="burn-row">
-                            <td>92-100</td>
-                            <td>BURN</td>
-                            <td>0.30%</td>
-                            <td>Critical crisis</td>
+                            <td>🔴 <strong>BURN</strong></td>
+                            <td>Tokens permanently destroyed</td>
                         </tr>
                     </tbody>
                 </table>
+
+                <p>Supply changes are:</p>
+                <ul>
+                    <li>capped per cycle (<strong>0.10% – 0.30%</strong>)</li>
+                    <li>bounded by reserve limits (<strong>min 50M, max 400M tokens</strong>)</li>
+                    <li>executed automatically</li>
+                    <li><strong>cycle time:</strong> every 2 minutes</li>
+                </ul>
             </section>
 
-            <!-- Section 5: Tokenomics -->
-            <section id="tokenomics" class="litepaper-section">
-                <h2><span class="section-number">05</span> Tokenomics</h2>
+            <!-- Section 6: Token Overview & Utility -->
+            <section id="token" class="litepaper-section">
+                <h2><span class="section-number">06</span> Token Overview & Utility</h2>
 
-                <h3>Token Details</h3>
+                <h3>6.1 Token Details</h3>
                 <div class="token-details">
                     <div class="token-stat">
-                        <span class="token-label">Token Name</span>
+                        <span class="token-label">Name</span>
                         <span class="token-value">SCANDAL</span>
                     </div>
                     <div class="token-stat">
                         <span class="token-label">Symbol</span>
-                        <span class="token-value">$SCNDL</span>
+                        <span class="token-value">SCNDL</span>
                     </div>
                     <div class="token-stat">
-                        <span class="token-label">Total Supply</span>
-                        <span class="token-value">1,000,000,000</span>
+                        <span class="token-label">Standard</span>
+                        <span class="token-value">BEP-20</span>
                     </div>
                     <div class="token-stat">
                         <span class="token-label">Network</span>
-                        <span class="token-value">Base</span>
+                        <span class="token-value">BNB Smart Chain</span>
+                    </div>
+                    <div class="token-stat">
+                        <span class="token-label">Initial Supply</span>
+                        <span class="token-value">1,000,000,000 SCNDL</span>
                     </div>
                 </div>
 
-                <h3>Distribution</h3>
-                <div class="distribution-chart">
-                    <div class="distribution-item" style="--percent: 60%;">
-                        <div class="distribution-bar liquidity"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Liquidity Pool (DEX)</span>
-                            <span class="distribution-value">600,000,000 (60%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 10%;">
-                        <div class="distribution-bar team"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Team & Development</span>
-                            <span class="distribution-value">100,000,000 (10%) — 24mo vesting</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 10%;">
-                        <div class="distribution-bar marketing"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Marketing</span>
-                            <span class="distribution-value">100,000,000 (10%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 10%;">
-                        <div class="distribution-bar public"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Community & Airdrops</span>
-                            <span class="distribution-value">100,000,000 (10%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 5%;">
-                        <div class="distribution-bar reserve"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Advisors & Partners</span>
-                            <span class="distribution-value">50,000,000 (5%)</span>
-                        </div>
-                    </div>
-                    <div class="distribution-item" style="--percent: 5%;">
-                        <div class="distribution-bar reserve"></div>
-                        <div class="distribution-info">
-                            <span class="distribution-label">Treasury</span>
-                            <span class="distribution-value">50,000,000 (5%)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Oracle Reserve (Dynamic Supply)</h3>
-                <p>
-                    In addition to the fixed distribution, the Oracle manages a <strong>virtual reserve</strong>
-                    of up to 200M tokens that can be minted or burned based on news sentiment:
-                </p>
+                <h3>6.2 Token Utility</h3>
+                <p>SCNDL is a utility token used to interact with the protocol.</p>
+                <p>It enables:</p>
                 <ul>
-                    <li><strong>BURN Events:</strong> When sentiment is negative (scandals, crises), tokens are sent
-                        to dead address, permanently reducing supply.</li>
-                    <li><strong>MINT Events:</strong> When sentiment is positive, new tokens are released into the
-                        Liquidity Pool.</li>
-                    <li><strong>Reserve Limits:</strong> Min 50M, Max 400M — prevents extreme supply changes.</li>
-                    <li><strong>Cooldown:</strong> 60 seconds minimum between Oracle actions.</li>
+                    <li>participation in prediction rounds</li>
+                    <li>interaction with protocol mechanics</li>
+                    <li>access to future governance systems</li>
+                    <li>engagement with experimental on-chain features</li>
+                </ul>
+                <div class="highlight-box">
+                    <p>SCNDL is not designed as an investment product or financial instrument.</p>
+                </div>
+
+                <h3>6.3 Oracle Reserve</h3>
+                <p>The protocol maintains a controlled reserve used for sentiment-based supply adjustments.</p>
+                <ul>
+                    <li>🔴 <strong>Negative sentiment</strong> → burn from reserve</li>
+                    <li>🟢 <strong>Positive sentiment</strong> → mint into circulation</li>
+                    <li>📊 <strong>Reserve limits:</strong> Min 50M, Max 400M tokens — prevents extreme supply
+                        fluctuations</li>
+                    <li>⏱️ <strong>Cycle time:</strong> Every 2 minutes</li>
+                </ul>
+            </section>
+
+            <!-- Section 7: On-Chain Prediction Game -->
+            <section id="game" class="litepaper-section">
+                <h2><span class="section-number">07</span> On-Chain Prediction Game</h2>
+
+                <h3>7.1 Game Overview</h3>
+                <p>The SCANDAL Prediction Game is a <strong>player-funded, on-chain PvP system</strong>.</p>
+
+                <div class="highlight-box">
+                    <ul style="margin: 0; padding-left: 1.2rem;">
+                        <li><strong>No house</strong></li>
+                        <li><strong>No odds</strong></li>
+                        <li><strong>No protocol exposure</strong></li>
+                    </ul>
+                    <p style="margin-top: 0.5rem;"><strong>Players compete against each other, not the
+                            protocol.</strong></p>
+                </div>
+
+                <p>The protocol provides:</p>
+                <ul>
+                    <li>fixed rules</li>
+                    <li>automated settlement</li>
+                    <li>transparent execution</li>
                 </ul>
 
-                <h3>Prediction Game</h3>
-                <p>
-                    SCANDAL features a unique <strong>Prediction Game</strong> where players bet on the next
-                    Oracle action (<span style="color: #22c55e;">MINT</span>, <span
-                        style="color: #3b82f6;">NEUTRAL</span>, or <span style="color: #ef4444;">BURN</span>) based on
-                    their reading of global news sentiment.
-                </p>
-                <div class="solution-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <h3>7.2 Available Choices</h3>
+                <p>Each round offers three possible outcomes:</p>
+                <div class="solution-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="solution-card">
-                        <div class="solution-icon">🎮</div>
-                        <h3>How It Works</h3>
-                        <ul style="text-align: left; font-size: 0.9rem;">
-                            <li>Deposit SCNDL tokens to your game balance</li>
-                            <li>Place bets on MINT, NEUTRAL, or BURN during voting window</li>
-                            <li>Oracle announces result after news analysis</li>
-                            <li>Winners share the losing pool (totalizator)</li>
-                            <li>Withdraw winnings anytime</li>
-                        </ul>
+                        <div class="solution-icon">🟢</div>
+                        <h3>MINT</h3>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">🔵</div>
+                        <h3>HOLD</h3>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">🔴</div>
+                        <h3>BURN</h3>
+                    </div>
+                </div>
+
+                <h3>7.3 How a Round Works</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="flow-number">1</div>
+                        <div class="flow-content">
+                            <p>Players commit exactly 1000 SCNDL</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">2</div>
+                        <div class="flow-content">
+                            <p>Tokens are locked in the contract</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">3</div>
+                        <div class="flow-content">
+                            <p>The Oracle finalizes the sentiment cycle</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">4</div>
+                        <div class="flow-content">
+                            <p>The outcome is published</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">5</div>
+                        <div class="flow-content">
+                            <p>The pool is redistributed among correct participants</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>7.4 Fee Structure</h3>
+                <div class="solution-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="solution-card">
+                        <div class="solution-icon">⚙️</div>
+                        <h3>3%</h3>
+                        <p>protocol operations</p>
+                    </div>
+                    <div class="solution-card">
+                        <div class="solution-icon">🔥</div>
+                        <h3>2%</h3>
+                        <p>automatic token burn</p>
                     </div>
                     <div class="solution-card">
                         <div class="solution-icon">💰</div>
-                        <h3>Game Fees</h3>
-                        <ul style="text-align: left; font-size: 0.9rem;">
-                            <li><strong>3%</strong> — Platform fee (operations)</li>
-                            <li><strong>2%</strong> — Auto-burn (deflationary)</li>
-                            <li><strong>95%</strong> — Winners pool</li>
-                        </ul>
-                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">
-                            No limit on winnings — depends on pool ratio!
-                        </p>
+                        <h3>95%</h3>
+                        <p>redistributed to correct participants</p>
                     </div>
                 </div>
+                <p><strong>The protocol never profits from directional outcomes.</strong></p>
 
-                <h3>Transaction Tax</h3>
-                <p>
-                    Every buy and sell transaction incurs a <strong>3% tax</strong>, distributed as follows:
+                <h4 style="margin-top: 2rem;">Example: Pool Distribution</h4>
+                <table class="scoring-table">
+                    <thead>
+                        <tr>
+                            <th>Pool</th>
+                            <th>Participants</th>
+                            <th>Total SCNDL</th>
+                            <th>Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="mint-row">
+                            <td>🟢 MINT</td>
+                            <td>40 players</td>
+                            <td>40,000 SCNDL</td>
+                            <td><strong>WINNER</strong></td>
+                        </tr>
+                        <tr class="hold-row">
+                            <td>🔵 HOLD</td>
+                            <td>30 players</td>
+                            <td>30,000 SCNDL</td>
+                            <td>Lost</td>
+                        </tr>
+                        <tr class="burn-row">
+                            <td>🔴 BURN</td>
+                            <td>30 players</td>
+                            <td>30,000 SCNDL</td>
+                            <td>Lost</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                    Total pool: 100,000 SCNDL • Fee (5%): 5,000 SCNDL • Prize pool (95%): 95,000 SCNDL<br>
+                    <strong>Each MINT winner receives:</strong> 95,000 / 40 = <strong>2,375 SCNDL</strong> (137.5%
+                    return)
                 </p>
-                <div class="solution-grid" style="grid-template-columns: repeat(3, 1fr);">
-                    <div class="solution-card">
-                        <div class="solution-icon">🔥</div>
-                        <h3>1% Auto-Burn</h3>
-                        <p>Automatically sent to dead address, continuously reducing total supply.</p>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">📈</div>
-                        <h3>1% Marketing</h3>
-                        <p>Funds marketing, partnerships, CEX listings, and ecosystem growth.</p>
-                    </div>
-                    <div class="solution-card">
-                        <div class="solution-icon">💧</div>
-                        <h3>1% Liquidity</h3>
-                        <p>Automatically added to liquidity pool, ensuring stable trading.</p>
-                    </div>
-                </div>
 
-                <h3>Security Features</h3>
+                <h3>7.5 Important Notice</h3>
                 <div class="highlight-box">
                     <ul style="margin: 0; padding-left: 1.2rem;">
-                        <li><strong>24h Oracle Timelock:</strong> Any change to Oracle address requires 24h delay —
-                            users can withdraw before changes take effect.</li>
-                        <li><strong>Bet Verification:</strong> All bets are stored on-chain and verified before payouts.
-                        </li>
-                        <li><strong>Double-Claim Protection:</strong> Each bet can only be claimed once.</li>
-                        <li><strong>Payout Limits:</strong> Total payouts cannot exceed the prize pool.</li>
-                        <li><strong>Emergency Withdraw:</strong> Users can always withdraw their funds, even if contract
-                            is paused.</li>
-                        <li><strong>Reentrancy Protection:</strong> All financial functions are protected against
-                            reentrancy attacks.</li>
+                        <li>Participation is optional</li>
+                        <li>No guaranteed results</li>
+                        <li>Outcomes follow deterministic rules</li>
+                        <li>The system is experimental</li>
                     </ul>
                 </div>
             </section>
 
-            <!-- Section 6: Roadmap -->
+            <!-- Section 8: Roadmap -->
             <section id="roadmap" class="litepaper-section">
-                <h2><span class="section-number">06</span> Roadmap</h2>
+                <h2><span class="section-number">08</span> Roadmap</h2>
 
                 <div class="roadmap-timeline">
                     <div class="roadmap-phase">
                         <div class="phase-marker active"></div>
                         <div class="phase-content">
-                            <h3>Phase 1: Foundation ✅</h3>
-                            <ul>
-                                <li>✅ Oracle development and testing</li>
-                                <li>✅ AI sentiment analysis (Gemini 2.0)</li>
-                                <li>✅ Real-time dashboard</li>
-                                <li>✅ Smart contracts (Token + Game V2)</li>
-                                <li>✅ Security audit and hardening</li>
-                                <li>✅ Prediction Game development</li>
-                                <li>✅ Base Sepolia testnet deployment</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="roadmap-phase">
-                        <div class="phase-marker active"></div>
-                        <div class="phase-content">
-                            <h3>Phase 2: Launch 🚀</h3>
-                            <ul>
-                                <li>Base mainnet deployment</li>
-                                <li>Uniswap V3 liquidity</li>
-                                <li>Prediction Game live</li>
-                                <li>Community building (Telegram, Twitter)</li>
-                                <li>Marketing campaign</li>
-                                <li>First 1000 holders milestone</li>
-                            </ul>
+                            <h3>Phase 1 — Foundation</h3>
+                            <p>Oracle, dashboard, contracts, testnet</p>
                         </div>
                     </div>
                     <div class="roadmap-phase">
                         <div class="phase-marker"></div>
                         <div class="phase-content">
-                            <h3>Phase 3: Growth</h3>
-                            <ul>
-                                <li>CEX listings (MEXC, Gate.io)</li>
-                                <li>Additional news sources</li>
-                                <li>Leaderboard & tournaments</li>
-                                <li>Mobile-optimized interface</li>
-                                <li>API for third-party integrations</li>
-                                <li>Influencer partnerships</li>
-                            </ul>
+                            <h3>Phase 2 — Launch</h3>
+                            <p>BNB mainnet deployment, prediction game, community growth</p>
                         </div>
                     </div>
                     <div class="roadmap-phase">
                         <div class="phase-marker"></div>
                         <div class="phase-content">
-                            <h3>Phase 4: Evolution</h3>
-                            <ul>
-                                <li>Cross-chain deployment (Arbitrum, Polygon)</li>
-                                <li>Advanced AI models</li>
-                                <li>DAO governance</li>
-                                <li>NFT integration (betting skins)</li>
-                                <li>Institutional partnerships</li>
-                                <li>Mobile app</li>
-                            </ul>
+                            <h3>Phase 3 — Expansion</h3>
+                            <p>Leaderboards, tournaments, additional data sources, APIs</p>
+                        </div>
+                    </div>
+                    <div class="roadmap-phase">
+                        <div class="phase-marker"></div>
+                        <div class="phase-content">
+                            <h3>Phase 4 — Evolution</h3>
+                            <p>DAO governance, multi-oracle setup, cross-chain experiments</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Section 7: Conclusion -->
-            <section id="conclusion" class="litepaper-section">
-                <h2><span class="section-number">07</span> Conclusion</h2>
-                <p>
-                    SCANDAL represents a paradigm shift in cryptocurrency tokenomics. By connecting token
-                    supply to real-world sentiment through AI-powered analysis, we create a living, breathing
-                    economic system that responds to global events in real-time.
-                </p>
-                <p>
-                    This is not just a token — it's an experiment in autonomous, sentiment-driven economics.
-                    A protocol where every headline matters, where scandals have real consequences, and where
-                    the collective pulse of the world shapes the future of the token.
-                </p>
+            <!-- Section 9: Disclaimer -->
+            <section id="disclaimer" class="litepaper-section">
+                <h2><span class="section-number">09</span> Disclaimer</h2>
+                <p>SCANDAL is an experimental protocol for research, interaction, and entertainment.</p>
+
+                <div class="highlight-box">
+                    <p><strong>It is not:</strong></p>
+                    <ul style="margin: 0; padding-left: 1.2rem;">
+                        <li>financial advice</li>
+                        <li>an investment product</li>
+                        <li>a betting or gambling service</li>
+                        <li>a guarantee of profit or income</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Experimental Risks</h3>
+                <p><strong>The protocol is experimental; users interact at their own risk. Past cycles do not guarantee
+                        future outcomes.</strong></p>
+                <p>Potential risks include:</p>
+                <ul>
+                    <li>Smart contract vulnerabilities or bugs</li>
+                    <li>Oracle failures or data inaccuracies</li>
+                    <li>Network congestion or transaction failures</li>
+                    <li>Unpredictable market conditions</li>
+                    <li>Regulatory changes affecting crypto assets</li>
+                </ul>
+
+                <h3 style="margin-top: 2rem;">No Financial Guarantees</h3>
+                <p>SCNDL does not:</p>
+                <ul>
+                    <li>guarantee returns or profits</li>
+                    <li>provide investment advice</li>
+                    <li>ensure token price stability</li>
+                    <li>promise future development or features</li>
+                </ul>
+
+                <p style="margin-top: 1.5rem;"><strong>Users interact with the protocol at their own discretion and
+                        risk.</strong></p>
+
+                <h3 style="margin-top: 2rem;">Final Statement</h3>
                 <div class="conclusion-tagline">
-                    <p><strong>Every scandal has a price. Every headline shapes the supply.</strong></p>
-                    <p>Welcome to SCANDAL.</p>
+                    <p>SCANDAL is a living economic system driven by real-world information and enforced by on-chain
+                        rules.</p>
+                    <p style="margin-top: 1rem;"><strong>No opinions.<br>
+                            No manual control.<br>
+                            Only outcomes.</strong></p>
+                    <p style="margin-top: 1.5rem; font-size: 1.1rem;">
+                        <strong>Every headline matters.<br>
+                            Every outcome follows the code.</strong>
+                    </p>
                 </div>
             </section>
 
@@ -501,7 +583,7 @@
             <footer class="litepaper-footer">
                 <p>SCANDAL Protocol © 2025. All rights reserved.</p>
                 <p class="disclaimer">This document is for informational purposes only.
-                    Cryptocurrency investments carry significant risk.</p>
+                    Cryptocurrency interactions carry significant risk.</p>
             </footer>
 
         </article>

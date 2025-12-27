@@ -22,13 +22,96 @@
         <div class="hero-content">
             <div class="hero-protocol">PROTOCOL</div>
             <h1 class="hero-title">SCANDAL</h1>
-            <p class="hero-slogan">Every scandal has a price. Every headline shapes the supply.</p>
+
+            <!-- Main Message -->
+            <h2 class="hero-headline">
+                News move the supply.<br>
+                Scandals burn tokens.
+            </h2>
+
+            <!-- Description -->
+            <p class="hero-description">
+                A sentiment-driven protocol where global headlines<br>
+                automatically mint, burn, or pause token supply.
+            </p>
+
+            <!-- LIVE Oracle Status -->
+            <div class="oracle-status-live">
+                <div class="status-label">CURRENT ORACLE STATUS</div>
+                <div class="status-display" id="heroOracleStatus">
+                    <span class="status-icon">⚪</span>
+                    <span class="status-action">LOADING</span>
+                    <span class="status-percent">...</span>
+                </div>
+            </div>
+
+            <!-- CTA Buttons -->
             <div class="hero-buttons">
                 <a href="dashboard.html" class="hero-btn hero-btn-primary">ENTER DASHBOARD</a>
                 <a href="litepaper.html" class="hero-btn hero-btn-secondary">READ LITEPAPER</a>
             </div>
+
+            <!-- Footer Text -->
+            <div class="hero-footer-text">
+                Live oracle • real headlines • on-chain execution
+            </div>
+        </div>
+
+        <!-- Explainer -->
+        <div class="hero-explainer">
+            Headlines are analyzed every cycle.<br>
+            The Oracle decides: <span class="explainer-highlight">MINT • HOLD • BURN</span>
         </div>
     </section>
+
+    <script>
+        // Live Oracle Status Update
+        async function updateHeroOracle() {
+            try {
+                const response = await fetch('/api/v2/round');
+                const data = await response.json();
+
+                let status, icon, percent, colorClass;
+
+                if (data.averageScore < 40) {
+                    status = 'MINT';
+                    icon = '🟢';
+                    percent = `+${(data.averageScore * 0.0075).toFixed(2)}% supply this cycle`;
+                    colorClass = 'mint';
+                } else if (data.averageScore > 60) {
+                    status = 'BURN';
+                    icon = '🔥';
+                    percent = `−${((data.averageScore - 60) * 0.0075).toFixed(2)}% supply this cycle`;
+                    colorClass = 'burn';
+                } else {
+                    status = 'HOLD';
+                    icon = '⚪';
+                    percent = '0% supply this cycle';
+                    colorClass = 'hold';
+                }
+
+                const statusDisplay = document.getElementById('heroOracleStatus');
+                statusDisplay.className = `status-display ${colorClass}`;
+                statusDisplay.innerHTML = `
+                    <span class="status-icon">${icon}</span>
+                    <span class="status-action">${status}</span>
+                    <span class="status-percent">${percent}</span>
+                `;
+            } catch (error) {
+                console.log('Oracle status update failed:', error);
+                // Show fallback status
+                document.getElementById('heroOracleStatus').innerHTML = `
+                    <span class="status-icon">⚪</span>
+                    <span class="status-action">STANDBY</span>
+                    <span class="status-percent">Awaiting next cycle</span>
+                `;
+            }
+        }
+
+        // Update on load and every 15 seconds
+        updateHeroOracle();
+        setInterval(updateHeroOracle, 15000);
+    </script>
 </body>
 
 </html>

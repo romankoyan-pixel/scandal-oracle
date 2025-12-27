@@ -1739,7 +1739,7 @@
             margin-top: -3px;
         }
 
-        /* NEUTRAL Badge */
+        /* HOLD Badge */
         .neutral-badge {
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 180, 220, 0.25));
             border: 2px solid rgba(0, 240, 255, 0.5);
@@ -2237,7 +2237,7 @@
                                 </div>
                                 <div class="holo-label neutral">
                                     <span class="label-icon">🔵</span>
-                                    <span class="label-name">NEUTRAL</span>
+                                    <span class="label-name">HOLD</span>
                                 </div>
                                 <div class="holo-label burn">
                                     <span class="label-icon">🔴</span>
@@ -2249,10 +2249,9 @@
 
                     <!-- Bet Buttons -->
                     <div class="arena-buttons">
-                        <button class="arena-btn mint-btn" id="arenaMint" onclick="vote('MINT')">🟢 Bet MINT</button>
-                        <button class="arena-btn neutral-btn" id="arenaNeutral" onclick="vote('NEUTRAL')">🔵 Bet
-                            NEUTRAL</button>
-                        <button class="arena-btn burn-btn" id="arenaBurn" onclick="vote('BURN')">🔴 Bet BURN</button>
+                        <button class="arena-btn mint-btn" id="arenaMint" onclick="vote('MINT')">🟢 MINT</button>
+                        <button class="arena-btn neutral-btn" id="arenaNeutral" onclick="vote('HOLD')">🔵 HOLD</button>
+                        <button class="arena-btn burn-btn" id="arenaBurn" onclick="vote('BURN')">🔴 BURN</button>
                     </div>
 
                     <!-- Pending Refunds Alert -->
@@ -2919,7 +2918,7 @@
 
         // Pool simulation
         const BET_AMOUNT = 1000; // $SCNDL per bet (V2 minimum)
-        let poolData = { mint: 0, neutral: 0, burn: 0 };
+        let poolData = { mint: 0, hold: 0, burn: 0 };
         let myBetAmount = 0;
         let lastCycleData = null;
 
@@ -2963,7 +2962,7 @@
 
             if (articlesCount > 0) {
                 // News has arrived - apply score-based offsets
-                // Rules: score < 40 = MINT, 40-60 = NEUTRAL, > 60 = BURN
+                // Rules: score < 40 = MINT, 40-60 = HOLD, > 60 = BURN
                 if (score < 40) {
                     // MINT zone - MINT leads
                     const intensity = (40 - score) / 40; // 0 at 40, 1 at 0
@@ -2977,7 +2976,7 @@
                     neutralOffset = -intensity * maxOffset * 0.4;
                     mintOffset = -intensity * maxOffset * 0.8;
                 } else {
-                    // NEUTRAL zone (40-60) - NEUTRAL leads
+                    // HOLD zone (40-60) - HOLD leads
                     const distFromCenter = Math.abs(50 - score);
                     const intensity = 1 - (distFromCenter / 10); // strongest at 50
                     neutralOffset = intensity * maxOffset * 0.6;
@@ -3018,7 +3017,7 @@
                     winner = 'BURN';
                 } else {
                     neutralRacer.classList.add('winner');
-                    winner = 'NEUTRAL';
+                    winner = 'HOLD';
                 }
 
                 // Show celebration at 98% (only once per cycle)
@@ -3451,7 +3450,7 @@
 
                     // Show winner celebration briefly if not shown yet
                     if (!window.celebrationShown && currentRaceScore !== 50) {
-                        let winner = 'NEUTRAL';
+                        let winner = 'HOLD';
                         if (currentRaceScore <= 40) winner = 'MINT';
                         else if (currentRaceScore >= 60) winner = 'BURN';
                         console.log('🏆 Cycle ended! Winner:', winner, 'Score:', currentRaceScore);
@@ -3873,7 +3872,7 @@
                         const myBet = betHistoryData.find(b => b.roundId === previousCycleId);
 
                         if (myBet) {
-                            const actualResult = (lastCycle.action || 'NEUTRAL').toUpperCase();
+                            const actualResult = (lastCycle.action || 'HOLD').toUpperCase();
                             const won = myBet.prediction === actualResult;
                             const amount = won ? (myBet.payout || myBet.amount) : myBet.amount;
 
@@ -3913,7 +3912,7 @@
             }
 
             document.getElementById('modalCycleId').textContent = lastCycleData.id;
-            document.getElementById('modalCycleAction').textContent = lastCycleData.action || 'NEUTRAL';
+            document.getElementById('modalCycleAction').textContent = lastCycleData.action || 'HOLD';
             document.getElementById('modalCycleScore').textContent = (lastCycleData.averageScore || 50).toFixed(1);
             document.getElementById('modalCycleRate').textContent = lastCycleData.ratePercentage || '0%';
 
@@ -4021,7 +4020,7 @@
 
                     const resultEl = document.getElementById('lastCycleResult');
                     const panelEl = document.getElementById('lastCyclePanel');
-                    const action = (lastCycleData.action || 'NEUTRAL').toUpperCase();
+                    const action = (lastCycleData.action || 'HOLD').toUpperCase();
                     resultEl.textContent = action;
 
                     // Remove ALL color classes first
