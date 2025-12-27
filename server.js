@@ -71,12 +71,8 @@ let tokenContract = null;
 
 if (process.env.PRIVATE_KEY) {
     try {
-        const network = {
-            chainId: 84532,
-            name: 'base-sepolia',
-            ensAddress: null
-        };
-        blockchainProvider = new ethers.JsonRpcProvider(BLOCKCHAIN_CONFIG.rpcUrl, network, { staticNetwork: network });
+        const network = new ethers.Network('base-sepolia', 84532);
+        blockchainProvider = new ethers.JsonRpcProvider(BLOCKCHAIN_CONFIG.rpcUrl, network, { staticNetwork: true });
         oracleWallet = new ethers.Wallet(process.env.PRIVATE_KEY, blockchainProvider);
         gameContract = new ethers.Contract(BLOCKCHAIN_CONFIG.gameAddress, BLOCKCHAIN_CONFIG.gameABI, oracleWallet);
         tokenContract = new ethers.Contract(BLOCKCHAIN_CONFIG.tokenAddress, BLOCKCHAIN_CONFIG.tokenABI, oracleWallet);
