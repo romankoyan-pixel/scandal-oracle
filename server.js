@@ -368,16 +368,30 @@ function calculateWeightedCycleScore(articles) {
 
     const weightedAvg = totalWeight > 0 ? weightedSum / totalWeight : 50;
 
-    // NEW: Top score gets extra weight to reduce HOLD bias
-    const topScore = Math.max(...allScores);
-    const bottomScore = Math.min(...allScores);
+    // Get extreme scores
+    const maxScore = Math.max(...allScores);
+    const minScore = Math.min(...allScores);
 
-    // Final score: 70% top score + 30% weighted average
-    // This ensures strong signals (scandals) aren't diluted
-    const finalScore = (topScore * 0.7) + (weightedAvg * 0.3);
+    // SYMMETRIC FORMULA: Use MIN for MINT trend, MAX for BURN trend
+    // This balances the system so both directions get equal boost
+    let finalScore;
 
-    console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} | TopScore=${topScore} | BottomScore=${bottomScore}`);
-    console.log(` 🎯 FINAL: (${topScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
+    if (weightedAvg < 50) {
+        // Trend towards MINT → use MIN score (most positive news)
+        finalScore = (minScore * 0.7) + (weightedAvg * 0.3);
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} < 50 → MINT trend`);
+        console.log(`   🎯 FINAL: (MIN ${minScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
+    } else if (weightedAvg > 50) {
+        // Trend towards BURN → use MAX score (most negative news)
+        finalScore = (maxScore * 0.7) + (weightedAvg * 0.3);
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} > 50 → BURN trend`);
+        console.log(`   🎯 FINAL: (MAX ${maxScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
+    } else {
+        // Exactly 50 → use weighted average only
+        finalScore = weightedAvg;
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} = 50 → NEUTRAL`);
+        console.log(`   🎯 FINAL: ${finalScore.toFixed(1)}`);
+    }
 
     return finalScore;
 }
