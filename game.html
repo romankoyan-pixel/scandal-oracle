@@ -4824,7 +4824,7 @@
             const displayValue = Math.max(0, localTimerValue - elapsed);
 
             if (localTimerMode === 'NEXT') {
-                timerEl.textContent = `BETS CLOSED: ${displayValue.toString().padStart(2, '0')}s`;
+                timerEl.textContent = `CLOSED: ${displayValue.toString().padStart(2, '0')}s`;
             } else {
                 timerEl.textContent = `${localTimerMode}: ${displayValue.toString().padStart(2, '0')}s`;
             }
