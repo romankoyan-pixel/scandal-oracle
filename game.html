@@ -196,7 +196,7 @@
         }
 
         .timer-value.syncing {
-            color: var(--accent-cyan);
+            color: #fbbf24;
             animation: syncPulse 1s ease-in-out infinite;
         }
 
@@ -4813,9 +4813,9 @@
         function tickLocalTimer() {
             const timerEl = document.getElementById('votingTimer');
 
-            // SYNC mode - show pulsing SYNC text instead of timer
+            // SYNC mode - show yellow СИНХРОНИЗАЦИЯ text instead of timer
             if (localTimerMode === 'SYNC') {
-                timerEl.textContent = '⚡ SYNCING...';
+                timerEl.textContent = 'СИНХРОНИЗАЦИЯ';
                 return;
             }
 
