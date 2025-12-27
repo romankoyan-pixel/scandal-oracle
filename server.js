@@ -2271,6 +2271,20 @@ app.listen(PORT, '0.0.0.0', async () => {
 
     await scanAndAddNews();
 
+    // Synchronize cycles with clock time (every 3 minutes: :00, :03, :06, etc.)
+    const now = Date.now();
+    const millisSinceMinute = now % AGGREGATION_INTERVAL;
+    const delayToNextCycle = AGGREGATION_INTERVAL - millisSinceMinute;
+
+    console.log(`⏱️ Syncing to clock: Next cycle in ${Math.round(delayToNextCycle / 1000)}s`);
+
+    // Start news scanning immediately, every 20s
     setInterval(async () => { await scanAndAddNews(); }, SCAN_INTERVAL);
-    setInterval(() => { closeCycleAndStartNew(); }, AGGREGATION_INTERVAL);
+
+    // Schedule first cycle at next 3-minute boundary
+    setTimeout(() => {
+        closeCycleAndStartNew();
+        // Then repeat every 3 minutes
+        setInterval(() => { closeCycleAndStartNew(); }, AGGREGATION_INTERVAL);
+    }, delayToNextCycle);
 });
