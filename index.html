@@ -73,8 +73,15 @@
 
                 // Use API's projected action and rate
                 const status = data.projectedAction || 'HOLD';
-                const rate = data.projectedRate || '0%';
+                let rate = data.projectedRate || '0%';
                 const colorClass = status.toLowerCase();
+
+                // Add +/− prefix if not already present
+                if (status === 'MINT' && !rate.startsWith('+')) {
+                    rate = '+' + rate;
+                } else if (status === 'BURN' && !rate.startsWith('−') && !rate.startsWith('-')) {
+                    rate = '−' + rate;
+                }
 
                 const statusDisplay = document.getElementById('heroOracleStatus');
                 statusDisplay.className = `status-display ${colorClass}`;

@@ -421,7 +421,8 @@ let seenTitles = new Set(savedData.seenTitles || []);
 let seenLinks = new Set(savedData.seenLinks || []);
 
 const SCAN_INTERVAL = 20000;
-const AGGREGATION_INTERVAL = 120000;
+const AGGREGATION_INTERVAL = 180000; // 3 minutes
+const BETTING_WINDOW = 60000; // 60 seconds betting window
 const MAX_CYCLES = 500; // Keep more cycles for news archive
 const MIN_ARTICLES_FOR_GAME = 0; // TESTING: set to 5 for production
 
@@ -1371,8 +1372,8 @@ app.post('/api/vote', async (req, res) => {
 // Game status endpoint - with V2 pool data
 app.get('/api/game-status', async (req, res) => {
     const elapsed = Date.now() - currentCycle.startTime;
-    const halfCycle = AGGREGATION_INTERVAL / 2;
-    const votingOpen = elapsed < halfCycle;
+    const votingOpen = elapsed < BETTING_WINDOW;
+    const isBettingClosed = elapsed >= BETTING_WINDOW;
     const wallet = req.query.wallet; // Extract wallet from query params
 
     const cycleId = currentCycle.id.toString();
@@ -1420,7 +1421,10 @@ app.get('/api/game-status', async (req, res) => {
     res.json({
         cycleId: currentCycle.id,
         votingOpen,
-        votingTimeRemaining: Math.max(0, halfCycle - elapsed),
+        cycleId: currentCycle.id,
+        votingOpen,
+        isBettingClosed,
+        bettingWindowRemaining: Math.max(0, BETTING_WINDOW - elapsed),
         cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
         cycleTotal: AGGREGATION_INTERVAL,
         cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL), // 0 to 1
@@ -1998,6 +2002,12 @@ app.post('/api/v2/bet', async (req, res) => {
         const walletLower = wallet.toLowerCase();
         const betAmount = Number(amount);
 
+        // Check if betting window is open
+        const timeElapsed = Date.now() - currentCycle.startTime;
+        if (timeElapsed > BETTING_WINDOW) {
+            return res.status(400).json({ error: 'Betting is closed for this round' });
+        }
+
         // Validate prediction
         const validPredictions = ['MINT', 'BURN', 'HOLD'];
         if (!validPredictions.includes(prediction.toUpperCase())) {
@@ -2179,6 +2189,8 @@ app.get('/api/v2/round', async (req, res) => {
             roundId: currentCycle.id,
             startTime: currentCycle.startTime,
             timeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime)),
+            bettingWindowRemaining: Math.max(0, BETTING_WINDOW - (Date.now() - currentCycle.startTime)),
+            isBettingClosed: (Date.now() - currentCycle.startTime) > BETTING_WINDOW,
             projectedAction: rateInfo.action,
             projectedRate: rateInfo.percentage,
             score: avgScore,
