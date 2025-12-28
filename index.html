@@ -43,6 +43,10 @@
                     <span class="status-action">LOADING</span>
                     <span class="status-percent">...</span>
                 </div>
+                <div class="status-supply">
+                    <span class="supply-label-mini">TOTAL SUPPLY:</span>
+                    <span class="supply-value-mini" id="heroTotalSupply">...</span>
+                </div>
             </div>
 
             <!-- CTA Buttons -->
@@ -89,6 +93,14 @@
                     <span class="status-action">${status}</span>
                     <span class="status-percent">${rate} supply this cycle</span>
                 `;
+
+                // Update total supply
+                if (data.totalSupply) {
+                    const supply = parseFloat(data.totalSupply).toLocaleString('en-US', {
+                        maximumFractionDigits: 0
+                    });
+                    document.getElementById('heroTotalSupply').textContent = supply + ' $SCNDL';
+                }
             } catch (error) {
                 console.log('Oracle status update failed:', error);
                 // Show fallback status
@@ -96,6 +108,7 @@
                     <span class="status-action">STANDBY</span>
                     <span class="status-percent">Awaiting next cycle</span>
                 `;
+                document.getElementById('heroTotalSupply').textContent = '--';
             }
         }
 

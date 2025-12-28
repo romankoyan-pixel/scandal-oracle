@@ -305,6 +305,31 @@ html.hero-hidden .hero-section {
     font-weight: 500;
 }
 
+/* Status Supply - Mini display */
+.status-supply {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.supply-label-mini {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+}
+
+.supply-value-mini {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: var(--accent-cyan);
+    font-weight: 700;
+}
+
 /* Hero Footer Text */
 .hero-footer-text {
     font-family: 'Rajdhani', sans-serif;
@@ -1765,7 +1790,37 @@ html.hero-hidden .hero-section {
 
 @media (max-width: 768px) {
     .steps-grid {
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .steps-grid .step-item {
+        flex: 0 0 80px;
+        min-width: 80px;
+    }
+
+    /* Themed horizontal scrollbar */
+    .steps-grid::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .steps-grid::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: 3px;
+    }
+
+    .steps-grid::-webkit-scrollbar-thumb {
+        background: var(--accent-cyan);
+        border-radius: 3px;
+    }
+
+    .steps-grid::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-green);
     }
 }
 
@@ -3680,5 +3735,511 @@ html.hero-hidden .hero-section {
 
     50% {
         box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN - MEDIA QUERIES
+   ============================================ */
+
+/* ========== LAPTOP SCREENS (short height) ========== */
+@media (max-height: 800px) {
+    .hero-section {
+        height: auto;
+        min-height: 100vh;
+        padding: 2rem 1rem;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 10vw, 6rem);
+        margin-bottom: 1rem;
+    }
+
+    .hero-headline {
+        font-size: clamp(1.2rem, 3vw, 2rem);
+        margin-bottom: 1rem;
+    }
+
+    .hero-description {
+        margin-bottom: 1.5rem;
+    }
+
+    .oracle-status-live {
+        padding: 1rem 1.5rem;
+        margin: 1rem auto;
+    }
+
+    .hero-buttons {
+        margin-bottom: 1rem;
+    }
+
+    .hero-explainer {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        margin-top: 1.5rem;
+    }
+
+    /* Dashboard fixes for laptop */
+    .dashboard {
+        height: auto;
+        min-height: auto;
+    }
+
+    .meter-section {
+        padding: 1.5rem;
+    }
+
+    .meter-value {
+        font-size: 3rem;
+    }
+
+    .chart-container {
+        height: 200px !important;
+    }
+
+    /* Litepaper fixes */
+    .litepaper-container {
+        padding: 1rem;
+    }
+
+    /* News fixes */
+    .news-section {
+        max-height: 500px;
+    }
+}
+
+/* ========== LARGE TABLET / SMALL DESKTOP (max-width: 1200px) ========== */
+@media (max-width: 1200px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .dashboard {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .meter-section {
+        order: 1;
+    }
+
+    .news-section {
+        order: 2;
+        max-height: 600px;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-buttons {
+        gap: 0.5rem;
+    }
+}
+
+/* ========== TABLET (max-width: 1024px) ========== */
+@media (max-width: 1024px) {
+    .header {
+        padding: 1rem;
+    }
+
+    .logo h1 {
+        font-size: 2rem;
+    }
+
+    .token-name {
+        font-size: 1rem;
+    }
+
+    .total-supply {
+        padding: 0.6rem 1rem;
+    }
+
+    .supply-value {
+        font-size: 1.1rem;
+    }
+
+    .meter-value {
+        font-size: 3rem;
+    }
+
+    .chart-container {
+        height: 250px !important;
+    }
+
+    /* News archive page */
+    .news-archive-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Litepaper */
+    .litepaper-container {
+        padding: 1rem;
+    }
+
+    .litepaper-content {
+        max-width: 100%;
+    }
+}
+
+/* ========== MOBILE (max-width: 768px) ========== */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    /* Header - Stack vertically */
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .logo {
+        justify-content: center;
+    }
+
+    .logo h1 {
+        font-size: 1.8rem;
+    }
+
+    .total-supply {
+        text-align: center;
+        width: 100%;
+    }
+
+    .wallet-balance-widget {
+        width: 100%;
+    }
+
+    .header-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .header-buttons a,
+    .header-buttons button {
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.75rem;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    /* Dashboard */
+    .dashboard {
+        gap: 1rem;
+    }
+
+    .meter-section,
+    .news-section {
+        padding: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1rem;
+    }
+
+    .meter-value {
+        font-size: 2.5rem;
+    }
+
+    .meter-bar {
+        height: 30px;
+    }
+
+    .meter-zones {
+        font-size: 0.75rem;
+    }
+
+    .zone {
+        padding: 0.4rem;
+    }
+
+    /* Action status */
+    .action-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .action-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* News items */
+    .news-list {
+        gap: 0.8rem;
+    }
+
+    .news-item {
+        padding: 0.8rem;
+    }
+
+    .news-title {
+        font-size: 0.9rem;
+    }
+
+    /* Chart */
+    .chart-container {
+        height: 200px !important;
+    }
+
+    /* Hero section */
+    .hero-title {
+        font-size: clamp(2.5rem, 12vw, 4rem);
+    }
+
+    .hero-headline {
+        font-size: clamp(1.2rem, 4vw, 1.8rem);
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .hero-btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 0.85rem;
+    }
+
+    .oracle-status-live {
+        padding: 1rem;
+        margin: 1.5rem 1rem;
+    }
+
+    .status-action {
+        font-size: 1.2rem;
+    }
+
+    .hero-explainer {
+        position: relative;
+        bottom: auto;
+        left: 0;
+        transform: none;
+        width: 100%;
+        margin-top: 2rem;
+        padding: 0 1rem;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    /* Litepaper */
+    .litepaper-nav {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .litepaper-header h1 {
+        font-size: 2rem;
+    }
+
+    .litepaper-toc {
+        position: static;
+        margin-bottom: 2rem;
+    }
+
+    /* News archive */
+    .news-archive-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .news-archive-filters {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .news-archive-card {
+        padding: 1rem;
+    }
+
+    /* Stats boxes */
+    .stats-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+    }
+
+    .stat-box {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* ========== SMALL MOBILE (max-width: 480px) ========== */
+@media (max-width: 480px) {
+    .container {
+        padding: 0.75rem;
+    }
+
+    .header {
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+
+    .token-name {
+        font-size: 0.85rem;
+    }
+
+    .header-buttons a,
+    .header-buttons button {
+        min-width: 100px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .meter-section,
+    .news-section {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+
+    .meter-value {
+        font-size: 2rem;
+    }
+
+    .meter-bar {
+        height: 24px;
+        border-radius: 12px;
+    }
+
+    .meter-zones {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+    }
+
+    .zone {
+        font-size: 0.7rem;
+        padding: 0.3rem;
+    }
+
+    /* Hero */
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-protocol {
+        font-size: 0.7rem;
+    }
+
+    .hero-btn {
+        padding: 0.8rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .status-display {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .status-action {
+        font-size: 1rem;
+    }
+
+    .status-percent {
+        font-size: 0.85rem;
+    }
+
+    /* News items */
+    .news-item {
+        padding: 0.6rem;
+    }
+
+    .news-title {
+        font-size: 0.85rem;
+    }
+
+    .news-meta {
+        font-size: 0.7rem;
+    }
+
+    /* Stats */
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-box {
+        padding: 0.8rem;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    /* Chart */
+    .chart-container {
+        height: 150px !important;
+    }
+
+    /* Litepaper */
+    .litepaper-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .litepaper-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .litepaper-section p,
+    .litepaper-section li {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== TOUCH TARGETS (for all mobile) ========== */
+@media (max-width: 1024px) {
+
+    /* Ensure minimum 44x44px touch targets */
+    a,
+    button,
+    .btn-news,
+    .btn-buy,
+    .btn-connect {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Better tap targets for news items */
+    .news-item {
+        min-height: 60px;
+    }
+
+    /* Scroll hints for overflow areas */
+    .news-list {
+        -webkit-overflow-scrolling: touch;
     }
 }
