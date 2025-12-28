@@ -75,6 +75,18 @@ const RSS_FEEDS = {
         'https://abcnews.go.com/abcnews/topstories',
         'https://feeds.nbcnews.com/nbcnews/public/news',
         'https://www.cbsnews.com/latest/rss/main'
+    ],
+    investigations: [
+        'https://www.propublica.org/feeds/propublica/main',
+        'https://www.bellingcat.com/feed/',
+        'https://www.icij.org/feed/',
+        'https://globalvoices.org/feed/'
+    ],
+    crisis: [
+        'https://www.crisisgroup.org/latest-updates/feed',
+        'https://www.thenewhumanitarian.org/rss.xml',
+        'https://rekt.news/feed.xml',
+        'https://web3isgoinggreat.com/feed.xml'
     ]
 };
 

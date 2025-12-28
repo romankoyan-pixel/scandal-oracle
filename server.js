@@ -318,6 +318,8 @@ const RSS_FEEDS = require('./config/feeds');
 const CATEGORY_WEIGHTS = {
     politics: 1.5,    // Government/policy - major market impact
     breaking: 1.5,    // Breaking news - immediate impact
+    investigations: 1.6, // Bellingcat/ProPublica - scandal focus
+    crisis: 1.7,      // War/conflict/hacks - highest scandal priority
     crypto: 1.4,      // Crypto news - direct relevance
     business: 1.3,    // Corporate/economy news
     world: 1.0,       // Global events - varied impact
