@@ -3954,7 +3954,11 @@
 
                 // ===== UPDATE COIN RACE based on Oracle score and cycle time =====
                 // Also update currentAverageScore for Oracle Arena display
-                if (typeof data.averageScore === 'number') {
+                // BLIND MODE: Reset to neutral 50 during betting window
+                isBlindMode = !!data.blindMode;
+                if (data.blindMode) {
+                    currentAverageScore = 50; // Hidden during betting
+                } else if (typeof data.averageScore === 'number') {
                     currentAverageScore = data.averageScore;
                 }
 
@@ -5065,8 +5069,13 @@
 
                 // Update score display (use currentAverageScore)
                 const holoScore = document.getElementById('holoScore');
-                if (holoScore && typeof currentAverageScore !== 'undefined') {
-                    holoScore.textContent = Math.round(currentAverageScore);
+                if (holoScore) {
+                    // BLIND MODE: Show '?' instead of score
+                    if (isBlindMode) {
+                        holoScore.textContent = '?';
+                    } else if (typeof currentAverageScore !== 'undefined') {
+                        holoScore.textContent = Math.round(currentAverageScore);
+                    }
                 }
 
                 // Animate Hologram Slider indicator position using anime.js
@@ -5188,6 +5197,7 @@
 
         // Store current average score for arena display
         let currentAverageScore = 50;
+        let isBlindMode = false; // Track blind mode for hiding score
 
         // Load Total Supply for header display
         async function loadTotalSupply() {
