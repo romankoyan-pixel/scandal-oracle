@@ -2447,6 +2447,82 @@
             .refund-btn {
                 width: 100%;
             }
+
+            /* ========== MOBILE GAME LAYOUT ENHANCEMENTS ========== */
+
+            /* Equal width nav buttons (DASHBOARD, NEWS, ORACLE) */
+            .game-nav {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.4rem;
+                width: 100%;
+            }
+
+            .game-nav a.btn-news {
+                width: 100%;
+                text-align: center;
+                padding: 0.5rem 0.3rem;
+                font-size: 0.7rem;
+            }
+
+            /* Buy and Connect buttons below nav */
+            .game-nav a.btn-buy,
+            .game-nav button.btn-connect {
+                grid-column: span 1;
+            }
+
+            /* Use flexbox with order for element reordering */
+            .game-main {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .voting-panel {
+                order: 1;
+            }
+
+            .right-panel {
+                order: 2;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Stats row stays on top of right panel */
+            .stats-row {
+                order: 1;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .stat-card {
+                padding: 0.6rem;
+            }
+
+            .stat-value {
+                font-size: 1.1rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
+            }
+
+            /* Game balance panel after stats */
+            .game-balance-panel {
+                order: 2;
+            }
+
+            /* Move Last Cycle, Bet History, Leaderboard to BOTTOM */
+            .last-cycle-btn {
+                order: 10;
+            }
+
+            #betHistoryPanel {
+                order: 11;
+            }
+
+            #leaderboardPanel {
+                order: 12;
+            }
         }
     </style>
 </head>

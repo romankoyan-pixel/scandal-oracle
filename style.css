@@ -3944,7 +3944,10 @@ html.hero-hidden .hero-section {
 
     .meter-section,
     .news-section {
-        padding: 1.5rem;
+        padding: 1rem;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .section-title {

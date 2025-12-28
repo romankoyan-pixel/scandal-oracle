@@ -1269,6 +1269,33 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+// V2 Round endpoint for index.html hero section (with totalSupply)
+app.get('/api/v2/round', async (req, res) => {
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
+    const rateInfo = calculateDynamicRate(avgScore);
+
+    // Get total supply from blockchain
+    let totalSupply = null;
+    if (tokenContract) {
+        try {
+            const supply = await tokenContract.totalSupply();
+            totalSupply = ethers.formatEther(supply);
+        } catch (e) {
+            console.log('Could not fetch total supply:', e.message);
+        }
+    }
+
+    res.json({
+        cycleId: currentCycle.id,
+        projectedAction: rateInfo.action,
+        projectedRate: rateInfo.percentage,
+        score: avgScore,
+        totalSupply,
+        articlesCount: currentCycle.articles.length,
+        timeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime))
+    });
+});
+
 // Supply history for chart (uses in-memory cycles + MongoDB)
 app.get('/api/supply-history', async (req, res) => {
     try {
