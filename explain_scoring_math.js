@@ -88,14 +88,14 @@ function calculateMath(scenarioName, articles) {
     let action = "UNKNOWN";
     let color = "";
 
-    if (finalScore < 40) {
+    if (finalScore < 36) {
         action = "MINT (🟢 Позитив)";
         color = "🟢";
-    } else if (finalScore > 60) {
+    } else if (finalScore > 64) {
         action = "BURN (🔴 Скандал)";
         color = "🔴";
     } else {
-        action = "NEUTRAL (⚪ Тишина)";
+        action = "HOLD (⚪ Нейтраль)";
         color = "⚪";
     }
 

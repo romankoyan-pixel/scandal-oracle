@@ -23,10 +23,10 @@ function oldCalculate(avgScore) {
     return 'NEUTRAL';
 }
 
-// NEW scoring thresholds (narrower NEUTRAL: 40-60 = 21 points)
+// NEW scoring thresholds (MINT: 0-35, HOLD: 36-64, BURN: 65-100)
 function newCalculate(avgScore) {
-    if (avgScore < 40) return 'MINT';
-    if (avgScore > 60) return 'BURN';
+    if (avgScore < 36) return 'MINT';
+    if (avgScore > 64) return 'BURN';
     return 'NEUTRAL';
 }
 

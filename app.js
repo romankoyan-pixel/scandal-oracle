@@ -12,11 +12,11 @@ const INITIAL_SUPPLY = 1000000000; // 1 Billion tokens
 // ============================================
 // DYNAMIC RATE - DISCRETE STEPS
 // 0.10%, 0.15%, 0.20%, 0.25%, 0.30%
-// MINT: 0-39, HOLD: 40-60, BURN: 61-100
+// MINT: 0-35, HOLD: 36-64, BURN: 65-100
 // ============================================
 function calculateDynamicRate(avgScore) {
-    // MINT zone: 0-39 (40 points)
-    if (avgScore < 40) {
+    // MINT zone: 0-35 (36 points)
+    if (avgScore < 36) {
         let rate;
         if (avgScore <= 8) rate = 0.0030;        // 0.30%
         else if (avgScore <= 16) rate = 0.0025;  // 0.25%
@@ -26,8 +26,8 @@ function calculateDynamicRate(avgScore) {
         return { action: 'MINT', rate: rate };
     }
 
-    // BURN zone: 61-100 (40 points)
-    if (avgScore > 60) {
+    // BURN zone: 65-100 (36 points)
+    if (avgScore > 64) {
         let rate;
         if (avgScore >= 92) rate = 0.0030;       // 0.30%
         else if (avgScore >= 84) rate = 0.0025;  // 0.25%
@@ -37,7 +37,7 @@ function calculateDynamicRate(avgScore) {
         return { action: 'BURN', rate: rate };
     }
 
-    // HOLD: 40-60 (21 points - narrower!)
+    // HOLD: 36-64 (29 points)
     return { action: 'HOLD', rate: 0 };
 }
 
@@ -753,8 +753,8 @@ class ScandalOracle {
     }
 
     createArticleCard(article, cycleId, index) {
-        // Correct thresholds: 0-39=MINT(green), 40-60=HOLD(cyan), 61-100=BURN(red)
-        const category = article.score <= 39 ? 'good' : article.score <= 60 ? 'hold' : 'scandal';
+        // Correct thresholds: 0-35=MINT(green), 36-64=HOLD(cyan), 65-100=BURN(red)
+        const category = article.score <= 35 ? 'good' : article.score <= 64 ? 'hold' : 'scandal';
         const key = `${cycleId}-${index}`;
         const isExpanded = this.expandedArticles.has(key);
         const shortDesc = article.description ? article.description.substring(0, 100) : '';

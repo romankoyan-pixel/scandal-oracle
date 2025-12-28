@@ -3327,23 +3327,23 @@
 
             if (articlesCount > 0) {
                 // News has arrived - apply score-based offsets
-                // Rules: score < 40 = MINT, 40-60 = HOLD, > 60 = BURN
-                if (score < 40) {
+                // Rules: score < 36 = MINT, 36-64 = HOLD, > 64 = BURN
+                if (score < 36) {
                     // MINT zone - MINT leads
-                    const intensity = (40 - score) / 40; // 0 at 40, 1 at 0
+                    const intensity = (36 - score) / 36; // 0 at 36, 1 at 0
                     mintOffset = intensity * maxOffset;
                     neutralOffset = -intensity * maxOffset * 0.4;
                     burnOffset = -intensity * maxOffset * 0.8;
-                } else if (score > 60) {
+                } else if (score > 64) {
                     // BURN zone - BURN leads
-                    const intensity = (score - 60) / 40; // 0 at 60, 1 at 100
+                    const intensity = (score - 64) / 36; // 0 at 64, 1 at 100
                     burnOffset = intensity * maxOffset;
                     neutralOffset = -intensity * maxOffset * 0.4;
                     mintOffset = -intensity * maxOffset * 0.8;
                 } else {
-                    // HOLD zone (40-60) - HOLD leads
+                    // HOLD zone (36-64) - HOLD leads
                     const distFromCenter = Math.abs(50 - score);
-                    const intensity = 1 - (distFromCenter / 10); // strongest at 50
+                    const intensity = 1 - (distFromCenter / 14); // strongest at 50
                     neutralOffset = intensity * maxOffset * 0.6;
                     // Slight lean based on which side of 50
                     if (score < 50) {
