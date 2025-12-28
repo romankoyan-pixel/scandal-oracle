@@ -436,6 +436,14 @@
 
                 updateWalletButton(e.detail.address);
             });
+
+            // Re-check connection after a delay (in case event fired before listeners registered)
+            setTimeout(() => {
+                if (walletManager.isConnected() && !balanceWidget.style.display.includes('flex')) {
+                    console.log('🔄 Delayed wallet check - reconnecting UI');
+                    updateWalletButton(walletManager.getAddress());
+                }
+            }, 500);
         }
 
         // Wait for DOM and walletManager

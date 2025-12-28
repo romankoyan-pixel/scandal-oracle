@@ -1843,26 +1843,26 @@
         }
 
         .arena-btn.mint-btn {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.3));
-            border: 2px solid rgba(0, 255, 136, 0.5);
-            color: #00ff88;
-        }
-
-        .arena-btn.mint-btn:hover {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(0, 200, 100, 0.5));
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .arena-btn.burn-btn {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(200, 50, 50, 0.3));
             border: 2px solid rgba(239, 68, 68, 0.5);
             color: #ff4444;
         }
 
-        .arena-btn.burn-btn:hover {
+        .arena-btn.mint-btn:hover {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(200, 50, 50, 0.5));
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .arena-btn.burn-btn {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.3));
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+
+        .arena-btn.burn-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(0, 200, 100, 0.5));
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
             transform: translateY(-2px);
         }
 
@@ -1884,9 +1884,9 @@
         }
 
         .arena-btn.mint-btn.selected {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.6), rgba(0, 200, 100, 0.7));
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.7), inset 0 0 20px rgba(0, 255, 136, 0.3);
-            border-color: #00ff88;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(200, 50, 50, 0.7));
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.3);
+            border-color: #ff4444;
         }
 
         .arena-btn.neutral-btn.selected {
@@ -1896,9 +1896,9 @@
         }
 
         .arena-btn.burn-btn.selected {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(200, 50, 50, 0.7));
-            box-shadow: 0 0 30px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.3);
-            border-color: #ff4444;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.6), rgba(0, 200, 100, 0.7));
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.7), inset 0 0 20px rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
         }
 
         /* Disabled state for buttons when voting is closed */
@@ -2664,9 +2664,9 @@
 
                     <!-- Bet Buttons -->
                     <div class="arena-buttons">
-                        <button class="arena-btn mint-btn" id="arenaMint" onclick="vote('MINT')">🟢 MINT</button>
+                        <button class="arena-btn mint-btn" id="arenaMint" onclick="vote('MINT')">🔴 MINT</button>
                         <button class="arena-btn neutral-btn" id="arenaNeutral" onclick="vote('HOLD')">🔵 HOLD</button>
-                        <button class="arena-btn burn-btn" id="arenaBurn" onclick="vote('BURN')">🔴 BURN</button>
+                        <button class="arena-btn burn-btn" id="arenaBurn" onclick="vote('BURN')">🟢 BURN</button>
                     </div>
 
                     <!-- Pending Refunds Alert -->
@@ -4074,7 +4074,10 @@
 
                 showMessage(`✓ Bet placed: ${BET_AMOUNT} SCNDL on ${choice}`, 'success');
                 document.querySelectorAll('.arena-btn').forEach(btn => btn.classList.remove('selected'));
-                const btnId = `arena${choice.charAt(0).toUpperCase() + choice.slice(1).toLowerCase()}`;
+
+                // Map choice to button ID (HOLD uses arenaNeutral)
+                const btnIdMap = { 'MINT': 'arenaMint', 'HOLD': 'arenaNeutral', 'BURN': 'arenaBurn' };
+                const btnId = btnIdMap[choice.toUpperCase()];
 
                 // Highlight choice
                 document.getElementById(btnId)?.classList.add('selected');

@@ -1058,8 +1058,8 @@ Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": n
         const descLower = (article.description || '').toLowerCase();
         const fullText = titleLower + ' ' + descLower;
 
-        // Scandal keywords → boost score +15
-        const scandalKeywords = /war|attack|killed|fraud|hack|arrest|corruption|crash|collapse|terror|bomb|strike|murder|scandal/;
+        // Scandal keywords → boost score +15 (includes injuries as negative events)
+        const scandalKeywords = /war|attack|killed|fraud|hack|arrest|corruption|crash|collapse|terror|bomb|strike|murder|scandal|injury|injured|hurt|suffers|sidelined|hospitalized|surgery|broken|fractured/;
         if (fullText.match(scandalKeywords)) {
             const oldScore = score;
             score = Math.min(100, score + 15);
