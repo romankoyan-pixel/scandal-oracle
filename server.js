@@ -969,9 +969,14 @@ Example 7: "Major exchange hacked, $500M stolen"
 → { "impact": 9, "controversy": 10, "viral": 9, "reason": "Major crypto hack theft" }
 → Score: (9×0.3 + 10×0.5 + 9×0.2)×10 = 87 (BURN ✅)
 
+Example 8: "Top 5 games to play this weekend" (GAMING/ENTERTAINMENT GUIDE)
+→ { "impact": 2, "controversy": 5, "viral": 4, "reason": "Entertainment guide neutral content" }
+→ Score: (2×0.3 + 5×0.5 + 4×0.2)×10 = 39 (HOLD zone ✅ - gaming guides are NEUTRAL!)
+
 **IMPORTANT NOTES:**
-- Advice columns, lifestyle tips, reviews, opinion pieces = LOW controversy (1-3)
-- Score 0-35 = MINT (good news), 36-64 = HOLD (neutral), 65-100 = BURN (scandal)
+- Advice columns, lifestyle tips, reviews, gaming guides, opinion pieces = MID controversy (4-5), LOW impact (1-3)
+- These are NEUTRAL content → should be HOLD zone (36-64), NOT MINT!
+- Score 0-35 = MINT (genuinely good economic news), 36-64 = HOLD (neutral), 65-100 = BURN (scandal)
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
