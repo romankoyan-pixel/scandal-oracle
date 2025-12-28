@@ -17,14 +17,19 @@ const RSS_FEEDS = {
         'https://www.france24.com/en/rss',
         'https://feeds.skynews.com/feeds/rss/world.xml',
         'https://www.euronews.com/rss?level=theme&name=news',
-        'https://abcnews.go.com/abcnews/internationalheadlines'
+        'https://abcnews.go.com/abcnews/internationalheadlines',
+        'https://feeds.apnews.com/rss/apf-topnews',
+        'https://www.independent.co.uk/news/world/rss',
+        'https://www.reddit.com/r/worldnews/.rss',
+        'https://news.google.com/rss'
     ],
     crypto: [
         'https://www.coindesk.com/arc/outboundfeeds/rss/',
         'https://cointelegraph.com/rss',
         'https://decrypt.co/feed',
         'https://www.theblock.co/rss.xml',
-        'https://bitcoinmagazine.com/.rss/full/'
+        'https://bitcoinmagazine.com/.rss/full/',
+        'https://cryptonews.com/news/feed/'
     ],
     business: [
         'https://feeds.bbci.co.uk/news/business/rss.xml',
