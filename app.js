@@ -47,6 +47,7 @@ class ScandalOracle {
         this.completedCycles = [];
         this.expandedArticles = new Set();
         this.cycleStartTime = Date.now();
+        this.blindMode = false; // Hide score/impact during betting window
 
         // Supply tracking - start empty, will be loaded from server
         this.totalSupply = null; // Will be loaded from blockchain
@@ -176,6 +177,9 @@ class ScandalOracle {
             // Update sync state from server
             this.isSyncing = statusData.sync?.isSyncing || false;
 
+            // Track blind mode from API (scores hidden during betting window)
+            this.blindMode = !!data.blindMode;
+
             if (data.currentCycle) {
                 const prevCycleId = this.currentCycle?.id;
                 this.currentCycle = data.currentCycle;
@@ -261,23 +265,39 @@ class ScandalOracle {
     updateUI() {
         if (!this.currentCycle) return;
 
-        const score = Math.round(this.currentCycle.averageScore);
-        document.getElementById('scandalScore').textContent = score;
-        document.getElementById('meterFill').style.width = `${score}%`;
-        document.getElementById('articleCount').textContent = this.currentCycle.articles.length;
-        document.getElementById('avgScore').textContent = score;
+        // BLIND MODE: Hide score and impact during betting window
+        if (this.blindMode) {
+            document.getElementById('scandalScore').textContent = '?';
+            document.getElementById('meterFill').style.width = '50%';
+            document.getElementById('articleCount').textContent = '0';
+            document.getElementById('avgScore').textContent = '?';
 
-        const action = this.currentCycle.projectedAction;
-        const actionStatus = document.getElementById('actionStatus');
-        actionStatus.className = `action-status ${action.toLowerCase()}`;
-        actionStatus.querySelector('.action-value').textContent = action;
+            const actionStatus = document.getElementById('actionStatus');
+            actionStatus.className = 'action-status collecting';
+            actionStatus.querySelector('.action-value').textContent = 'COLLECTING';
 
-        // Update impact stats
-        const impact = this.calculateProjectedImpact();
-        document.getElementById('tokenImpact').textContent = this.formatChange(impact.change);
-        document.getElementById('tokenImpact').className =
-            `action-stat-value ${impact.change > 0 ? 'positive' : impact.change < 0 ? 'negative' : ''}`;
-        document.getElementById('newSupply').textContent = this.formatNumber(impact.newSupply);
+            document.getElementById('tokenImpact').textContent = '--';
+            document.getElementById('tokenImpact').className = 'action-stat-value';
+            document.getElementById('newSupply').textContent = this.formatNumber(this.totalSupply);
+        } else {
+            const score = Math.round(this.currentCycle.averageScore);
+            document.getElementById('scandalScore').textContent = score;
+            document.getElementById('meterFill').style.width = `${score}%`;
+            document.getElementById('articleCount').textContent = this.currentCycle.articles.length;
+            document.getElementById('avgScore').textContent = score;
+
+            const action = this.currentCycle.projectedAction;
+            const actionStatus = document.getElementById('actionStatus');
+            actionStatus.className = `action-status ${action.toLowerCase()}`;
+            actionStatus.querySelector('.action-value').textContent = action;
+
+            // Update impact stats
+            const impact = this.calculateProjectedImpact();
+            document.getElementById('tokenImpact').textContent = this.formatChange(impact.change);
+            document.getElementById('tokenImpact').className =
+                `action-stat-value ${impact.change > 0 ? 'positive' : impact.change < 0 ? 'negative' : ''}`;
+            document.getElementById('newSupply').textContent = this.formatNumber(impact.newSupply);
+        }
 
         // Update total supply in header
         document.getElementById('totalSupply').textContent = this.totalSupply.toLocaleString('en-US', { maximumFractionDigits: 0 });
