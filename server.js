@@ -943,7 +943,7 @@ Rate these 3 factors (0-10 each):
 # CALIBRATION EXAMPLES
 Example 1: "FTX collapses, CEO arrested for $8B fraud"
 → { "impact": 10, "controversy": 10, "viral": 10, "reason": "Massive crypto fraud scandal" }
-→ Score: (10×0.3 + 10×0.5 + 10×0.2)×10 = 100
+→ Score: (10×0.3 + 10×0.5 + 10×0.2)×10 = 100 (BURN ✅)
 
 Example 2: "Spurs beat OKC in regular season game"
 → { "impact": 4, "controversy": 5, "viral": 5, "reason": "Routine sports game result" }
@@ -954,12 +954,24 @@ Example 3: "Central bank maintains interest rates"
 → Score: (4×0.3 + 3×0.5 + 4×0.2)×10 = 43 (HOLD zone ✅)
 
 Example 4: "Tesla announces layoffs amid restructuring"
-→ { "impact": 5, "controversy": 6, "viral": 6, "reason": "Significant corporate restructuring news" }
-→ Score: (5×0.3 + 6×0.5 + 6×0.2)×10 = 63 (BURN zone)
+→ { "impact": 5, "controversy": 6, "viral": 6, "reason": "Corporate layoffs news" }
+→ Score: (5×0.3 + 6×0.5 + 6×0.2)×10 = 57 (HOLD zone edge ✅)
 
 Example 5: "War escalates, oil prices surge"
 → { "impact": 9, "controversy": 9, "viral": 10, "reason": "Major geopolitical crisis event" }
-→ Score: (9×0.3 + 9×0.5 + 10×0.2)×10 = 92
+→ Score: (9×0.3 + 9×0.5 + 10×0.2)×10 = 92 (BURN ✅)
+
+Example 6: "Advice column: How to deal with toxic boss" (LIFESTYLE/ADVICE)
+→ { "impact": 3, "controversy": 5, "viral": 4, "reason": "Lifestyle advice neutral content" }
+→ Score: (3×0.3 + 5×0.5 + 4×0.2)×10 = 42 (HOLD zone ✅ - advice is NOT scandal!)
+
+Example 7: "Major exchange hacked, $500M stolen"
+→ { "impact": 9, "controversy": 10, "viral": 9, "reason": "Major crypto hack theft" }
+→ Score: (9×0.3 + 10×0.5 + 9×0.2)×10 = 87 (BURN ✅)
+
+**IMPORTANT NOTES:**
+- Advice columns, lifestyle tips, reviews, opinion pieces = LOW controversy (1-3)
+- Score 0-35 = MINT (good news), 36-64 = HOLD (neutral), 65-100 = BURN (scandal)
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
