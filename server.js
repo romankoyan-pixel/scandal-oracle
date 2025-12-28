@@ -374,6 +374,16 @@ function calculateWeightedCycleScore(articles) {
     const maxScore = Math.max(...allScores);
     const minScore = Math.min(...allScores);
 
+    // EXTREME OVERRIDE - if any article is truly extreme, it dominates the cycle
+    if (maxScore >= 95) {
+        console.log(`🔥 EXTREME BURN OVERRIDE: article scored ${maxScore} → forcing BURN`);
+        return 95; // Force BURN zone
+    }
+    if (minScore <= 10) {
+        console.log(`💚 EXTREME MINT OVERRIDE: article scored ${minScore} → forcing MINT`);
+        return 10; // Force MINT zone
+    }
+
     // SOFT MIN/MAX FORMULA (20/80 ratio) - mild influence from extremes
     let finalScore;
 
@@ -987,11 +997,15 @@ Example 11: "Best After-Christmas deals on electronics" (DEALS/SALES ARTICLE)
 → { "impact": 2, "controversy": 5, "viral": 4, "reason": "Sales deals article neutral" }
 → Score: (2×0.3 + 5×0.5 + 4×0.2)×10 = 39 (HOLD zone ✅ - deals articles are NEUTRAL!)
 
+Example 12: "Brothers climb world's tallest peaks" (HUMAN INTEREST/ADVENTURE)
+→ { "impact": 2, "controversy": 4, "viral": 5, "reason": "Adventure story no controversy" }
+→ Score: (2×0.3 + 4×0.5 + 5×0.2)×10 = 36 (HOLD zone ✅ - adventure stories are NEUTRAL!)
+
 **IMPORTANT NOTES:**
-- Science discoveries, sports results, deals articles, gaming guides, lifestyle tips = NEUTRAL content
+- Science discoveries, sports results, deals, gaming guides, adventure stories, human interest = NEUTRAL
 - Give these MID controversy (4-5) and LOW impact (1-3) → lands in HOLD zone (36-64)
 - MINT (0-35) = genuinely GOOD economic news (deals, growth, success stories affecting markets)
-- BURN (65-100) = scandals, crashes, attacks, arrests, corruption
+- BURN (65-100) = ONLY scandals, crashes, attacks, arrests, corruption, hacks, fraud
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
