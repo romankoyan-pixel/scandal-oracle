@@ -2166,6 +2166,288 @@
             color: #ff4444;
             text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
         }
+
+        /* ============================================
+           GAME PAGE RESPONSIVE - MEDIA QUERIES
+           ============================================ */
+
+        /* ========== LARGE TABLET (max-width: 1200px) ========== */
+        @media (max-width: 1200px) {
+            .game-main {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                overflow-y: auto;
+            }
+
+            .voting-panel {
+                order: 1;
+            }
+
+            .news-section {
+                order: 2;
+                max-height: 500px;
+            }
+        }
+
+        /* ========== TABLET (max-width: 1024px) ========== */
+        @media (max-width: 1024px) {
+
+            html,
+            body {
+                height: auto;
+                overflow: auto;
+            }
+
+            .game-wrapper {
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .game-header {
+                padding: 0 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .game-logo h1 {
+                font-size: 1.5rem;
+            }
+
+            .game-logo .oracle {
+                font-size: 1.5rem;
+            }
+
+            .game-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .game-nav a,
+            .game-nav button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+
+            .vote-btn {
+                min-height: 60px;
+                font-size: 0.9rem;
+            }
+
+            .cycle-value,
+            .timer-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* ========== MOBILE (max-width: 768px) ========== */
+        @media (max-width: 768px) {
+            .game-header {
+                height: auto;
+                padding: 0.75rem 1rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .game-logo {
+                justify-content: center;
+            }
+
+            .game-nav {
+                width: 100%;
+                justify-content: center;
+                gap: 0.4rem;
+            }
+
+            .game-main {
+                gap: 1rem;
+                padding: 0.75rem;
+            }
+
+            .voting-panel {
+                padding: 1rem;
+            }
+
+            .panel-title {
+                font-size: 0.9rem;
+            }
+
+            .cycle-row {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.8rem;
+            }
+
+            .cycle-info {
+                min-width: auto;
+            }
+
+            .cycle-value,
+            .timer-value {
+                font-size: 1.2rem;
+            }
+
+            .vote-buttons {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+
+            .vote-btn {
+                min-height: 55px;
+                padding: 0.8rem;
+            }
+
+            .race-track {
+                padding: 0.8rem;
+            }
+
+            .race-title {
+                font-size: 0.75rem;
+            }
+
+            .lane-label {
+                font-size: 0.6rem;
+                width: 45px;
+            }
+
+            .lane-track {
+                height: 24px;
+            }
+
+            .news-item {
+                padding: 0.6rem;
+            }
+
+            .news-item .news-title {
+                font-size: 0.85rem;
+            }
+
+            .scandal-item {
+                padding: 0.6rem;
+            }
+
+            .scandal-item h3 {
+                font-size: 0.8rem;
+            }
+
+            .pool-section {
+                padding: 0.8rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+        }
+
+        /* ========== SMALL MOBILE (max-width: 480px) ========== */
+        @media (max-width: 480px) {
+            .game-header {
+                padding: 0.5rem;
+            }
+
+            .game-logo h1 {
+                font-size: 1.2rem;
+            }
+
+            .game-logo .oracle {
+                font-size: 1.2rem;
+            }
+
+            .game-nav a,
+            .game-nav button {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
+                min-height: 36px;
+            }
+
+            .game-main {
+                padding: 0.5rem;
+            }
+
+            .voting-panel {
+                padding: 0.75rem;
+            }
+
+            .panel-title {
+                font-size: 0.8rem;
+                letter-spacing: 1px;
+            }
+
+            .cycle-value,
+            .timer-value {
+                font-size: 1rem;
+            }
+
+            .vote-btn {
+                min-height: 50px;
+                font-size: 0.85rem;
+            }
+
+            .race-lanes {
+                gap: 0.3rem;
+            }
+
+            .lane-track {
+                height: 20px;
+            }
+
+            .coin-racer {
+                font-size: 0.9rem;
+            }
+
+            .scandal-log {
+                max-height: 250px;
+            }
+
+            /* Oracle Arena responsive */
+            .oracle-arena {
+                padding: 0.75rem;
+            }
+
+            .hologram-container {
+                margin-bottom: 0.75rem;
+            }
+
+            .hologram-panel {
+                padding: 0.75rem;
+            }
+
+            .score-value {
+                font-size: 2rem;
+            }
+
+            .hologram-labels {
+                gap: 0.5rem;
+            }
+
+            .holo-label {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            /* Arena betting buttons */
+            .arena-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .arena-btn {
+                width: 100%;
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            /* Refund alert */
+            .refund-alert {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+
+            .refund-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
