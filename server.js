@@ -322,9 +322,9 @@ const CATEGORY_WEIGHTS = {
     business: 1.3,    // Corporate/economy news
     world: 1.0,       // Global events - varied impact
     tech: 1.0,        // Technology news
-    science: 0.8,     // Science discoveries - lower financial impact
-    sports: 0.6,      // Sports - low market impact
-    esports: 0.5      // Gaming/esports - minimal market impact
+    science: 0.9,     // Science discoveries - increased weight
+    sports: 0.8,      // Sports - increased weight for balance
+    esports: 0.7      // Gaming/esports - increased weight
 };
 
 // Calculate weighted average score for a cycle
@@ -372,43 +372,41 @@ function calculateWeightedCycleScore(articles) {
     const maxScore = Math.max(...allScores);
     const minScore = Math.min(...allScores);
 
-    // SYMMETRIC FORMULA: Use MIN for MINT trend, MAX for BURN trend
-    // This balances the system so both directions get equal boost
+    // SOFT MIN/MAX FORMULA (20/80 ratio) - mild influence from extremes
     let finalScore;
 
-    if (weightedAvg < 50) {
-        // Trend towards MINT → use MIN score (most positive news)
-        finalScore = (minScore * 0.7) + (weightedAvg * 0.3);
-        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} < 50 → MINT trend`);
-        console.log(`   🎯 FINAL: (MIN ${minScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
-    } else if (weightedAvg > 50) {
-        // Trend towards BURN → use MAX score (most negative news)
-        finalScore = (maxScore * 0.7) + (weightedAvg * 0.3);
-        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} > 50 → BURN trend`);
-        console.log(`   🎯 FINAL: (MAX ${maxScore} * 0.7) + (${weightedAvg.toFixed(1)} * 0.3) = ${finalScore.toFixed(1)}`);
+    if (weightedAvg < 45) {
+        // Trend towards MINT → slight MIN influence
+        finalScore = (minScore * 0.2) + (weightedAvg * 0.8);
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} < 45 → MINT trend`);
+        console.log(`   🎯 Soft MIN: (${minScore}×0.2) + (${weightedAvg.toFixed(1)}×0.8) = ${finalScore.toFixed(1)}`);
+    } else if (weightedAvg > 55) {
+        // Trend towards BURN → slight MAX influence
+        finalScore = (maxScore * 0.2) + (weightedAvg * 0.8);
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} > 55 → BURN trend`);
+        console.log(`   🎯 Soft MAX: (${maxScore}×0.2) + (${weightedAvg.toFixed(1)}×0.8) = ${finalScore.toFixed(1)}`);
     } else {
-        // Exactly 50 → use weighted average only
+        // Neutral zone → pure weighted average
         finalScore = weightedAvg;
-        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} = 50 → NEUTRAL`);
-        console.log(`   🎯 FINAL: ${finalScore.toFixed(1)}`);
+        console.log(`📊 WeightedAvg=${weightedAvg.toFixed(1)} in 45-55 → NEUTRAL`);
+        console.log(`   🎯 Pure avg: ${finalScore.toFixed(1)}`);
     }
 
     return finalScore;
 }
 
 // ============================================
-// DYNAMIC RATE CALCULATION - NEW THRESHOLDS
-// HOLD zone: 40-60 (21 points) 
+// DYNAMIC RATE CALCULATION - BALANCED THRESHOLDS
+// MINT: 0-35 | HOLD: 36-64 | BURN: 65-100
 // ============================================
 function calculateDynamicRate(avgScore) {
-    // MINT zone: 0-39 (40 points)
-    if (avgScore < 40) {
+    // MINT zone: 0-35 (36 points)
+    if (avgScore < 36) {
         let rate;
         if (avgScore <= 8) rate = 0.0030;        // 0.30%
         else if (avgScore <= 16) rate = 0.0025;  // 0.25%
         else if (avgScore <= 24) rate = 0.0020;  // 0.20%
-        else if (avgScore <= 32) rate = 0.0015;  // 0.15%
-        else rate = 0.0010;                       // 0.10%
+        else rate = 0.0015;                       // 0.15%
 
         return {
             action: 'MINT',
@@ -417,14 +415,13 @@ function calculateDynamicRate(avgScore) {
         };
     }
 
-    // BURN zone: 61-100 (40 points)
-    if (avgScore > 60) {
+    // BURN zone: 65-100 (36 points)
+    if (avgScore > 64) {
         let rate;
         if (avgScore >= 92) rate = 0.0030;       // 0.30%
         else if (avgScore >= 84) rate = 0.0025;  // 0.25%
         else if (avgScore >= 76) rate = 0.0020;  // 0.20%
-        else if (avgScore >= 68) rate = 0.0015;  // 0.15%
-        else rate = 0.0010;                       // 0.10%
+        else rate = 0.0015;                       // 0.15%
 
         return {
             action: 'BURN',
@@ -433,7 +430,7 @@ function calculateDynamicRate(avgScore) {
         };
     }
 
-    // HOLD zone: 40-60 (21 points - narrower!)
+    // HOLD zone: 36-64 (29 points)
     return {
         action: 'HOLD',
         rate: 0,
@@ -995,7 +992,28 @@ Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": n
             (result.controversy || 0) * 0.5 +  // 50% weight (SCANDAL focus)
             (result.viral || 0) * 0.2          // 20% weight
         ) * 10;
-        const score = Math.min(100, Math.max(0, Math.round(rawScore)));
+        let score = Math.min(100, Math.max(0, Math.round(rawScore)));
+
+        // KEYWORD BOOSTERS - adjust score based on headline keywords
+        const titleLower = article.title.toLowerCase();
+        const descLower = (article.description || '').toLowerCase();
+        const fullText = titleLower + ' ' + descLower;
+
+        // Scandal keywords → boost score +15
+        const scandalKeywords = /war|attack|killed|fraud|hack|arrest|corruption|crash|collapse|terror|bomb|strike|murder|scandal/;
+        if (fullText.match(scandalKeywords)) {
+            const oldScore = score;
+            score = Math.min(100, score + 15);
+            console.log(`🔴 Keyword boost: "${fullText.match(scandalKeywords)[0]}" found → ${oldScore} + 15 = ${score}`);
+        }
+
+        // Positive keywords → reduce score -15
+        const positiveKeywords = /peace|ceasefire|deal|success|growth|win|wins|launch|agreement|breakthrough|rescue|save|hero/;
+        if (fullText.match(positiveKeywords)) {
+            const oldScore = score;
+            score = Math.max(0, score - 15);
+            console.log(`🟢 Keyword boost: "${fullText.match(positiveKeywords)[0]}" found → ${oldScore} - 15 = ${score}`);
+        }
 
         console.log(`🧠 AI Analysis: Score ${score} | Imp:${result.impact} Cont:${result.controversy} Vir:${result.viral} | "${result.reason}"`);
 
