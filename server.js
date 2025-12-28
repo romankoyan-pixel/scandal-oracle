@@ -1960,8 +1960,25 @@ app.get('/api/v2/balance/:wallet', async (req, res) => {
             try {
                 const contractBalance = await gameContract.balances(wallet);
                 onChainBalance = Number(ethers.formatEther(contractBalance));
+
+                // AUTO-SYNC: If MongoDB differs from blockchain, fix MongoDB!
+                // Blockchain is the source of truth
+                if (balance.balance !== undefined && Math.abs(balance.balance - onChainBalance) > 0.01) {
+                    console.log(`⚠️ BALANCE MISMATCH: ${wallet.slice(0, 8)} - MongoDB: ${balance.balance}, Blockchain: ${onChainBalance}`);
+
+                    // Update MongoDB to match blockchain
+                    const realBalance = await GameBalance.findOne({ wallet });
+                    if (realBalance) {
+                        const diff = onChainBalance - realBalance.balance;
+                        realBalance.balance = onChainBalance;
+                        await realBalance.save();
+                        console.log(`✅ SYNCED: ${wallet.slice(0, 8)} balance corrected to ${onChainBalance} (diff: ${diff > 0 ? '+' : ''}${diff.toFixed(0)})`);
+                        // Update local variable for response
+                        balance.balance = onChainBalance;
+                    }
+                }
             } catch (e) {
-                console.log('Could not fetch on-chain balance');
+                console.log('Could not fetch on-chain balance:', e.message);
             }
         }
 
@@ -1970,6 +1987,7 @@ app.get('/api/v2/balance/:wallet', async (req, res) => {
             balance: balance.balance,
             pendingBet: balance.pendingBet,
             onChainBalance,
+            synced: balance.balance === onChainBalance,
             stats: {
                 totalDeposited: balance.totalDeposited || 0,
                 totalWithdrawn: balance.totalWithdrawn || 0,
@@ -2146,6 +2164,33 @@ app.post('/api/v2/bet', async (req, res) => {
         let balance = await GameBalance.findOne({ wallet: walletLower });
         if (!balance) {
             balance = new GameBalance({ wallet: walletLower });
+        }
+
+        // BLOCKCHAIN VERIFICATION: Sync balance from blockchain before bet
+        if (gameContract) {
+            try {
+                const contractBalance = await gameContract.balances(walletLower);
+                const onChainBalance = Number(ethers.formatEther(contractBalance));
+
+                // If MongoDB differs from blockchain, sync it first
+                if (Math.abs(balance.balance - onChainBalance) > 0.01) {
+                    console.log(`⚠️ PRE-BET SYNC: ${walletLower.slice(0, 8)} - MongoDB: ${balance.balance}, Blockchain: ${onChainBalance}`);
+                    balance.balance = onChainBalance;
+                    await balance.save();
+                }
+
+                // Verify bet amount against BLOCKCHAIN balance (source of truth)
+                if (onChainBalance < betAmount) {
+                    return res.status(400).json({
+                        error: 'Insufficient blockchain balance',
+                        available: onChainBalance,
+                        requested: betAmount
+                    });
+                }
+            } catch (e) {
+                console.log('Could not verify blockchain balance:', e.message);
+                // Continue with MongoDB balance if blockchain unavailable
+            }
         }
 
         // ATOMIC UPDATE: Check balance AND deduct in one operation to prevent race conditions
