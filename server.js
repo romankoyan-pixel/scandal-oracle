@@ -973,10 +973,23 @@ Example 8: "Top 5 games to play this weekend" (GAMING/ENTERTAINMENT GUIDE)
 → { "impact": 2, "controversy": 5, "viral": 4, "reason": "Entertainment guide neutral content" }
 → Score: (2×0.3 + 5×0.5 + 4×0.2)×10 = 39 (HOLD zone ✅ - gaming guides are NEUTRAL!)
 
+Example 9: "Scientists discover high-energy cosmic rays" (SCIENCE DISCOVERY)
+→ { "impact": 2, "controversy": 4, "viral": 5, "reason": "Science discovery no market impact" }
+→ Score: (2×0.3 + 4×0.5 + 5×0.2)×10 = 36 (HOLD zone ✅ - science discoveries are NEUTRAL!)
+
+Example 10: "Arsenal wins Premier League match" (ROUTINE SPORTS)
+→ { "impact": 2, "controversy": 5, "viral": 5, "reason": "Routine sports result neutral" }
+→ Score: (2×0.3 + 5×0.5 + 5×0.2)×10 = 41 (HOLD zone ✅ - routine sports are NEUTRAL!)
+
+Example 11: "Best After-Christmas deals on electronics" (DEALS/SALES ARTICLE)
+→ { "impact": 2, "controversy": 5, "viral": 4, "reason": "Sales deals article neutral" }
+→ Score: (2×0.3 + 5×0.5 + 4×0.2)×10 = 39 (HOLD zone ✅ - deals articles are NEUTRAL!)
+
 **IMPORTANT NOTES:**
-- Advice columns, lifestyle tips, reviews, gaming guides, opinion pieces = MID controversy (4-5), LOW impact (1-3)
-- These are NEUTRAL content → should be HOLD zone (36-64), NOT MINT!
-- Score 0-35 = MINT (genuinely good economic news), 36-64 = HOLD (neutral), 65-100 = BURN (scandal)
+- Science discoveries, sports results, deals articles, gaming guides, lifestyle tips = NEUTRAL content
+- Give these MID controversy (4-5) and LOW impact (1-3) → lands in HOLD zone (36-64)
+- MINT (0-35) = genuinely GOOD economic news (deals, growth, success stories affecting markets)
+- BURN (65-100) = scandals, crashes, attacks, arrests, corruption
 
 # TASK
 Return ONLY a JSON object: { "impact": number, "controversy": number, "viral": number, "reason": "short explanation 5 words" }`;
