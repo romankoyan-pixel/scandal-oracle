@@ -1,0 +1,7 @@
+node_modules
+.env
+predictions.json
+oracle_data.json
+.DS_Store
+dist
+coverage
