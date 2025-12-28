@@ -235,7 +235,7 @@ class ScandalOracle {
     }
 
     formatChange(num) {
-        const prefix = num >= 0 ? '+' : '';
+        const prefix = num >= 0 ? '+' : '-';
         return prefix + this.formatNumber(Math.abs(num));
     }
 

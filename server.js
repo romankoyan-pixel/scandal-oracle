@@ -1002,8 +1002,20 @@ Example 12: "Brothers climb world's tallest peaks" (HUMAN INTEREST/ADVENTURE)
 → { "impact": 2, "controversy": 4, "viral": 5, "reason": "Adventure story no controversy" }
 → Score: (2×0.3 + 4×0.5 + 5×0.2)×10 = 36 (HOLD zone ✅ - adventure stories are NEUTRAL!)
 
+Example 13: "Best places to see dark skies and stars" (NATURE/ASTRONOMY)
+→ { "impact": 2, "controversy": 4, "viral": 5, "reason": "Nature article no controversy" }
+→ Score: (2×0.3 + 4×0.5 + 5×0.2)×10 = 36 (HOLD zone ✅ - nature/astronomy is NEUTRAL!)
+
+Example 14: "Top travel destinations for winter 2025" (TRAVEL/TOURISM)
+→ { "impact": 2, "controversy": 5, "viral": 5, "reason": "Travel guide neutral content" }
+→ Score: (2×0.3 + 5×0.5 + 5×0.2)×10 = 41 (HOLD zone ✅ - travel guides are NEUTRAL!)
+
+Example 15: "Heavy snow expected in mountains this weekend" (WEATHER)
+→ { "impact": 2, "controversy": 5, "viral": 4, "reason": "Weather report neutral" }
+→ Score: (2×0.3 + 5×0.5 + 4×0.2)×10 = 39 (HOLD zone ✅ - weather is NEUTRAL!)
+
 **IMPORTANT NOTES:**
-- Science discoveries, sports results, deals, gaming guides, adventure stories, human interest = NEUTRAL
+- Science, nature, astronomy, travel, weather, sports, deals, gaming, adventure = NEUTRAL
 - Give these MID controversy (4-5) and LOW impact (1-3) → lands in HOLD zone (36-64)
 - MINT (0-35) = genuinely GOOD economic news (deals, growth, success stories affecting markets)
 - BURN (65-100) = ONLY scandals, crashes, attacks, arrests, corruption, hacks, fraud

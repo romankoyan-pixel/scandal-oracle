@@ -85,6 +85,32 @@
             font-size: 0.85rem;
         }
 
+        /* Total Supply in Header */
+        .total-supply-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(0, 30, 50, 0.9) 0%, rgba(0, 20, 40, 0.95) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            min-width: 120px;
+        }
+
+        .total-supply-header .supply-label {
+            font-size: 0.6rem;
+            color: rgba(0, 240, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-supply-header .supply-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #00f0ff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
         /* Main Content */
         .game-main {
             flex: 1;
@@ -2450,7 +2476,7 @@
 
             /* ========== MOBILE GAME LAYOUT ENHANCEMENTS ========== */
 
-            /* Equal width nav buttons (DASHBOARD, NEWS, ORACLE) */
+            /* Nav uses 3-column grid for both rows */
             .game-nav {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
@@ -2458,6 +2484,7 @@
                 width: 100%;
             }
 
+            /* First row: DASHBOARD, NEWS, ORACLE */
             .game-nav a.btn-news {
                 width: 100%;
                 text-align: center;
@@ -2465,10 +2492,29 @@
                 font-size: 0.7rem;
             }
 
-            /* Buy and Connect buttons below nav */
-            .game-nav a.btn-buy,
+            /* Second row: Buy (left), Total Supply (center), Connect (right) */
+            .game-nav a.btn-buy {
+                grid-column: 1;
+                text-align: center;
+            }
+
+            .game-nav .total-supply-header {
+                grid-column: 2;
+                padding: 0.3rem 0.5rem;
+                min-width: auto;
+            }
+
+            .game-nav .total-supply-header .supply-label {
+                font-size: 0.5rem;
+            }
+
+            .game-nav .total-supply-header .supply-value {
+                font-size: 0.75rem;
+            }
+
             .game-nav button.btn-connect {
-                grid-column: span 1;
+                grid-column: 3;
+                text-align: center;
             }
 
             /* Use flexbox with order for element reordering */
@@ -2541,6 +2587,10 @@
                 <a href="news.html" class="btn-news">NEWS</a>
                 <a href="game.html" class="btn-news">ORACLE</a>
                 <a href="#" class="btn-buy" target="_blank">Buy $SCNDL</a>
+                <div class="total-supply-header" id="totalSupplyHeader">
+                    <span class="supply-label">TOTAL SUPPLY</span>
+                    <span class="supply-value" id="totalSupplyValue">Loading...</span>
+                </div>
                 <button class="btn-connect" id="connectWallet" onclick="toggleWallet()">Connect Wallet</button>
             </div>
         </div>
@@ -5139,6 +5189,21 @@
         // Store current average score for arena display
         let currentAverageScore = 50;
 
+        // Load Total Supply for header display
+        async function loadTotalSupply() {
+            try {
+                const res = await fetch('/api/v2/round');
+                const data = await res.json();
+                if (data.totalSupply) {
+                    const supply = parseFloat(data.totalSupply);
+                    const formatted = (supply / 1e6).toFixed(2) + 'M';
+                    document.getElementById('totalSupplyValue').textContent = formatted;
+                }
+            } catch (e) {
+                console.log('loadTotalSupply error:', e);
+            }
+        }
+
         async function init() {
             // Load initial data without auto-connecting wallet
             // Note: Pool data comes from updateGameStatus() to avoid flickering
@@ -5146,12 +5211,14 @@
             await updateOracleArena();
             await loadLeaderboard();
             await loadLastCycle();
+            await loadTotalSupply();
 
             // Server sync every 3 seconds (for data updates including pool)
             setInterval(updateGameStatus, 3000);
             setInterval(updateOracleArena, 3000);
             setInterval(loadLeaderboard, 30000);
             setInterval(loadLastCycle, 30000);
+            setInterval(loadTotalSupply, 15000); // Update Total Supply every 15 seconds
 
             // Check pending refunds every 10 seconds (when wallet connected)
             setInterval(checkPendingRefunds, 10000);
