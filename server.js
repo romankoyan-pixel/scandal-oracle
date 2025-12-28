@@ -466,6 +466,7 @@ let seenLinks = new Set(savedData.seenLinks || []);
 const SCAN_INTERVAL = 20000;
 const AGGREGATION_INTERVAL = 180000; // 3 minutes
 const BETTING_WINDOW = 60000; // 60 seconds betting window
+const REVEAL_BUFFER = 1000; // 1 second safety buffer - scores reveal AFTER betting closes
 const MAX_CYCLES = 500; // Keep more cycles for news archive
 const MIN_ARTICLES_FOR_GAME = 0; // TESTING: set to 5 for production
 
@@ -1092,7 +1093,14 @@ async function scanAndAddNews() {
         console.log(`🔍 [Cycle ${currentCycle.id}] "${article.title.substring(0, 45)}..."`);
         const scored = await scoreArticle(article);
         currentCycle.articles.push(scored);
-        console.log(`✅ Score: ${scored.score} | Total: ${currentCycle.articles.length}\n`);
+
+        // ANTI-BACKDOOR: Hide score during betting window
+        const elapsed = Date.now() - currentCycle.startTime;
+        if (elapsed < BETTING_WINDOW + REVEAL_BUFFER) {
+            console.log(`✅ Article collected (score hidden during betting) | Total: ${currentCycle.articles.length}\n`);
+        } else {
+            console.log(`✅ Score: ${scored.score} | Total: ${currentCycle.articles.length}\n`);
+        }
     } else {
         console.log(`⏭️  No new articles\n`);
     }
@@ -1272,9 +1280,31 @@ async function closeCycleAndStartNew() {
 
 // API Endpoints
 app.get('/api/news', (req, res) => {
-    // Use weighted average with category weights and extreme multipliers
-    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
+    const elapsed = Date.now() - currentCycle.startTime;
+    const isBlindMode = elapsed < BETTING_WINDOW + REVEAL_BUFFER; // Scores hidden until 61 seconds
 
+    // BLIND MODE: During betting window + buffer, hide articles and scores
+    if (isBlindMode) {
+        res.json({
+            currentCycle: {
+                id: currentCycle.id,
+                startTime: currentCycle.startTime,
+                articles: [], // HIDDEN during betting!
+                averageScore: null, // HIDDEN
+                projectedAction: 'COLLECTING', // Neutral placeholder
+                projectedRate: 0,
+                projectedRatePercentage: '0.00%',
+                timeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+                bettingOpen: true,
+                blindMode: true
+            },
+            completedCycles: cycles
+        });
+        return;
+    }
+
+    // After betting closes - reveal everything
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
     const rateInfo = calculateDynamicRate(avgScore);
 
     res.json({
@@ -1284,16 +1314,43 @@ app.get('/api/news', (req, res) => {
             projectedAction: rateInfo.action,
             projectedRate: rateInfo.rate,
             projectedRatePercentage: rateInfo.percentage,
-            timeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime))
+            timeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+            bettingOpen: false,
+            blindMode: false
         },
         completedCycles: cycles
     });
 });
 
 app.get('/api/status', (req, res) => {
-    // Use weighted average with category weights and extreme multipliers
-    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
+    const elapsed = Date.now() - currentCycle.startTime;
+    const isBlindMode = elapsed < BETTING_WINDOW + REVEAL_BUFFER;
 
+    // BLIND MODE: During betting window + buffer, hide score
+    if (isBlindMode) {
+        res.json({
+            cycleId: currentCycle.id,
+            action: 'COLLECTING',
+            rate: 0,
+            ratePercentage: '0.00%',
+            score: null, // HIDDEN
+            articlesCount: 0, // HIDDEN
+            totalCycles: cycles.length,
+            cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+            bettingOpen: true,
+            blindMode: true,
+            sync: {
+                isSyncing: syncState.isSyncing,
+                retryCount: syncState.retryCount,
+                maxRetries: syncState.maxRetries,
+                lastError: syncState.lastError
+            }
+        });
+        return;
+    }
+
+    // After betting closes - reveal everything
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
     const rateInfo = calculateDynamicRate(avgScore);
 
     res.json({
@@ -1304,8 +1361,9 @@ app.get('/api/status', (req, res) => {
         score: avgScore,
         articlesCount: currentCycle.articles.length,
         totalCycles: cycles.length,
-        cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime)),
-        // Sync state for frontend
+        cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+        bettingOpen: false,
+        blindMode: false,
         sync: {
             isSyncing: syncState.isSyncing,
             retryCount: syncState.retryCount,
@@ -1317,10 +1375,10 @@ app.get('/api/status', (req, res) => {
 
 // V2 Round endpoint for index.html hero section (with totalSupply)
 app.get('/api/v2/round', async (req, res) => {
-    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
-    const rateInfo = calculateDynamicRate(avgScore);
+    const elapsed = Date.now() - currentCycle.startTime;
+    const isBlindMode = elapsed < BETTING_WINDOW + REVEAL_BUFFER;
 
-    // Get total supply from blockchain
+    // Get total supply from blockchain (always show this)
     let totalSupply = null;
     if (tokenContract) {
         try {
@@ -1331,6 +1389,26 @@ app.get('/api/v2/round', async (req, res) => {
         }
     }
 
+    // BLIND MODE: During betting window + buffer, hide score
+    if (isBlindMode) {
+        res.json({
+            cycleId: currentCycle.id,
+            projectedAction: 'COLLECTING',
+            projectedRate: '0.00%',
+            score: null,
+            totalSupply,
+            articlesCount: 0,
+            timeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+            bettingOpen: true,
+            blindMode: true
+        });
+        return;
+    }
+
+    // After betting closes - reveal everything
+    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
+    const rateInfo = calculateDynamicRate(avgScore);
+
     res.json({
         cycleId: currentCycle.id,
         projectedAction: rateInfo.action,
@@ -1338,7 +1416,9 @@ app.get('/api/v2/round', async (req, res) => {
         score: avgScore,
         totalSupply,
         articlesCount: currentCycle.articles.length,
-        timeRemaining: Math.max(0, AGGREGATION_INTERVAL - (Date.now() - currentCycle.startTime))
+        timeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
+        bettingOpen: false,
+        blindMode: false
     });
 });
 
@@ -1540,23 +1620,30 @@ app.get('/api/game-status', async (req, res) => {
     }
 
     // Calculate current Oracle score for race animation
-    const avgScore = calculateWeightedCycleScore(currentCycle.articles);
-    const rateInfo = calculateDynamicRate(avgScore);
+    // BLIND MODE: Hide score during betting window
+    let avgScore = null;
+    let projectedAction = 'COLLECTING';
+
+    if (isBettingClosed) {
+        // After betting closes - reveal score
+        avgScore = calculateWeightedCycleScore(currentCycle.articles);
+        const rateInfo = calculateDynamicRate(avgScore);
+        projectedAction = rateInfo.action;
+    }
 
     res.json({
-        cycleId: currentCycle.id,
-        votingOpen,
         cycleId: currentCycle.id,
         votingOpen,
         isBettingClosed,
         bettingWindowRemaining: Math.max(0, BETTING_WINDOW - elapsed),
         cycleTimeRemaining: Math.max(0, AGGREGATION_INTERVAL - elapsed),
         cycleTotal: AGGREGATION_INTERVAL,
-        cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL), // 0 to 1
-        averageScore: avgScore, // Oracle score for race
-        projectedAction: rateInfo.action, // MINT, BURN, or HOLD
+        cycleProgress: Math.min(1, elapsed / AGGREGATION_INTERVAL),
+        averageScore: avgScore, // null during betting, revealed after
+        projectedAction: projectedAction,
+        blindMode: !isBettingClosed,
         totalVotes: pools.mint + pools.burn + pools.hold,
-        articlesCount: currentCycle.articles.length,
+        articlesCount: isBettingClosed ? currentCycle.articles.length : 0, // Hide count during betting
         minArticlesRequired: MIN_ARTICLES_FOR_GAME,
         userVote,
         userPendingBet,
